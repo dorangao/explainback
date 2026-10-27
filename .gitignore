@@ -14,6 +14,7 @@ credentials*.json
 
 # Local browser captures, diagnostics and generated evaluation output
 .playwright-mcp/
+.playwright-cli/
 output/
 *.log
 docs/local-evaluation.json

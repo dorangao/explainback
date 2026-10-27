@@ -2,15 +2,19 @@
   "name": "explainback",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22.9.0" },
+  "engines": {
+    "node": ">=22.9.0"
+  },
   "scripts": {
-    "dev": "node --env-file=.env.local src/server.mjs",
-    "start": "node --env-file=.env.local src/server.mjs",
-    "security:check": "node --env-file=.env.local scripts/security-check.mjs",
-    "eval:live": "node --env-file=.env.local scripts/evaluate.mjs",
-    "claim:smoke": "node --env-file=.env.local scripts/claim-smoke.mjs",
+    "dev": "node --env-file-if-exists=.env.local src/server.mjs",
+    "start": "node --env-file-if-exists=.env.local src/server.mjs",
+    "security:check": "node --env-file-if-exists=.env.local scripts/security-check.mjs",
+    "eval:live": "node --env-file-if-exists=.env.local scripts/evaluate.mjs",
+    "claim:smoke": "node --env-file-if-exists=.env.local scripts/claim-smoke.mjs",
     "test": "node --test",
     "meta:check": "node --env-file-if-exists=.env.local scripts/meta-check.mjs",
-    "meta:smoke": "node --env-file-if-exists=.env.local scripts/meta-smoke.mjs"
+    "meta:smoke": "node --env-file-if-exists=.env.local scripts/meta-smoke.mjs",
+    "eval:models": "node --env-file-if-exists=.env.local scripts/compare-models.mjs",
+    "llm:recover": "node --env-file-if-exists=.env.local scripts/recover-ollama.mjs"
   }
 }

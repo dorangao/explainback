@@ -1,10 +1,11 @@
 import {flightScenario,flightTitle} from '../public/flight.mjs';
+import {createTesterAuth,expiredTesterCookie} from './tester-auth.mjs';
 import {createTrace} from './trace.mjs';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
-import { callMeta, DEFAULT_META_MODEL } from './meta.mjs';
+import {createProviderRouter} from './llm/index.mjs';
 import { createSession, assess, advance, view } from './learning.mjs';
 import { problems } from './problems.mjs';
 import { confirmClaim, replayClaimEvidence } from './claim-testing.mjs';
@@ -49,16 +50,20 @@ async function readJSON(req) {
 }
 
 export function createApp({
-  configured = Boolean(process.env.MODEL_API_KEY?.trim()),
-  model = process.env.META_MODEL || DEFAULT_META_MODEL,
-  modelCall = args => callMeta({ ...args, apiKey: process.env.MODEL_API_KEY, model }),
+  configured, modelCall, router = createProviderRouter(),
   traceEnabled = process.env.EXPLAINBACK_TRACE === '1',
+  testerCredentials = {},
 } = {}) {
+  const targets=router.list().map(t=>({...t,...(configured!==undefined&&t.id===router.defaultId?{configured}:{})}));
+  const selected=id=>{const t=targets.find(t=>t.id===(id??router.defaultId));if(!t)throw new RequestError(400,'Choose an allowed provider/model.');return {...t};};
+  const defaultTarget=selected();
+  const sessionView=s=>({...view(s),llm:s.llm});
   const sessions = new Map();
+  const auth=createTesterAuth({...testerCredentials,onRevoke:owner=>{for(const [id,s]of sessions)if(s.owner===owner)sessions.delete(id);}});
   let turnWindow = Date.now();
   let turns = 0;
   const server = createServer(async (req, res) => {
-    const json = (status, data) => { res.writeHead(status, { ...safeHeaders, 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(data)); };
+    const json = (status, data, headers={}) => { res.writeHead(status, { ...safeHeaders, ...headers, 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(data)); };
     try {
       const port = server.address().port;
       const validHosts = [`127.0.0.1:${port}`, `localhost:${port}`];
@@ -70,29 +75,43 @@ export function createApp({
         const data = await readFile(new URL(`../public/${name}`, import.meta.url));
         res.writeHead(200, { ...safeHeaders, 'Content-Type': type }); res.end(data); return;
       }
+      const tester=auth.authenticate(req.headers.cookie);
+      if(req.method==='GET'&&path==='/api/auth'){json(200,{configured:auth.configured,authenticated:Boolean(tester)});return;}
+      if(req.method==='POST'&&['/api/login','/api/logout'].includes(path)){
+        if(req.headers.origin!==`http://${req.headers.host}`)throw new RequestError(403,'This action must come from the local app.');
+        const body=await readJSON(req);
+        if(path==='/api/logout'){auth.revoke(req.headers.cookie);json(200,{authenticated:false},{'Set-Cookie':expiredTesterCookie});return;}
+        try{const result=auth.login(body,req.headers.cookie);json(200,{authenticated:true},{'Set-Cookie':result.cookie});}
+        catch(error){if(!error.status)throw error;json(error.status,{error:error.message,code:error.code});}return;
+      }
+      if(path.startsWith('/api/')&&!tester){json(401,{error:'Sign in to tester access.',code:'TESTER_REQUIRED'});return;}
       if (req.method === 'GET' && path === '/api/status') {
-        json(200, { configured, mode: 'live', model, traceEnabled, audience: 'synthetic-adult', problems: [...Object.values(problems).map(p => ({ id: p.id, title: p.title })),{id:'acceleration',title:motionTitle},{id:'flight',title:flightTitle}] }); return;
+        json(200, { configured:defaultTarget.configured, mode: 'live', model:defaultTarget.model, models:targets,defaultModel:defaultTarget.id, traceEnabled, audience: 'tester-poc', problems: [...Object.values(problems).map(p => ({ id: p.id, title: p.title })),{id:'acceleration',title:motionTitle},{id:'flight',title:flightTitle}] }); return;
       }
       if (req.method !== 'POST' || !['/api/session', '/api/turn', '/api/reset', '/api/claim', '/api/replay',...(traceEnabled?['/api/trace']:[])].includes(path)) { json(404, { error: 'Not found.' }); return; }
       if (req.headers.origin !== `http://${req.headers.host}`) throw new RequestError(403, 'This action must come from the local app.');
       const body = await readJSON(req);
+      if(!auth.active(tester.id)){json(401,{error:'Sign in to tester access.',code:'TESTER_REQUIRED'});return;}
       for (const [id, s] of sessions) if (!s.busy && Date.now() - s.createdAt > 30 * 60_000) sessions.delete(id);
       if (path === '/api/session') {
-        if (body.adult !== true || body.synthetic !== true) throw new RequestError(400, 'Confirm adult-only, synthetic use before starting.');
+        if (body.synthetic !== true) throw new RequestError(400, 'Use synthetic examples for this prototype.');
         if ((!Object.hasOwn(problems, body.problemId)&&!['acceleration','flight'].includes(body.problemId)) || !['en', 'zh'].includes(body.language)) throw new RequestError(400, 'Choose a problem and language.');
         if (sessions.size >= 100) throw new RequestError(429, 'Local session limit reached. Reset an existing session.');
         const workflow=body.workflow??(['acceleration','flight'].includes(body.problemId)?'claim-testing':'baseline');
         if(!['baseline','claim-testing'].includes(workflow)||(workflow==='claim-testing'&&!['crossing','acceleration','flight'].includes(body.problemId))||(['acceleration','flight'].includes(body.problemId)&&workflow!=='claim-testing')) throw new RequestError(400,'Choose an available workflow.');
         if(body.problemId==='acceleration')try{motionScenario(body.motion===undefined?{}:body.motion);}catch{throw new RequestError(400,'Choose allowed hypothetical motion, mass, grip and power settings.');}
         if(body.problemId==='flight')try{flightScenario(body.flight===undefined?{}:body.flight);}catch{throw new RequestError(400,'Choose allowed hypothetical flight, inertia and stopping settings.');}
+        const target=selected(body.llm);
+        if(!target.configured)throw new RequestError(503,'Selected provider is not configured. Check the server environment.');
         const s = createSession(body.problemId, body.language, workflow,body.problemId==='flight'?(body.flight??{}):body.problemId==='acceleration'?(body.motion??{}):{});
         const sessionId = randomBytes(24).toString('hex');
-        s.demoUsed=traceEnabled;s.trace=traceEnabled?createTrace(process.env.MODEL_API_KEY?.trim()):null;
+        s.llm=target;s.owner=tester.id;
+        s.demoUsed=traceEnabled;s.trace=traceEnabled?createTrace([process.env.MODEL_API_KEY?.trim(),testerCredentials.password??process.env.EXPLAINBACK_TESTER_PASSWORD]):null;
         sessions.set(sessionId, s);
-        json(200, { sessionId, ...view(s) }); return;
+        json(200, { sessionId, ...sessionView(s) }); return;
       }
       const s = sessions.get(body.sessionId);
-      if (!s) throw new RequestError(404, 'Session expired. Start a new session.');
+      if (!s || s.owner!==tester.id) throw new RequestError(404, 'Session expired. Start a new session.');
       if (path === '/api/reset') { sessions.delete(body.sessionId); json(200, { reset: true }); return; }
       if(path==='/api/trace'){
         if(body.clear!==undefined&&typeof body.clear!=='boolean')throw new RequestError(400,'Use a boolean clear flag.');
@@ -101,7 +120,7 @@ export function createApp({
       if (s.busy) throw new RequestError(409, 'A response is already in progress.');
       if(path==='/api/claim') {
         if(s.workflow!=='claim-testing')throw new RequestError(400,'This session has no claim to confirm.');
-        try{json(200,{sessionId:body.sessionId,...confirmClaim(s,{claimId:body.claimId,decision:body.decision,source:body.source})});}
+        try{json(200,{sessionId:body.sessionId,...confirmClaim(s,{claimId:body.claimId,decision:body.decision,source:body.source}),llm:s.llm});}
         catch{throw new RequestError(400,'The claim changed or cannot be confirmed.');}
         return;
       }
@@ -115,7 +134,7 @@ export function createApp({
       if(body.demoPreset!==undefined&&typeof body.demoPreset!=='boolean')throw new RequestError(400,'Use a boolean preset flag.');
       if(body.answer!==undefined&&!answerShapeValid(s,body.answer))
         throw new RequestError(400,'Enter the two numeric values for this topic, or leave both blank to ask for help.');
-      if (!configured) throw new RequestError(503, 'Meta API key is missing. Configure .env.local and restart the server.');
+      if (!s.llm.configured) throw new RequestError(503, 'Selected provider is not configured.');
       if (s.phase === 'complete') throw new RequestError(400, 'This session is complete. Start another example.');
       if (typeof body.explanation !== 'string' || !body.explanation.trim() || body.explanation.length > 1200) throw new RequestError(400, 'Enter 1–1200 characters of synthetic reasoning.');
       if (Date.now() - turnWindow > 60 * 60_000) { turns = 0; turnWindow = Date.now(); }
@@ -125,17 +144,20 @@ export function createApp({
       let traceCall;
       try {
         const result = await assess(s, body.explanation.trim(), args=>{
-          traceCall=s.trace?.start({model,input:args.input,instructions:args.instructions});
-          return modelCall({...args,...(traceCall?{onTrace:traceCall.event}:{})});
+          traceCall=s.trace?.start({provider:s.llm.provider,model:s.llm.model,input:args.input,instructions:args.instructions});
+          const options={...args,...(traceCall?{onTrace:traceCall.event}:{})};
+          return modelCall?modelCall(options):router.call(s.llm.id,options);
         }, body.answer);
+        if(!auth.active(tester.id)){traceCall?.finish('discarded');json(401,{error:'Sign in to tester access.',code:'TESTER_REQUIRED'});return;}
         if (!sessions.has(body.sessionId)) throw new RequestError(409, 'Session was reset; the response was discarded.');
         const next=advance(s, body.explanation.trim(), result, body.answer);
-        traceCall?.finish('accepted');json(200, { sessionId: body.sessionId, ...next });
+        traceCall?.finish('accepted');json(200, { sessionId: body.sessionId, ...next,llm:s.llm });
       } catch (error) {
         traceCall?.finish(error instanceof RequestError?'discarded':'failed or rejected');
         if (error instanceof RequestError) throw error;
+        if(['OLLAMA_BUSY','OLLAMA_UNCERTAIN','OLLAMA_OTHER_MODEL','OLLAMA_CONTROL'].includes(error.code)){traceCall?.event({type:'error',message:error.message});throw new RequestError(409,error.message);}
         // Deliberately do not log or return raw upstream errors, prompts or secrets.
-        const failure = new RequestError(502, 'Meta feedback could not be completed or validated. Your text is preserved. Check API access, model and credits, then retry explicitly.');
+        const failure = new RequestError(502, 'Provider feedback could not be completed or validated. Your text is preserved. Check the selected model and connection, then retry explicitly.');
         failure.attemptsRemaining = Math.max(0, 12 - s.attempts);
         throw failure;
       } finally { s.busy = false; }
@@ -155,5 +177,5 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error('PORT must be an integer from 1024 to 65535.');
   const server = createApp();
   server.on('error', () => { console.error('Could not start the local server. Check whether the port is already in use.'); process.exitCode = 1; });
-  server.listen(port, '127.0.0.1', () => console.log(`ExplainBack local adult prototype: http://127.0.0.1:${port}`));
+  server.listen(port, '127.0.0.1', () => console.log(`ExplainBack local tester prototype: http://127.0.0.1:${port}`));
 }

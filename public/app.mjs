@@ -14,7 +14,9 @@ import { renderPhysicsPanel } from './physics-panel.mjs';
 const $ = id => document.getElementById(id);
 let playbackFrame=null,playbackLast=0;
 let session = null, generation = 0, busy = false, ready = false, catalog = [];
-let traceEnabled=false,demoPresetUsed=false,journeyModel=null;
+let authenticated=false,authConfigured=false,authBusy=false,authMessage='',authVersion=0;
+let traceEnabled=false,demoPresetUsed=false,journeyModel=null,providerTargets=[];
+const selectedTarget=()=>providerTargets.find(t=>t.id===$('llm-model').value);
 let guidedDemo=false,autoEvidence=false,autoWaiting=false,autoGate=null;
 let autoRun=null,autoState='idle',autoStage='',autoCalls=0,autoStopReason='';
 const journey=mountJourney($('journey')),providerConsole=mountProviderConsole($('provider-console'),post);
@@ -25,29 +27,29 @@ const copy = {
     'motion-settings-heading':'Choose a hypothetical experiment', 'motion-speed-label':'Final speed (both cars)', 'motion-duration-label':'Time from rest (both cars)', 'motion-profile-label':"Car B’s acceleration", 'motion-setting-note':'A has constant acceleration. Every setting is hypothetical, not a Tesla specification. Settings stay fixed for a session; reset to change them.', 'motion-assumptions-heading':'What this model assumes', 'motion-metric-label':'Graph view',
     provenance:'Baseline: bilingual adaptive coach and fixed math. Extension: claim confirmation, checked evidence, replay, and transfer report. Implementation starts October 26 Pacific; competition eligibility unresolved.',
     'claim-heading':'Is this your claim?', 'confirm-claim':'Yes, test this claim', 'revise-claim':'Revise my meaning',
-    'confirm-note':'Confirmation runs locally. No Meta request.', 'evidence-heading':'Checked evidence',
-    'evidence-note':'Code checks the fixed mathematical identity. Claim interpretation and reasoning assessments come from Meta and may be wrong.',
+    'confirm-note':'Confirmation runs locally. No model request.', 'evidence-heading':'Checked evidence',
+    'evidence-note':'Code checks the fixed mathematical identity. Claim interpretation and reasoning assessments come from the selected model and may be wrong.',
     'values-legend':'Your transfer values', 'asymptote-label':'Horizontal asymptote y =', 'crossing-label':'Crossing input x =',
     'values-note':'Enter both values with your reasoning, or leave both blank to ask for help.', 'report-heading':'Transfer evidence',
     headline: 'Make your reasoning visible.', subtitle: 'Explain in your own words. Find one gap. Try the idea somewhere new.',
-    eyebrow: 'LOCAL LEARNING LAB · ADULT PROTOTYPE', 'topic-label': 'Explore an idea',
-    'consent-text': 'I am 18+ and will use only synthetic adult-user examples. No real student data.',
+    eyebrow: 'LOCAL LEARNING LAB · TESTER PREVIEW', 'topic-label': 'Explore an idea',
+    'consent-text': 'Use synthetic examples. No real student or private information.',
     start: 'Start a session ↗', reset: 'Reset session', 'explanation-label': 'Explain why, not just the answer.',
     'example-label': 'Synthetic starting points:', 'example-ambiguous': 'A vague claim', 'example-misconception': 'A possible misconception',
-    submit: 'Get one next step →', 'request-note': 'One live Meta request per submission. No automatic retries.',
+    submit: 'Get one next step →', 'request-note': 'One live model request per submission. No automatic retries.',
     'graph-heading': 'Look at the behavior.', 'graph-tag': 'VERIFIED MATH', 'scrubber-label': 'Explore a finite input',
     'margin-note': 'A limit describes what happens toward an end. A value tells you what happens at one input.',
     'comparison-label': 'YOUR REASONING, SIDE BY SIDE', 'before-label': 'Where you started', 'after-label': 'On a fresh problem',
     'learning-note': 'Your explanation supports this transfer problem. One response is evidence to build on, not a claim of lasting mastery.',
     again: 'Explore another idea →', 'trail-label': 'Reasoning trail', 'empty-text': 'Choose one idea and bring a synthetic explanation.',
     'empty-note': 'English or Chinese. A small question, a visible change in thinking.',
-    'footer-left': 'Local prototype · Synthetic adults only · Sessions stay in memory', 'footer-right': 'Meta feedback + deterministic graphs',
+    'footer-left': 'Local prototype · Tester access · Synthetic examples · Sessions stay in memory', 'footer-right': 'Model feedback + deterministic graphs',
     steps: ['01 · Explain', '02 · Reflect', '03 · Transfer', '04 · Compare'],
     stages: { explain: 'YOUR REASONING', revisit: 'REVISIT ONE IDEA', transfer: 'A FRESH PROBLEM', complete: 'A CHANGE IN REASONING' },
     actions: { ask_clarification:'Clarify the meaning',ask_prediction:'Predict before checking',evaluate_point:'Check one value',reveal_graph:'Test the idea with a graph',select_transfer:'Try a targeted transfer',compare_reasoning:'Compare the reasoning' },
     labels: { ambiguous: 'LET’S CLARIFY', misconception: 'ONE POSSIBLE GAP', supported: 'REASONING SUPPORTED' },
-    pending: 'Reading your reasoning…', unavailable: 'Meta key missing · configure .env.local',
-    ready: 'Meta configured · live requests', graphHidden: 'Make a prediction first. We can reveal the graph when it helps test your idea.',
+    pending: 'Reading your reasoning…', unavailable: 'Selected provider needs configuration',
+    ready: 'Configured · live requests', graphHidden: 'Make a prediction first. We can reveal the graph when it helps test your idea.',
     placeholder: 'I think… because…', newSession: 'Session reset. Choose an idea and start again.',
   },
   zh: {
@@ -56,29 +58,29 @@ const copy = {
     'motion-settings-heading':'选择一个假想实验', 'motion-speed-label':'末速度（两车相同）', 'motion-duration-label':'从静止开始的时间（两车相同）', 'motion-profile-label':'B 车的加速度', 'motion-setting-note':'A 车的加速度恒定。所有数值均为假设，并非 Tesla 规格。每次会话设置固定；重置后可修改。', 'motion-assumptions-heading':'模型假设', 'motion-metric-label':'图像视图',
     provenance:'已有基础：双语自适应辅导与固定数学题库。新增：确认说法、核验证据、重放与迁移报告。实际开发始于太平洋时间10月26日；参赛资格尚待确认。',
     'claim-heading':'这是你想表达的说法吗？', 'confirm-claim':'是，检验这个说法', 'revise-claim':'修改我的意思',
-    'confirm-note':'确认在本地完成，不发送 Meta 请求。', 'evidence-heading':'已核验的证据',
-    'evidence-note':'代码核验固定数学恒等式。说法解读和推理评价来自 Meta，可能有误。',
+    'confirm-note':'确认在本地完成，不发送模型请求。', 'evidence-heading':'已核验的证据',
+    'evidence-note':'代码核验固定数学恒等式。说法解读和推理评价来自所选模型，可能有误。',
     'values-legend':'你的迁移题数值', 'asymptote-label':'水平渐近线 y =', 'crossing-label':'穿越点的输入 x =',
     'values-note':'结合推理填写两个数值；如需帮助，可以将两个输入框都留空。', 'report-heading':'迁移证据',
     headline: '让你的思考看得见。', subtitle: '用自己的话讲出来，找到一个缺口，再用一道新题检验。',
-    eyebrow: '本地学习实验室 · 成人原型', 'topic-label': '探索一个想法',
-    'consent-text': '我已满18岁，只使用虚构的成人学习示例，不输入真实学生资料。',
+    eyebrow: '本地学习实验室 · 测试预览', 'topic-label': '探索一个想法',
+    'consent-text': '请使用虚构示例，不输入真实学生资料或私人信息。',
     start: '开始学习 ↗', reset: '重置本次学习', 'explanation-label': '请解释为什么，而不只是给出答案。',
     'example-label': '虚构示例：', 'example-ambiguous': '一个模糊的说法', 'example-misconception': '一个可能的误解',
-    submit: '获取一个下一步 →', 'request-note': '每次提交发送一次真实 Meta 请求，不会自动重试。',
+    submit: '获取一个下一步 →', 'request-note': '每次提交发送一次真实模型请求，不会自动重试。',
     'graph-heading': '看看函数的行为。', 'graph-tag': '已核验的数学', 'scrubber-label': '探索一个有限的输入值',
     'margin-note': '极限描述趋向某一端时的行为；函数值描述某个输入处的结果。',
     'comparison-label': '对照你的两次推理', 'before-label': '最初的想法', 'after-label': '面对一道新题',
     'learning-note': '这次解释支持你在这道迁移题上的理解。一次回答只是进一步学习的依据，不代表已经长期掌握。',
     again: '探索另一个想法 →', 'trail-label': '推理记录', 'empty-text': '选择一个概念，从一段虚构的解释开始。',
     'empty-note': '中文或英文。一个小问题，一次看得见的思考变化。',
-    'footer-left': '本地原型 · 仅限虚构成人示例 · 会话只保存在内存', 'footer-right': 'Meta 反馈 + 确定性图像',
+    'footer-left': '本地原型 · 测试者访问 · 虚构示例 · 会话只保存在内存', 'footer-right': '模型反馈 + 确定性图像',
     steps: ['01 · 解释', '02 · 反思', '03 · 迁移', '04 · 对照'],
     stages: { explain: '讲出你的推理', revisit: '重新思考一个概念', transfer: '一道全新的题', complete: '推理的变化' },
     actions: { ask_clarification:'先澄清含义',ask_prediction:'先预测，再验证',evaluate_point:'核验一个函数值',reveal_graph:'用图像检验想法',select_transfer:'尝试针对性的迁移题',compare_reasoning:'对照两次推理' },
     labels: { ambiguous: '先澄清一下', misconception: '一个可能的理解缺口', supported: '推理得到支持' },
-    pending: '正在阅读你的推理…', unavailable: '未配置 Meta 密钥 · 请检查 .env.local',
-    ready: 'Meta 已配置 · 真实 API 请求', graphHidden: '先讲出预测。需要时再展开图像，检验你的想法。',
+    pending: '正在阅读你的推理…', unavailable: '所选提供商尚未配置',
+    ready: '已配置 · 真实模型调用', graphHidden: '先讲出预测。需要时再展开图像，检验你的想法。',
     placeholder: '我认为……因为……', newSession: '学习记录已重置。选择一个概念重新开始。',
   },
 };
@@ -90,12 +92,14 @@ function localize() {
   t().steps.forEach((text, i) => $(`step-${i+1}`).textContent = text);
   $('explanation').placeholder = t().placeholder;
   for (const item of catalog) { const option = [...$('topic').options].find(o => o.value === item.id); if (option) option.textContent = item.title[language()]; }
-  $('connection').textContent = ready ? t().ready : t().unavailable;
+  $('connection').textContent = ready ? (session?.llm?.label??selectedTarget()?.label??'')+' · '+t().ready : t().unavailable;
+  $('llm-model-label').textContent=language()==='zh'?'提供商 / 模型':'Provider / model';
+  $('llm-model-note').textContent=language()==='zh'?'每个会话固定一个模型；重置后可切换。Ollama 串行运行，先卸载再换模型，首次加载可能较慢。':'One model per session; reset to change. Ollama runs one request at a time and unloads before switching; a cold start can take longer.';
   for(const [value,en,zh]of [['rising','Increasing','递增'],['falling','Decreasing','递减'],['smooth','Cosine pulse · smooth joins','余弦脉冲 · 平滑衔接']])$('motion-profile').querySelector(`option[value="${value}"]`).textContent=language()==='zh'?zh:en;
   for(const [value,en,zh]of [['velocity','Velocity (m/s)','速度 (m/s)'],['acceleration','Acceleration (m/s²)','加速度 (m/s²)'],['distance','Distance (m)','路程 (m)'],['force','Required force (kN)','所需力 (kN)'],['powerKw','Wheel power (kW)','轮端功率 (kW)'],['jerk','Jerk (m/s³)','加加速度 (m/s³)']])$('motion-metric').querySelector(`option[value="${value}"]`).textContent=language()==='zh'?zh:en;
   for(const [value,en,zh]of flightMetrics)$('flight-metric').querySelector(`option[value="${value}"]`).textContent=language()==='zh'?zh:en;
   for(const [value,en,zh]of [['constant','Constant','恒定'],['pulse','Cosine pulse','余弦脉冲']])$('flight-profile').querySelector(`option[value="${value}"]`).textContent=language()==='zh'?zh:en;
-  renderMotionSetup();drawCurrentGraph();stopPlayback();renderDemo();
+  renderMotionSetup();drawCurrentGraph();stopPlayback();renderDemo();renderAccess();
 }
 function flightMode(){return (session?.problem.id||$('topic').value)==='flight';}
 function motionMode(){return (session?.problem.id||$('topic').value)==='acceleration';}
@@ -134,14 +138,14 @@ function renderAutoDemo(){
  $('auto-demo-language').value=language();
  $('auto-demo-preview-title').textContent=zh?'本步预设与真实反馈':'This step’s preset and live feedback';
  $('auto-demo-note').textContent=!traceEnabled?(zh?'演示需启用 EXPLAINBACK_TRACE=1 并重启，以显示真实调用。':'Enable EXPLAINBACK_TRACE=1 and restart to show live calls in the guided demo.'):
-  !$('adult').checked?(zh?'先勾选上方成人 / 虚构示例确认，再开始。':'Confirm adult / synthetic use above, then start.'):
+  !authenticated?(zh?'请先登录测试账号。':'Sign in to tester access first.'):
   (zh?'按“下一步”推进，每个阶段都暂停。完整流程最多 4 次真实模型调用；脚本确认，不自动重试。切换语言会停止并重置。':'Advance with Next; every stage pauses. Up to 4 live calls, scripted confirmation, no retries. Switching language stops and resets the run.');
  const states=zh?{idle:'选择语言，再开始演示。',running:autoWaiting?'已暂停 · 阅读后点击下一步':'进行中 · 请等待本步完成',complete:'演示完成 · 数值与推理已核验；计为辅助完成。',stopped:'演示已停止；已发送的请求可能仍会完成。',attention:'演示已停在当前步骤，请查看反馈；可手动继续。'}:{idle:'Choose a language, then start.',running:autoWaiting?'Paused · read, then select Next':'In progress · wait for this step to finish',complete:'Demo complete · values and reasoning checked; assisted result.',stopped:'Demo stopped; an already sent request may still finish.',attention:'Demo stopped at this step. Inspect feedback; you can continue manually.'};
- $('auto-demo-status').textContent=states[autoState]+(autoState!=='idle'?` · ${autoCalls}/4 ${zh?'次模型调用':'provider calls'}`:'')+(autoStopReason==='language'?(zh?' 点击开始，以新语言重新演示。':' Select Start to run in the new language.'):'');
+ $('auto-demo-status').textContent=states[autoState]+(autoState!=='idle'?` · ${autoCalls}/4 ${zh?'次提交尝试':'submission attempts'}`:'')+(autoStopReason==='language'?(zh?' 点击开始，以新语言重新演示。':' Select Start to run in the new language.'):'');
  const names=zh?['说法','确认','预测','证据','加速','翻转','着陆','修正','迁移','结果']:['Claim','Confirm','Predict','Evidence','Accelerate','Flip','Land','Revise','Transfer','Result'];
  const current=guideStages.indexOf(autoStage);
  $('auto-demo-steps').hidden=autoState==='idle';$('auto-demo-steps').replaceChildren(...guideStages.map((id,i)=>{const li=document.createElement('li');li.textContent=`${i+1}. ${names[i]}`;li.classList.toggle('done',autoState==='complete'||i<current);if(id===autoStage)li.setAttribute('aria-current','step');return li;}));
- $('auto-demo-run').disabled=!ready||!traceEnabled||!$('adult').checked||busy||autoActive();$('auto-demo-stop').hidden=!autoActive();
+ $('auto-demo-run').disabled=!ready||!traceEnabled||!authenticated||busy||autoActive();$('auto-demo-stop').hidden=!autoActive();
  $('auto-demo-guide').hidden=!guidedDemo||!guide;
  if(guide){$('auto-demo-guide-title').textContent=guide[0];['claim','graph','result'].forEach((id,i)=>{$('guide-'+id).textContent=guide[i+1];$('guide-'+id+'-label').textContent=(zh?['说法 / 想法','怎么看图','结果 / 下一步']:['Claim / idea','Read the graph','Result / next action'])[i];});}
  $('auto-demo-next').disabled=!autoWaiting||!autoActive()||busy;
@@ -176,13 +180,13 @@ function drawCurrentGraph(){
   renderPhysicsPanel($('physics-panel'),motionMode()?session?.graph:null,language(),Number($('scrubber').value));
 }
 function controls() {
+  $('llm-model').disabled=Boolean(session)||busy||autoActive();
   if(busy){stopPlayback();journey.stop();}
   $('demo-load').disabled=busy||!session;$('demo-preset').disabled=busy;
   for(const id of ['roadster-acceleration','roadster-flight','example-torque','example-landing'])$(id).disabled=busy;
   $('flight-play').disabled=busy||!session?.graph;
-  $('start').disabled = !ready || !$('adult').checked || busy || Boolean(session);
+  $('start').disabled = !ready || !authenticated || busy || Boolean(session);
   $('topic').disabled = Boolean(session) || busy;
-  $('adult').disabled = Boolean(session) || busy;
   $('submit').disabled = busy || !session || ['complete','confirm'].includes(session.phase) || session.attemptsRemaining <= 0;
   $('submit').textContent = busy ? t().pending : t().submit;
   $('submit').classList.toggle('busy', busy);
@@ -193,12 +197,16 @@ function controls() {
   for(const id of ['confirm-claim','revise-claim','transfer-asymptote','transfer-crossing'])$(id).disabled=busy;
   for(const button of document.querySelectorAll('#evidence-records button'))button.disabled=busy;
   for(const id of ['motion-speed','motion-duration','motion-profile','motion-mass','motion-grip','motion-power','flight-mass','flight-time','flight-radius','flight-separation','flight-stop','flight-profile'])$(id).disabled=busy||Boolean(session);
-  if(autoActive())for(const id of ['start','topic','adult','roadster-acceleration','roadster-flight','submit','explanation','confirm-claim','revise-claim','demo-load','demo-preset','transfer-asymptote','transfer-crossing','example-ambiguous','example-misconception','example-force','example-smooth','example-torque','example-landing','flight-play'])$(id).disabled=true;
+  if(autoActive())for(const id of ['start','topic','roadster-acceleration','roadster-flight','submit','explanation','confirm-claim','revise-claim','demo-load','demo-preset','transfer-asymptote','transfer-crossing','example-ambiguous','example-misconception','example-force','example-smooth','example-torque','example-landing','flight-play'])$(id).disabled=true;
   renderAutoDemo();
 }
 async function post(path, body) {
-  const response = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(40_000) });
+  if(path==='/api/session')body={...body,llm:$('llm-model').value};
+  const accessVersion=authVersion;
+  const timeoutMs=(session?.llm?.timeoutMs??selectedTarget()?.timeoutMs??30000)+65000;
+  const response = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(timeoutMs) });
   const data = await response.json();
+  if(response.status===401&&authenticated&&accessVersion===authVersion)loseAccess('TESTER_REQUIRED');
   if (!response.ok) { const error = new Error(data.error || 'Local request failed.'); error.attemptsRemaining = data.attemptsRemaining; throw error; }
   return data;
 }
@@ -241,7 +249,7 @@ function render() {
       $('checked-result').textContent=`${language()==='zh'?'已核验的数值':'Checked value'} · ${name} = ${Number(point.y.toPrecision(8))}`;
     }
     $('next-question').textContent = phase === 'complete' ? '' : (session.probe || last.question);
-    $('source').textContent = `${language()==='zh'?'真实 Meta 反馈':'Live Meta feedback'} · ${last.model || 'Meta Model API'}`;
+    $('source').textContent = `${language()==='zh'?'真实模型反馈':'Live model feedback'} · ${last.model || session.llm?.model || 'model'}`;
   }
   if(flightMode()&&graph){const slider=$('scrubber'),end=graph.scenario.airtime+graph.scenario.stopTime;if(slider.dataset.scenario!==graph.scenario.id){slider.value=0;slider.dataset.scenario=graph.scenario.id;}slider.min=0;slider.max=end;slider.step=.0001;}
   else if(motionMode()&&graph){const slider=$('scrubber');if(slider.dataset.scenario!==graph.scenario.id){slider.value=0;slider.dataset.scenario=graph.scenario.id;}slider.min=0;slider.max=graph.scenario.T;slider.step=graph.scenario.T/100;}
@@ -286,7 +294,7 @@ function renderClaimWorkbench(){
     $('claim-buttons').hidden=session.phase!=='confirm';
     $('confirm-note').textContent=session.claim.confirmed?(session.claim.confirmationSource==='scripted-demo'?(zh?'演示脚本自动确认了预设解读；这不是学习者的确认。说法是否成立由证据另行检验。':'The demo script confirmed the preset interpretation automatically; this is not a learner confirmation. Evidence checks whether the claim holds.'):(zh?'学习者已确认这段解读。数学结果与说法是否成立将在证据中另行核验。':'The learner confirmed this interpretation. Whether the claim holds is checked separately in the evidence.')):t()['confirm-note'];
     $('claim-decisions-label').textContent=zh?'说法的决定记录':'Claim decisions';
-    const names=zh?{proposed:'Meta 提出解读',confirm:'学习者确认 · 本地操作',revise:'学习者要求修改 · 本地操作'}:{proposed:'Meta proposed an interpretation',confirm:'Learner confirmed · local action',revise:'Learner requested revision · local action'};
+    const names=zh?{proposed:'模型提出解读',confirm:'学习者确认 · 本地操作',revise:'学习者要求修改 · 本地操作'}:{proposed:'Model proposed an interpretation',confirm:'Learner confirmed · local action',revise:'Learner requested revision · local action'};
     $('claim-decisions').replaceChildren(...session.claimEvents.map(e=>{const li=document.createElement('li');li.textContent=`${e.source==='scripted-demo'?(zh?'演示脚本确认 · 本地操作':'Demo script confirmed · local action'):names[e.action]}: ${e.interpretation}`;return li;}));
     $('claim-quote').textContent=session.claim.quote;
     $('claim-interpretation').textContent=session.claim.interpretation;
@@ -319,7 +327,7 @@ function renderClaimWorkbench(){
   const report=session.report,outcomes=zh?{insufficient:'尚无充分证据：迁移尝试未完成。',independent:'独立迁移：本题未使用额外辅导。',assisted:'辅助迁移：本题使用了额外辅导。'}:{insufficient:'Insufficient evidence: transfer is not complete.',independent:'Independent transfer: no additional coaching on this problem.',assisted:'Assisted transfer: additional coaching was used on this problem.'};
   $('report-outcome').textContent=session.demoUsed&&report.outcome!=='insufficient'?(zh?'脚本 / 开发演示完成：数值和推理已检查，不计独立迁移。':'Scripted / developer demo complete: values and reasoning checked; not independent transfer.'):outcomes[report.outcome];
   $('report-checked').textContent=report.checkedAnswer?`${zh?'代码核验的数值':'Values checked by code'}: ${session.answerFields.map(f=>`${f.label[language()]} ${report.checkedAnswer[f.key]}`).join('; ')}`:'';
-  $('report-judgment').textContent=report.reasoningAssessment?(zh?'Meta 判断推理得到支持；这不是代码对理解程度的证明。':'Meta assessed the reasoning as supported; code does not verify understanding.') : '';
+  $('report-judgment').textContent=report.reasoningAssessment?(zh?'所选模型判断推理得到支持；这不是代码对理解程度的证明。':'The selected model assessed the reasoning as supported; code does not verify understanding.') : '';
   $('report-revision').textContent=report.revision?`${zh?'依据证据作出的解释':'Evidence-based revision'}: ${report.revision}`:'';
   $('report-refs').textContent=report.evidenceIds?`${zh?'引用证据':'Evidence references'}: ${report.evidenceIds.join(', ')}`:'';
   $('report-limit').textContent=report.limitation?.[language()]||'';
@@ -348,21 +356,24 @@ function updatePoint() {
   $('point-value').textContent=`x = ${x.toFixed(1)} → y = ${y.toFixed(4)}`;
   drawGraph($('graph'), session.graph, language(), x);
 }
-function clear() {
+function clear({remote=true}={}) {
   stopAutoDemo('reset');
   guidedDemo=false;autoEvidence=false;autoWaiting=false;$('workspace').prepend($('journey'));
   if(autoState!=='stopped'){autoState='idle';autoStage='';autoCalls=0;autoStopReason='';}
   $('auto-demo-preview').hidden=true;$('auto-demo-prompt').textContent='';$('auto-demo-feedback').textContent='';
   stopPlayback();journey.stop();generation++;demoPresetUsed=false;journeyModel=null;
-  if(session) post('/api/reset',{sessionId:session.sessionId}).catch(()=>{});
+  if(session&&remote) post('/api/reset',{sessionId:session.sessionId}).catch(()=>{});
   session=null;busy=false;$('explanation').value='';$('character-count').textContent='0 / 1200';
   $('transfer-asymptote').value='';$('transfer-crossing').value='';$('replay-status').textContent='';
   $('scrubber').value=0;delete $('scrubber').dataset.scenario;$('motion-metric').value='velocity';$('flight-metric').value='torque';
-  $('error').hidden=true;$('notice').textContent=t().newSession;render();
+  // Remove rendered learner/provider content as well as the in-memory session.
+  // A shared tester browser must not retain a previous sign-in's hidden transcript.
+  for(const id of ['problem-title','expression','prompt','history','evidence','feedback-text','coach-reason','checked-result','next-question','source','claim-quote','claim-interpretation','claim-scope','claim-decisions','evidence-records','before','after','report-outcome','report-checked','report-judgment','report-revision','report-refs','report-limit','error'])$(id).textContent='';
+  $('error').hidden=true;$('notice').textContent=t().newSession;drawCurrentGraph();render();
 }
 $('auto-demo-stop').addEventListener('click',()=>stopAutoDemo());
 $('auto-demo-run').addEventListener('click',async()=>{
- if(!ready||!traceEnabled||!$('adult').checked||busy||autoActive())return;
+ if(!ready||!traceEnabled||!authenticated||busy||autoActive())return;
  clear();$('topic').value='flight';
  for(const[id,value]of Object.entries({'motion-speed':60,'motion-duration':5,'motion-profile':'smooth','motion-mass':2000,'motion-grip':1,'motion-power':600,'flight-mass':2000,'flight-time':1.5,'flight-radius':.9,'flight-separation':1,'flight-stop':.3,'flight-profile':'pulse'}))$(id).value=String(value);
  journeyModel=journeyScenario(demoSettings.motion,demoSettings.flight);demoPresetUsed=true;guidedDemo=true;autoEvidence=false;$('auto-demo-animation').append($('journey'));
@@ -383,13 +394,13 @@ $('auto-demo-run').addEventListener('click',async()=>{
   finally{if(poll)clearInterval(poll);if(current()){busy=false;controls();renderDemo();await providerConsole.refresh();}}
  };
  try{
-  await runPresetDemo({language:run.language,adultConfirmed:$('adult').checked,traceEnabled,signal:run.controller.signal,request,
+  await runPresetDemo({language:run.language,testerAuthenticated:authenticated,traceEnabled,signal:run.controller.signal,request,
    checkpoint:demoCheckpoint,
    step:stage=>{if(!current())return;autoStage=stage;if(stage==='complete')autoState='complete';renderAutoDemo();},
    show:(data,preset)=>{
     if(!current())return;session=data;if(data.graph)autoEvidence=true;render();
     if(preset){$('explanation').value=preset.text;$('explanation').dispatchEvent(new Event('input'));$('auto-demo-prompt').textContent=preset.text;if(data.phase==='transfer')data.answerFields.forEach((f,i)=>$(i===0?'transfer-asymptote':'transfer-crossing').value=preset.answer?.[f.key]??'');}
-    const feedback=data.phase==='confirm'?data.claim.interpretation:data.history.at(-1)?.feedback;$('auto-demo-feedback').textContent=feedback?`Meta · ${feedback}`:'';providerConsole.refresh();
+    const feedback=data.phase==='confirm'?data.claim.interpretation:data.history.at(-1)?.feedback;$('auto-demo-feedback').textContent=feedback?`${data.llm?.label??"Model"} · ${feedback}`:'';providerConsole.refresh();
    },
    play:async(signal,stage)=>{const [from,to,rate]={acceleration:[0,journeyModel.launch,.5],flip:[journeyModel.launch,journeyModel.touchdown,.25],landing:[journeyModel.touchdown,journeyModel.end,.1]}[stage];return journey.playRange({signal,from,to,rate});},
   });
@@ -397,17 +408,17 @@ $('auto-demo-run').addEventListener('click',async()=>{
  finally{if(current()){autoRun=null;busy=false;journey.stop();controls();renderDemo();await providerConsole.refresh();}}
 });
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopAutoDemo('hidden');});
-$('adult').addEventListener('change',controls);
+$('llm-model').addEventListener('change',()=>{ready=Boolean(selectedTarget()?.configured);localize();controls();});
 $('topic').addEventListener('change',()=>{localize();renderMotionSetup();});
 $('language').addEventListener('change',()=>{stopAutoDemo('language');clear();localize();controls();});
 $('start').addEventListener('click',async()=>{
-  if(busy||session||!$('adult').checked)return;
+  if(busy||session||!authenticated)return;
   busy=true;controls();const version=++generation;
   try {
     if(motionMode()||flightMode())journeyModel=readJourney();
-    const data=await post('/api/session',{problemId:$('topic').value,language:language(),adult:true,synthetic:true,workflow:['crossing','acceleration','flight'].includes($('topic').value)?'claim-testing':'baseline',...($('topic').value==='flight'?{flight:{massKg:Number($('flight-mass').value),airtime:Number($('flight-time').value),radius:Number($('flight-radius').value),separation:Number($('flight-separation').value),stopTime:Number($('flight-stop').value),landingProfile:$('flight-profile').value}}:{}),...($('topic').value==='acceleration'?{motion:{speedMph:Number($('motion-speed').value),duration:Number($('motion-duration').value),profileB:$('motion-profile').value,massKg:Number($('motion-mass').value),grip:Number($('motion-grip').value),powerKw:Number($('motion-power').value)}}:{})});
+    const data=await post('/api/session',{problemId:$('topic').value,language:language(),synthetic:true,workflow:['crossing','acceleration','flight'].includes($('topic').value)?'claim-testing':'baseline',...($('topic').value==='flight'?{flight:{massKg:Number($('flight-mass').value),airtime:Number($('flight-time').value),radius:Number($('flight-radius').value),separation:Number($('flight-separation').value),stopTime:Number($('flight-stop').value),landingProfile:$('flight-profile').value}}:{}),...($('topic').value==='acceleration'?{motion:{speedMph:Number($('motion-speed').value),duration:Number($('motion-duration').value),profileB:$('motion-profile').value,massKg:Number($('motion-mass').value),grip:Number($('motion-grip').value),powerKw:Number($('motion-power').value)}}:{})});
     if(version!==generation)return;
-    session=data;$('notice').textContent=language()==='zh'?'虚构成人示例；不输入真实个人或学生信息。':'Synthetic adult example; keep real personal and student information out.';
+    session=data;$('notice').textContent=language()==='zh'?'虚构示例；不输入真实个人或学生信息。':'Synthetic example; keep real personal and student information out.';
     $('error').hidden=true;render();$('explanation').focus();
   }catch(error){if(version===generation){$('notice').textContent=error.message;}}
   finally{if(version===generation){busy=false;controls();$('explanation').focus();}}
@@ -492,8 +503,49 @@ $('flight-play').addEventListener('click',()=>{
 });
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopPlayback();});
 for(const [id,topic]of [['roadster-acceleration','acceleration'],['roadster-flight','flight']])$(id).addEventListener('click',()=>{if(busy)return;if((session?.problem.id||$('topic').value)===topic)return;clear();$('topic').value=topic;localize();controls();});
-try {
-  const response=await fetch('/api/status');if(!response.ok)throw new Error();
-  const status=await response.json();ready=status.configured;catalog=status.problems;traceEnabled=status.traceEnabled===true;
-  $('connection').classList.toggle('ready',ready);localize();controls();
-}catch{ready=false;localize();$('connection').textContent=language()==='zh'?'本地服务器不可用':'Local server unavailable';}
+const authCopy={
+ en:{heading:'Sign in to the lab',kicker:'EARLY ACCESS',description:'Use your shared tester account to explore the prototype.',username:'Username',password:'Password',submit:'Sign in',logout:'Sign out',pending:'Please wait…',connection:'Tester sign-in required',note:'Use synthetic examples. Do not enter real student or private information.',errors:{TESTER_SETUP:'Set EXPLAINBACK_TESTER_USERNAME and EXPLAINBACK_TESTER_PASSWORD (12–512 characters) in .env.local or the server environment, then restart.',TESTER_CREDENTIALS:'Username or password is incorrect.',TESTER_RATE:'Too many login attempts. Try again in one minute.',TESTER_CAPACITY:'Tester session limit reached. Sign out another session or restart the local server.',TESTER_REQUIRED:'Your session ended. Please sign in again.',NETWORK:'The local server could not be reached. Try again.'}},
+ zh:{heading:'登录学习实验室',kicker:'早期测试',description:'使用共享测试账号体验此原型。',username:'用户名',password:'密码',submit:'登录',logout:'退出登录',pending:'请稍候……',connection:'请先登录测试账号',note:'请使用虚构示例，不输入真实学生资料或私人信息。',errors:{TESTER_SETUP:'请在 .env.local 或服务端环境中设置 EXPLAINBACK_TESTER_USERNAME 和 EXPLAINBACK_TESTER_PASSWORD（12–512 个字符），然后重启。',TESTER_CREDENTIALS:'用户名或密码不正确。',TESTER_RATE:'登录尝试过多，请在一分钟后重试。',TESTER_CAPACITY:'测试会话数量已达上限。请退出其他会话或重启本地服务器。',TESTER_REQUIRED:'会话已结束，请重新登录。',NETWORK:'无法连接本地服务器，请重试。'}},
+};
+function renderAccess(){
+ const c=authCopy[language()];
+ for(const [id,key]of [['tester-heading','heading'],['tester-kicker','kicker'],['tester-description','description'],['tester-username-label','username'],['tester-password-label','password'],['tester-note','note']])$(id).textContent=c[key];
+ $('tester-submit').textContent=authBusy?c.pending:c.submit;$('tester-logout').textContent=c.logout;
+ $('tester-submit').disabled=authBusy||!authConfigured;for(const id of ['tester-username','tester-password'])$(id).disabled=authBusy||!authConfigured;
+ $('tester-login').hidden=authenticated;$('tester-workspace').hidden=!authenticated;$('tester-logout').hidden=!authenticated;
+ $('tester-logout').disabled=authBusy;$('tester-message').hidden=!authMessage;$('tester-message').textContent=c.errors[authMessage]??'';
+ if(!authenticated){$('connection').textContent=c.connection;$('connection').classList.remove('ready');}
+}
+function loseAccess(code=''){
+ authVersion++;authenticated=false;ready=false;traceEnabled=false;providerTargets=[];catalog=[];authMessage=code;
+ clear({remote:false});$('tester-password').value='';renderAccess();$('tester-username').focus();
+}
+async function authRequest(path,body){
+ const response=await fetch(path,{...(body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),signal:AbortSignal.timeout(10000)});
+ const data=await response.json();if(!response.ok)throw Object.assign(new Error('Tester request failed.'),{code:data.code??'NETWORK'});return data;
+}
+async function loadStatus(version){
+ const status=await authRequest('/api/status');if(version!==authVersion)return;
+ providerTargets=status.models??[];$('llm-model').replaceChildren(...providerTargets.map(t=>{const o=new Option(t.label,t.id);o.disabled=!t.configured;return o;}));$('llm-model').value=status.defaultModel;
+ ready=Boolean(selectedTarget()?.configured);catalog=status.problems;traceEnabled=status.traceEnabled===true;authenticated=true;
+ $('connection').classList.toggle('ready',ready);localize();controls();
+}
+$('tester-form').addEventListener('submit',async event=>{
+ event.preventDefault();if(authBusy||!authConfigured)return;
+ authBusy=true;authMessage='';const version=++authVersion;renderAccess();
+ try{await authRequest('/api/login',{username:$('tester-username').value,password:$('tester-password').value});$('tester-password').value='';await loadStatus(version);if(authenticated)$('start').focus();}
+ catch(error){if(version===authVersion){authenticated=false;authMessage=error.code??'NETWORK';}}
+ finally{authBusy=false;renderAccess();}
+});
+$('tester-logout').addEventListener('click',async()=>{
+ if(authBusy)return;authBusy=true;clear({remote:false});renderAccess();
+ try{await authRequest('/api/logout',{});loseAccess();}
+ catch{authMessage='NETWORK';$('notice').textContent=authCopy[language()].errors.NETWORK;}
+ finally{authBusy=false;renderAccess();}
+});
+localize();controls();
+try{
+ const status=await authRequest('/api/auth');authConfigured=status.configured;
+ if(status.authenticated)await loadStatus(authVersion);else authMessage=authConfigured?'':'TESTER_SETUP';
+}catch(error){authMessage=error.code??'NETWORK';}
+renderAccess();

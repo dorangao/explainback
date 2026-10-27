@@ -1,17 +1,19 @@
+import {testerCredentials,testerCookie} from '../test-support/tester.mjs';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { request } from 'node:http';
 import { createApp } from '../src/server.mjs';
 
 async function running(t, modelCall) {
-  const server = createApp({ configured: true, modelCall });
+  const server = createApp({testerCredentials, configured: true, modelCall });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   t.after(() => new Promise(resolve => server.close(resolve)));
   const origin = `http://127.0.0.1:${server.address().port}`;
-  const post = (path, body) => fetch(origin + path, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: origin }, body: JSON.stringify(body) });
-  return { origin, post };
+  const cookie=await testerCookie(origin);
+  const post = (path, body) => fetch(origin + path, { method: 'POST', headers: { Cookie:cookie, 'Content-Type': 'application/json', Origin: origin }, body: JSON.stringify(body) });
+  return { origin, post, cookie };
 }
-const start = { problemId: 'crossing', language: 'en', adult: true, synthetic: true };
+const start = { problemId: 'crossing', language: 'en', synthetic: true };
 const clarification = (text, feedback='Clarify.', question='Which end?') => ({ model:'test', toolCall:{name:'ask_clarification',arguments:JSON.stringify({assessment:'ambiguous',evidence:text,feedback,question,reason:'Clarify the meaning before judging.',focus:'meaning'})} });
 
 test('serves the workspace but never serves environment or server files', async t => {
@@ -25,10 +27,9 @@ test('serves the workspace but never serves environment or server files', async 
   assert.match(page.headers.get('content-security-policy'), /default-src 'self'/);
 });
 
-test('rejects cross-origin requests and requires adult/synthetic confirmation', async t => {
-  const { origin, post } = await running(t);
-  assert.equal((await fetch(origin + '/api/session', { method: 'POST', headers: { Origin: 'https://example.com', 'Content-Type': 'application/json' }, body: JSON.stringify(start) })).status, 403);
-  assert.equal((await post('/api/session', { ...start, adult: false })).status, 400);
+test('rejects cross-origin requests and requires synthetic examples', async t => {
+  const { origin, post, cookie } = await running(t);
+  assert.equal((await fetch(origin + '/api/session', { method: 'POST', headers: { Cookie:cookie, Origin: 'https://example.com', 'Content-Type': 'application/json' }, body: JSON.stringify(start) })).status, 403);
   assert.equal((await post('/api/session', { ...start, synthetic: false })).status, 400);
   assert.equal((await post('/api/session', { ...start, problemId: '__proto__' })).status, 400);
   const status = await new Promise((resolve, reject) => {
@@ -77,7 +78,7 @@ test('upstream failures are safe and do not advance the learning state', async t
 
 test('Chinese text survives split UTF-8 bytes in an HTTP body', async t => {
   let observed;
-  const { origin, post } = await running(t, async args => {
+  const { origin, post, cookie } = await running(t, async args => {
     observed = JSON.parse(args.input).explanation;
     return clarification(observed,'请澄清。','指哪一端？');
   });
@@ -85,7 +86,7 @@ test('Chinese text survives split UTF-8 bytes in an HTTP body', async t => {
   const buffer = Buffer.from(JSON.stringify({ sessionId: initial.sessionId, explanation: '不会碰到' }));
   const split = buffer.indexOf(Buffer.from('不')) + 1;
   const status = await new Promise((resolve, reject) => {
-    const req = request(origin + '/api/turn', { method: 'POST', headers: { Origin: origin, 'Content-Type': 'application/json' } }, res => { res.resume(); resolve(res.statusCode); });
+    const req = request(origin + '/api/turn', { method: 'POST', headers: { Cookie:cookie, Origin: origin, 'Content-Type': 'application/json' } }, res => { res.resume(); resolve(res.statusCode); });
     req.on('error', reject); req.write(buffer.subarray(0, split));
     setTimeout(() => req.end(buffer.subarray(split)), 5);
   });
@@ -185,14 +186,14 @@ test('expired claim sessions cannot confirm or replay and send no model request'
 });
 
 test('acceleration HTTP flow binds settings and uses motion-specific transfer answers',async t=>{
- let calls=0;const {post,origin}=await running(t,async args=>{
+ let calls=0;const {post,origin,cookie}=await running(t,async args=>{
   calls++;const i=JSON.parse(args.input),text=i.explanation;
   if(i.phase==='claim')return native(claimDecision('propose_claim',text,{assessment:'misconception',kind:'same-endpoints-distance',scope:'prescribed-motion-interval',interpretation:'Equal endpoints mean equal distances.',experimentId:'motion-distance'}));
   if(i.phase==='prediction')return native(claimDecision('run_experiment',text,{experimentId:'motion-distance'}));
   if(i.phase==='revision')return native(claimDecision('select_transfer',text,{variantId:'default',evidenceIds:[i.evidenceRecords[0].id]}));
   return native(claimDecision('compare_reasoning',text,{priorEvidence:i.originalExplanation,evidenceIds:[i.evidenceRecords[0].id]}));
  });
- assert.ok((await(await fetch(origin+'/api/status')).json()).problems.some(p=>p.id==='acceleration'));
+ assert.ok((await(await fetch(origin+'/api/status',{headers:{Cookie:cookie}})).json()).problems.some(p=>p.id==='acceleration'));
  let s=await(await post('/api/session',{...claimStart,problemId:'acceleration',motion:{speedMph:90,duration:3,profileB:'falling'}})).json();
  assert.equal(s.problem.id,'acceleration');assert.equal(s.graph,null);assert.match(s.assumptions,/Hypothetical/);
  const turn=async(explanation,answer)=>{const r=await post('/api/turn',{sessionId:s.sessionId,explanation,...(answer?{answer}:{})});assert.equal(r.status,200);s=await r.json();};
@@ -214,7 +215,7 @@ test('acceleration settings reject invalid units, durations and unbounded profil
 });
 
 test('flight HTTP workflow binds settings, reveals after prediction, and completes relevant numeric transfer',async t=>{
- let calls=0;const {post,origin}=await running(t,async req=>{
+ let calls=0;const {post,origin,cookie}=await running(t,async req=>{
   calls++;const i=JSON.parse(req.input),text=i.explanation;
   if(i.phase==='claim')return native(claimDecision('propose_claim',text,{kind:'landing-impulse',scope:'ideal-flight-and-contact',interpretation:text,experimentId:'flight-contact'}));
   if(i.phase==='prediction')return native(claimDecision('run_experiment',text,{experimentId:'flight-contact'}));

@@ -3,7 +3,7 @@ import {runPresetDemo} from '../public/demo-runner.mjs';
 function fixture(overrides={}){
  const calls=[],steps=[];let played=0,index=0;
  const states=[{phase:'confirm',claim:{id:'c1',kind:'rotation-torque'}},{phase:'revision',graph:{kind:'flight'}},{phase:'transfer',problem:{id:'flight',formula:'flight-transfer-default'},claim:{kind:'rotation-torque'},answerFields:[{key:'peakTorque'},{key:'touchdownOmegaA'}]},{phase:'complete',report:{outcome:'assisted'}}];
- return {calls,steps,get played(){return played;},options:{language:'en',adultConfirmed:true,traceEnabled:true,signal:new AbortController().signal,
+ return {calls,steps,get played(){return played;},options:{language:'en',testerAuthenticated:true,traceEnabled:true,signal:new AbortController().signal,
   request:async(path,body)=>{calls.push({path,body});if(path==='/api/session')return {sessionId:'s1',phase:'claim',problem:{id:'flight'}};if(path==='/api/claim')return {sessionId:'s1',phase:'prediction',problem:{id:'flight'},claim:{kind:'rotation-torque'}};return {sessionId:'s1',problem:{id:'flight'},claim:{kind:'rotation-torque'},...states[index++]};},
   show:()=>{},step:s=>steps.push(s),checkpoint:async()=>{},play:async()=>{played++;return true;},...overrides}};
 }
@@ -15,8 +15,8 @@ test('one-click workflow makes exactly four provider submissions and plays befor
  for(const c of f.calls.filter(c=>c.path==='/api/turn'))assert.equal(c.body.demoPreset,true);
  assert.deepEqual(f.calls.at(-1).body.answer,{peakTorque:26318.95,touchdownOmegaA:5.24});
 });
-test('demo does not assert adult consent or enable tracing by itself',async()=>{
- for(const flags of [{adultConfirmed:false},{traceEnabled:false}]){const f=fixture(flags);await assert.rejects(runPresetDemo(f.options));assert.equal(f.calls.length,0);}
+test('demo does not assert tester authentication or enable tracing by itself',async()=>{
+ for(const flags of [{testerAuthenticated:false},{traceEnabled:false}]){const f=fixture(flags);await assert.rejects(runPresetDemo(f.options));assert.equal(f.calls.length,0);}
 });
 test('provider clarification stops the script without retry or fabricated confirmation',async()=>{
  const f=fixture();const original=f.options.request;f.options.request=async(path,body)=>path==='/api/turn'?(f.calls.push({path,body}),{sessionId:'s1',phase:'claim'}):original(path,body);

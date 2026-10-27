@@ -1,15 +1,17 @@
+import {testerCredentials,testerCookie} from '../test-support/tester.mjs';
 import {test} from 'node:test';import assert from 'node:assert/strict';
 import {createApp} from '../src/server.mjs';
 import {callMeta} from '../src/meta.mjs';
-const start={problemId:'flight',language:'en',adult:true,synthetic:true};
+const start={problemId:'flight',language:'en',synthetic:true};
 async function running(t,traceEnabled){
- const server=createApp({configured:true,traceEnabled,modelCall:args=>callMeta({...args,apiKey:'fixture-key',fetchImpl:async()=>Response.json({id:'r1',model:'fixture',status:'completed',output:[{type:'reasoning',summary:[{text:'PRIVATE REASONING'}]},{type:'function_call',name:'ask_clarification',arguments:JSON.stringify({assessment:'ambiguous',evidence:'synthetic',feedback:'Clarify.',question:'Which model?',reason:'Meaning first.',focus:'meaning'})}]})})});
+ const server=createApp({testerCredentials,configured:true,traceEnabled,modelCall:args=>callMeta({...args,apiKey:'fixture-key',fetchImpl:async()=>Response.json({id:'r1',model:'fixture',status:'completed',output:[{type:'reasoning',summary:[{text:'PRIVATE REASONING'}]},{type:'function_call',name:'ask_clarification',arguments:JSON.stringify({assessment:'ambiguous',evidence:'synthetic',feedback:'Clarify.',question:'Which model?',reason:'Meaning first.',focus:'meaning'})}]})})});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));t.after(()=>new Promise(r=>server.close(r)));
  const origin=`http://127.0.0.1:${server.address().port}`;
- return {origin,post:(path,body)=>fetch(origin+path,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify(body)})};
+ const cookie=await testerCookie(origin);
+ return {origin,cookie,post:(path,body)=>fetch(origin+path,{method:'POST',headers:{Cookie:cookie,Origin:origin,'Content-Type':'application/json'},body:JSON.stringify(body)})};
 }
 test('trace flag off hides capability and denies trace data',async t=>{
- const {origin,post}=await running(t,false);assert.equal((await(await fetch(origin+'/api/status')).json()).traceEnabled,false);
+ const {origin,post,cookie}=await running(t,false);assert.equal((await(await fetch(origin+'/api/status',{headers:{Cookie:cookie}})).json()).traceEnabled,false);
  const s=await(await post('/api/session',start)).json();
  assert.equal((await post('/api/trace',{sessionId:s.sessionId})).status,404);
 });

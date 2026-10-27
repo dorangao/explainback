@@ -25,5 +25,5 @@ for (const item of cases) {
     console.log(`FAIL ${item.id}: API request or feedback validation failed`);
   }
 }
-await writeFile(new URL('../docs/local-evaluation.json', import.meta.url), JSON.stringify({ syntheticAdultsOnly: true, evaluatedAt: new Date().toISOString(), results }, null, 2) + '\n');
+await writeFile(new URL('../docs/local-evaluation.json', import.meta.url), JSON.stringify({ syntheticExamplesOnly: true, evaluatedAt: new Date().toISOString(), results }, null, 2) + '\n');
 if (results.some(r => !r.pass)) process.exitCode = 1;

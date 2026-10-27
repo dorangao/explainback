@@ -2,9 +2,9 @@
 export const guideStages=['claim','confirm','prediction','evidence','acceleration','flip','landing','revision','transfer','complete'];
 const notes={
  en:{
- claim:['Start with a testable claim','“A complete flip that starts and ends at rest needs no torque.” Is that true throughout the turn?','The car is at the starting line. Graphs unlock after a prediction.','Next sends this preset to Meta for interpretation; it does not check the physics yet.','Interpret the claim'],
+ claim:['Start with a testable claim','“A complete flip that starts and ends at rest needs no torque.” Is that true throughout the turn?','The car is at the starting line. Graphs unlock after a prediction.','Next sends this preset to the model for interpretation; it does not check the physics yet.','Interpret the claim'],
  confirm:['Read the interpretation','Check the proposed claim and its scope in the preset feedback below. This demo confirms it as a script.','The motion is still paused. Confirming meaning does not make the claim true.','Next records scripted confirmation locally. No provider call.','Confirm the script'],
- prediction:['Predict before checking','The preset predicts that zero net angular impulse means zero torque at every instant.','Look for positive and negative regions in the torque graph once the evidence appears.','Next asks Meta to select the bounded experiment; code checks the curve.','Test the prediction'],
+ prediction:['Predict before checking','The preset predicts that zero net angular impulse means zero torque at every instant.','Look for positive and negative regions in the torque graph once the evidence appears.','Next asks the model to select the bounded experiment; code checks the curve.','Test the prediction'],
  evidence:['Read the checked evidence','Starting and ending with zero angular speed does not require torque to be zero throughout.','Positive torque builds spin; negative torque removes it. Their signed areas cancel.','The animation is now unlocked. Next plays only acceleration, then pauses.','Play acceleration'],
  acceleration:['Acceleration → pause','How does a smooth speed increase change force? The car follows a prescribed cosine acceleration pulse.','Speed’s slope is acceleration; force is mass × acceleration. Choose Drive force to see the pulse.','At 5 s the car reaches 60 mph. Smooth joins need nonzero force between them; this is a target curve, not proof of real feasibility.','Play the flip'],
  flip:['Flip → pause','A turn can finish upright and at rest even though torque acted during the turn.','The torque graph rises above and below zero. Both lobes are needed for this controlled rest-to-rest flip.','At 6.5 s the turn is complete. The model assumes an external torque couple and a launch impulse; no real takeoff mechanism is tested.','Play the landing'],
@@ -14,9 +14,9 @@ const notes={
  complete:['Result: compare the reasoning','The original zero-torque claim has been revised using signed torque and angular impulse.','Keep exploring the primary reference animation; the fresh transfer result is in the feedback and console.','Values and reasoning were checked. This scripted, assisted result does not establish independent learning or a safe real-world stunt.','Finished']
  },
  zh:{
- claim:['从可检验的说法开始','“完整翻转的起点和终点都不旋转，所以全过程不需要力矩。”这是真的吗？','汽车停在起点。先预测，再解锁图像。','点击下一步，将预设发给 Meta 解读；此时尚未检验物理结论。','解读说法'],
+ claim:['从可检验的说法开始','“完整翻转的起点和终点都不旋转，所以全过程不需要力矩。”这是真的吗？','汽车停在起点。先预测，再解锁图像。','点击下一步，将预设发给模型解读；此时尚未检验物理结论。','解读说法'],
  confirm:['阅读模型解读','查看下方反馈中的说法与适用范围。本演示会以脚本身份确认解读。','运动仍暂停。确认含义不代表说法正确。','下一步仅在本地记录脚本确认，不调用模型。','确认预设解读'],
- prediction:['先预测，再检验','预设预测：净角冲量为零，就意味着每一瞬间的力矩都为零。','证据出现后，观察力矩图中零线以上和以下的部分。','下一步由 Meta 选择限定实验，再由代码核验曲线。','检验预测'],
+ prediction:['先预测，再检验','预设预测：净角冲量为零，就意味着每一瞬间的力矩都为零。','证据出现后，观察力矩图中零线以上和以下的部分。','下一步由模型选择限定实验，再由代码核验曲线。','检验预测'],
  evidence:['阅读已核验的证据','起点和终点的角速度都为零，并不要求全过程力矩为零。','正力矩增加旋转，负力矩减少旋转；两部分的有符号面积抵消。','动画已解锁。下一步只播放加速阶段，结束后暂停。','播放加速'],
  acceleration:['加速 → 暂停','速度平滑增加时，力如何变化？汽车按规定的余弦加速度脉冲运动。','速度曲线的斜率是加速度；力等于质量乘加速度。可选择“驱动力”查看脉冲。','5 秒时达到 60 mph。平滑衔接仍需要过程中有非零力；目标曲线不证明实车可行。','播放翻转'],
  flip:['翻转 → 暂停','翻转结束时可以回正且停止旋转，但过程中仍有力矩。','力矩图先在零线上方，再在下方。受控的静止到静止翻转需要这两部分。','6.5 秒时完成翻转。模型假设理想外力偶和起飞冲量，没有检验真实起跳机构。','播放着陆'],

@@ -101,3 +101,24 @@ test('claim decisions retain separate local confirmation provenance across a cor
  assert.deepEqual(events.map(e=>e.action),['proposed','revise','proposed','confirm']);
  assert.equal(events[1].claimId,old);assert.equal(events[3].claimId,current);assert.equal(events[3].modelCalls,0);
 });
+test('completion schema binds the original quote to the first explanation, not a revision',()=>{
+ const s=transferred(),schema=claimTools(s,'Finite crossing and end behavior differ.',{asymptote:-1,crossingX:-2}).find(t=>t.name==='compare_reasoning').parameters;
+ assert.deepEqual(schema.properties.priorEvidence.enum,['At finite input an asymptote is a barrier.']);
+});
+test('completion rejects partial or wrong-source original quotes without mutation',()=>{
+ const s=transferred(),text='Finite crossing and end behavior differ.',before=JSON.stringify(s);
+ for(const priorEvidence of ['an asymptote is a barrier.',text]){
+  assert.throws(()=>advanceClaim(s,text,d('compare_reasoning',text,{priorEvidence,evidenceIds:[s.evidenceRecords[0].id]}),{asymptote:-1,crossingX:-2}),e=>e.validationCode==='original-quote');
+  assert.equal(JSON.stringify(s),before);
+ }
+ advanceClaim(s,text,d('compare_reasoning',text,{priorEvidence:s.before,evidenceIds:[s.evidenceRecords[0].id]}),{asymptote:-1,crossingX:-2});
+ assert.equal(s.phase,'complete');assert.equal(s.report.originalQuote,'At finite input an asymptote is a barrier.');
+});
+test('claim confirmation asks to confirm the captured interpretation in the session language',()=>{
+ for(const [language,want] of [['en','Does this interpretation match what you meant? Confirm it, or revise your claim.'],['zh','这段解读是否符合你的原意？请确认，或修改你的说法。']]){
+  const s=createClaimSession(language),p=proposal();p.question='Would you replace your claim with the correct answer?';
+  const v=advanceClaim(s,p.evidence,p);
+  assert.equal(v.phase,'confirm');assert.equal(v.probe,want);assert.equal(v.claim.interpretation,p.interpretation);
+  assert.equal(v.history[0].question,p.question); // Keep actual provider output inspectable.
+ }
+});
