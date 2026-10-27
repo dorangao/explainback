@@ -160,3 +160,26 @@ credentials for server-only sensitive Production variables. Trace capture and
 is already Vercel-registered; project assignment, ownership and DNS verification
 succeeded without changing nameservers or unrelated DNS records. Production
 publication and HTTPS smoke verification follow this pre-release checkpoint.
+
+## Structured lesson output correction
+
+The first Production smoke test reproduced the string-encoded lesson failure
+with a process topic. Meta documents that `tools[].strict` validates the supplied
+schema but does not constrain generated tool arguments. Lesson composition now
+opts into Responses `text.format` with a strict JSON schema. The adapter returns
+structured data, and the same lesson/formula validators still decide acceptance.
+The provider console retains the actual structured request/response. Guide and
+claim-testing calls still use tools; Ollama keeps its existing tool path and
+exclusive coordination. There are no automatic retries or malformed-JSON repairs.
+
+References: [strict tool schemas](https://dev.meta.ai/docs/tool-calling#strict-tool-schemas),
+[structured output](https://dev.meta.ai/docs/structured-output).
+
+All 210 tests pass, including new transport/validation regressions. Two explicit,
+sequential live Meta calls produced accepted process and mathematical lessons.
+A fresh review found no blockers. Corrected preview:
+https://explainback-33ahk9ij1-doran-gaos-projects.vercel.app
+The corrected hosted preview accepted the previously failing web-process topic.
+Its reviewed presentation supports stage selection and preserves the selected
+stage while switching English/Chinese. The provider console shows the actual
+`text.format.type=json_schema` request, without a fabricated tool call.
