@@ -1,0 +1,20 @@
+async page => page.evaluate(async()=>{
+ const {mountSuctionLab}=await import('/assets/suction-view.mjs?regression='+Date.now());
+ const {suctionScenario}=await import('/assets/suction.mjs');
+ const root=document.createElement('section');document.body.append(root);const view=mountSuctionLab(root);
+ const primary=suctionScenario({massKg:1200,areaM2:2,pressurePa:3000}),robot=suctionScenario({},'default');
+ const session={sessionId:'synthetic-regression',problem:{id:'suction',formula:primary.id},phase:'claim',evidenceRecords:[],graph:null};
+ const set=extra=>view.set({session,language:'en',visible:true,preview:!session.graph,locked:false,primaryReference:false,...extra});
+ try{
+  set();session.phase='revision';session.graph={kind:'suction',scenario:primary};session.evidenceRecords=[{formulaId:primary.id,experimentId:'suction-static'}];set();
+  if(root.querySelector('[data-el=mass]').value!=='1200'||root.querySelector('[data-el=pressure]').value!=='3000'||!root.querySelector('[data-el=balance]').textContent.includes('Contact impossible'))throw new Error('First graph did not use pinned nondefault inputs');
+  const control=root.querySelector('[data-el=pressure]');control.value='5000';control.dispatchEvent(new Event('input'));set({locked:true});set();if(control.value!=='5000')throw new Error('Routine renders reset intentional exploration');
+  session.phase='transfer';session.problem.formula=robot.id;session.graph=null;set();if(!root.querySelector('[data-el=robot]').hidden)throw new Error('Hidden robot answers leaked');
+  session.graph={kind:'suction',scenario:robot};set();if(root.querySelector('[data-el=robot]').hidden||!root.querySelector('[data-el=robot]').textContent.includes('2,451.66'))throw new Error('Explicit help did not render robot');
+  set({primaryReference:true,preview:false});if(!root.querySelector('[data-el=robot]').hidden||root.querySelector('[data-el=mass]').value!=='1200')throw new Error('Guided reference did not remain primary');
+  session.phase='design-review';session.graph={kind:'suction',scenario:primary};const {designComparison}=await import('/assets/suction.mjs');session.evidenceRecords.push({formulaId:primary.id,experimentId:'suction-design',result:designComparison(primary)});session.designProposal={candidateId:'reduce-leakage',nextMeasurement:'PRIVATE SYNTHETIC DESIGN <img src=x>'};set();
+  if(root.querySelector('img'))throw new Error('Model text became HTML');view.set({session:null,language:'en',visible:false,preview:true,locked:false});if(root.textContent.includes('PRIVATE SYNTHETIC DESIGN'))throw new Error('Reset retained prior design text');
+  for(const [domain,formula]of [['acceleration','motion-60-1-rising'],['flight','flight-2000-1.5-0.9-1-0.3-pulse'],['crossing','crossing-primary']])view.set({session:{sessionId:domain,problem:{id:domain,formula},evidenceRecords:[{formulaId:formula}]},language:'en',visible:false,preview:false,locked:false});
+  return {legacyDomainIsolation:true,pinnedNondefault:true,explorationPreserved:true,transferHelp:true,transferHidden:true,guidedReference:true,untrustedText:true,resetPrivacy:true};
+ }finally{view.stop();root.remove();}
+})

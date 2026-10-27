@@ -2,6 +2,8 @@
 .env.*
 !.env.example
 node_modules/
+.vercel/
+dist/
 .DS_Store
 
 # Local credentials and private key material

@@ -4,9 +4,34 @@ Explain it in your own words. Discover what you’re missing.
 
 用自己的话讲出来，找到真正没懂的地方。
 
+## Create lessons in the app
+
+**Create a lesson / 创建课程** turns a topic into an editable bilingual lesson using the configured model (Meta by default). Choose **Create a new topic demo** to generate an adjustable mathematical model or an interactive process diagram, including topics beyond the original eight experiments. Review its assumptions, formulas or steps, edit the definition or ask Muse to revise it, then present a guided prediction → experiment → explanation → transfer sequence. Switch between English and Chinese while operating the same demo.
+
+Generated demos use a bounded declarative format, never generated JavaScript or HTML. Numeric checks verify calculations from the authored formulas; they do not independently validate the science or units. Process answers remain explicitly authored. **Use existing experiments** retains the original eight physics/quantum experiments and their checked calculations. Export/import versioned JSON to keep a lesson; drafts are otherwise temporary and imports require a fresh review. The existing trace flag also controls the Studio provider console. See [Lesson Studio](docs/lesson-studio.md) for scope, limits and verification.
+
+## Independent educational framing
+
+Lessons use generic names: **Acceleration & force lab / 加速度与力实验室**,
+**Sideways roll & landing lab / 侧向翻滚与着陆实验室**, and **Suction & design lab / 吸附与设计实验室**.
+Vehicle diagrams are code-drawn schematics and the numerical inputs are hypothetical.
+The About panel explains the independent status and makes no sponsorship or
+endorsement claim. Provider names identify the actual service used. The optional
+McMurtry link is an attributed external example, not evidence validating our model.
+See [naming and source notes](docs/naming-and-sources.md). Dated development records
+and baseline archives retain their historical names.
+
+## Vercel tester preview
+
+The cloud entry point uses **Meta muse-spark-1.3 only**; local Ollama models are
+not exposed or contacted. Tester login, bilingual claim tests, guided vehicle
+animation and the opt-in provider console use shared Redis storage across
+function instances. See [Vercel setup and retention](docs/vercel-deployment.md).
+`npm run dev` keeps the existing localhost workflow and multi-provider options.
+
 ## Hackathon direction
 
-### Guided Roadster walkthrough
+### Guided vehicle physics walkthrough
 
 Choose **English / 中文**, sign in with your tester account, then click
 **Start demo / 开始演示**. The preset workflow now waits for **Next / 下一步**
@@ -18,7 +43,7 @@ expand “This step’s preset and live feedback” to inspect the submitted pre
 
 The primary animation and expanded provider console stay in the same workspace.
 Desktop places the console alongside motion/graphs; mobile stacks the panels and
-keeps Next at the bottom of the screen while the guide is active. Before the
+keeps Next in the guide heading without a floating overlay. Before the
 prediction, a static starting scene appears and graphs stay hidden. During fresh
 transfer, the animation remains explicitly labeled **primary reference**, with
 its original parameters rather than the fresh problem’s values.
@@ -45,10 +70,10 @@ The earlier one-click prototype remains baseline work in
 See [guided-demo verification](docs/guided-demo-verification.md) and the
 [earlier one-click verification](docs/one-click-demo-verification.md).
 
-### Continuous Roadster demo
+### Continuous vehicle demo
 
-Choose either Roadster topic. Both setting groups now configure one primary
-demonstration with a shared mass. After confirming a claim and submitting a
+Choose an acceleration or flip/landing topic. Each manual topic has its own
+settings; the guided demo uses a fixed primary scenario with a shared mass. After confirming a claim and submitting a
 prediction, the **continuous journey** plays acceleration, a controlled flip,
 and vertical stopping on one clock. Three graph tracks share a cursor; select
 speed/drive force, rotation/torque, and vertical motion/contact force. Phase
@@ -70,19 +95,36 @@ Set `EXPLAINBACK_TRACE=1` in the server environment or `.env.local`, then restar
 the server, to show the **Developer · Provider request / response console**.
 `EXPLAINBACK_TRACE=0` (the default) disables both capture and the trace endpoint.
 The console can expand/collapse, refresh, and clear its records. It keeps the
-last 12 calls per session in memory, including filtered request bodies,
+last 12 calls per session, including filtered request bodies,
 assistant/tool outputs, usage, HTTP status, elapsed time and validation outcome.
 Credentials, headers, provider private reasoning and raw error bodies are
-omitted. Large bodies are truncated. Reset/expiry/server shutdown removes them.
+omitted. Large bodies are truncated. Reset or 30-minute session expiry removes
+them. Local storage is process memory; Vercel uses shared Redis with TTLs.
 Because developer context can contain checked answers, tracing also marks the
-session as a developer demo. No diagnostic records are written to disk.
+session as a developer demo. Local diagnostics are not written to disk.
 
 Earlier work is preserved as `docs/baseline/before-continuous-demo.*` (33 files).
 See [continuous demo verification](docs/continuous-demo-verification.md).
 
-### Flip and landing stage
+### Quantum computing showcase / 量子计算展示
 
-Select **2 · Flip & landing / 2 · 翻转与着陆** beside the acceleration stage,
+Open **Quantum computing / 量子计算** in the area navigation, or use `/#quantum`.
+The guided showcase pauses at each gate: qubit/readout → phase interference →
+Bell correlations → four-item Grover search. Local predictions, complex-amplitude
+arrows, theoretical probabilities and fresh-shot counts explain what changes.
+Single-run measurement collapse is separate from 256 freshly prepared runs.
+
+The simulator works without a model request. After finishing a circuit, ask the
+configured model to explain its checked state or challenge the preset claim.
+Native bounded responses use the existing authenticated provider router and
+optional trace console (`EXPLAINBACK_TRACE=1`). Meta remains the default; the
+Ollama coordinator still serializes local models. No quantum hardware is used,
+and no quantum speed advantage or independent-learning result is claimed.
+See [quantum showcase design and verification](docs/quantum-showcase.md).
+
+### Sideways roll and landing stage
+
+Select **2 · Sideways roll & landing / 2 · 侧向翻滚与着陆** beside the acceleration stage,
 or choose it in the topic list. Switching stages resets the transient session.
 Choose hypothetical mass, airborne time, radius of gyration, torque-couple
 separation, stopping time, and constant or cosine-pulse contact acceleration.
@@ -95,13 +137,15 @@ The evidence table separates angle from angular speed, average from peak force,
 and contact impulse from net impulse. Fresh transfer questions test torque,
 landing-force, or touchdown-state reasoning with separately checked numbers.
 
-Both languages explain the assumptions: fixed-axis rigid body, I=mk², ideal
+The shared code-drawn vehicle rolls sideways about its front-to-back axis. Blue air exhaust points opposite the orange reaction-force arrows. Opposed forces cancel while their roll torques add: each force is |τ|/d. Jets reverse to brake and switch off at zero torque and during contact; A has no jets. The plume is illustrative, with no gas storage, flow or actuator-performance model. See [roll and jet verification](docs/sideways-roll-and-jets.md).
+
+Both languages explain the assumptions: fixed roll-axis rigid body, I=mk², ideal
 external torque couple, ballistic flight back to the same reference height, and
 a **separate vertical-only stopping calculation**. Rotation ends at a labeled
 touchdown snapshot; A's remaining spin is unresolved. Contact force is total
-body force, not an occupant or individual tire load. No suspension, pitch/contact
+body force, not an occupant or individual tire load. No suspension, roll/contact
 coupling, structural limits, actuator capability, rebound, or real-vehicle safety
-verdict is modeled. These are hypothetical curves, not Tesla specifications.
+verdict is modeled. These are hypothetical curves, not manufacturer specifications.
 
 The prior acceleration/force lab and claim workflow are preserved in
 `docs/baseline/before-flip-landing.*` (27 source/test/package files with hashes).
@@ -109,9 +153,9 @@ See [flip and landing verification](docs/flip-landing-verification.md) for the
 physics, live bilingual checks, and baseline record. Earlier work remains
 explicitly labeled as baseline; capture dates do not establish event eligibility.
 
-### Roadster-inspired acceleration lab
+### Acceleration & force lab
 
-Select **Roadster-inspired acceleration lab / Roadster 灵感加速度实验室**.
+Select **Acceleration & force lab / 加速度与力实验室**.
 Choose hypothetical final speed, time, total mass, tire grip and wheel power.
 Car A accelerates uniformly; B can use increasing, decreasing, or a **cosine
 acceleration pulse**. The claim-testing flow asks for confirmation and prediction
@@ -132,7 +176,7 @@ still checks average acceleration and signed distance B−A. All have separate
 numeric checks, model-assessed reasoning, evidence replay and assistance tracking.
 
 English and Chinese share one model. These are **hypothetical prescribed curves,
-not Tesla data or specifications**. The level-road force check omits drag,
+not measured vehicle data or specifications**. The level-road force check omits drag,
 downforce/thrust, load transfer, motor torque curves, thermal limits, suspension,
 rotation and landing. Passing its two ideal limits establishes neither real
 feasibility nor comfort/safety. The curves are targets, not a vehicle simulation.
@@ -166,7 +210,7 @@ for build priorities, acceptance checks, provenance, and unresolved eligibility.
    and independent/assisted/incomplete status. Evidence replay makes no model call.
 
 The nonzero-limit and two-end-limit topics retain the baseline adaptive coach. All sessions remain
-local, tester-gated, synthetic, and transient. Source publication is separate from app
+tester-gated, synthetic, and transient. Source publication is separate from app
 deployment or hackathon submission. See [verification and contribution record](docs/claim-testing-verification.md).
 
 `npm run claim:smoke` is an opt-in live check using at most six synthetic requests
@@ -211,9 +255,8 @@ code-checked numerical observation. The selected model chooses between the two v
 transfer variants using their learning purposes. The final comparison quotes
 both explanations and notes any additional help used on the transfer problem.
 
-This is a **local tester prototype**. The app has no age checkbox or age-based
-access restriction. Use synthetic examples; no real student records. No deployment
-or external project changes are included.
+This is a **tester prototype**. The app has no age checkbox or age-based
+access restriction. Use synthetic examples; no real student records.
 
 ### Tester login
 
@@ -231,7 +274,8 @@ records. Sign-out clears those sessions and discards any in-flight result;
 a sent provider request is still allowed to finish under the Ollama lock.
 Five failed logins in a minute temporarily block further attempts. This is a
 shared local POC account, without account registration or password recovery.
-The server remains bound to localhost; remote hosting is outside this change.
+The local server remains bound to localhost. Vercel uses Secure cookies and
+shared storage; see the cloud setup above for its retention and restart behavior.
 
 ### Local boundaries and cost controls
 
@@ -452,3 +496,33 @@ npm run eval:models -- --models=all --cases=crossing-ambiguity-en,crossing-ambig
 The case filter uses canonical IDs and rejects unknown or duplicate entries before
 any provider call. Leaving it out runs the original eight cases. Login protects
 the browser APIs; the local eval CLI reads provider configuration directly.
+
+## Suction and design lab · October 27 extension
+
+After tester sign-in, choose **Suction & design lab** for a manual session,
+or choose **Suction · design comparison** in the guided demo and press **Start demo**.
+English and Chinese have the same claim → confirmation → prediction → checked
+experiment → design proposal/comparison → fresh robot transfer workflow.
+The guided version pauses at each stage and makes at most five provider submissions.
+It requires `EXPLAINBACK_TRACE=1`; ordinary manual sessions work with tracing disabled.
+Meta remains the default. No Ollama instance is required by this lab.
+
+The reduced model separates external-flow aerodynamics from sealed fan suction,
+checks normal force and friction across orientation, and compares four designs
+against a 30 kW budget and a teaching target of 20% ceiling reserve at doubled gap.
+Exploration sliders do not change the pinned evidence. Code computes the results;
+Muse interprets claims and proposes a bounded design hypothesis plus a measurement.
+It does not run CFD, certify safety, or establish real manufacturer specifications.
+Existing math and vehicle labs remain identified as baseline work.
+
+```sh
+# Offline tests
+npm test
+# Opt-in synthetic Meta regression: 14 calls, no retries; ignored local output
+node --env-file=.env.local scripts/eval-suction.mjs --live
+# Focused final-transfer check: 2 calls
+node --env-file=.env.local scripts/eval-suction.mjs --live --cases=transfer-citations
+```
+
+See [the verification record](docs/suction-lab-verification.md) and
+[the approved design](docs/superpowers/specs/2026-10-27-suction-lab-design.md).

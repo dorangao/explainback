@@ -1,3 +1,4 @@
+import {executeSuctionExperiment} from './suction-evidence.mjs';
 import {executeFlightExperiment} from './flight-evidence.mjs';
 import { isDeepStrictEqual } from 'node:util';
 import { evaluate } from './problems.mjs';
@@ -12,6 +13,7 @@ const catalog = new Map([
 export const experimentIds = ['finite-equality','finite-crossing','end-behavior'];
 const pair=(en,zh)=>({en,zh});
 export function executeExperiment({sessionId,claimId,formulaId,experimentId,evidenceId}) {
+  if(typeof formulaId==='string'&&formulaId.startsWith('suction-'))return executeSuctionExperiment({sessionId,claimId,formulaId,experimentId,evidenceId});
   if(typeof formulaId==='string'&&formulaId.startsWith('flight-'))return executeFlightExperiment({sessionId,claimId,formulaId,experimentId,evidenceId});
   if(typeof formulaId==='string'&&formulaId.startsWith('motion-'))return executeMotionExperiment({sessionId,claimId,formulaId,experimentId,evidenceId});
   if(![sessionId,claimId,evidenceId].every(v=>typeof v==='string'&&v.length>0&&v.length<=160)

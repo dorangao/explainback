@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=22.9.0"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "node --env-file-if-exists=.env.local src/server.mjs",
@@ -12,6 +12,7 @@
     "eval:live": "node --env-file-if-exists=.env.local scripts/evaluate.mjs",
     "claim:smoke": "node --env-file-if-exists=.env.local scripts/claim-smoke.mjs",
     "test": "node --test",
+    "build": "node scripts/build-vercel.mjs",
     "meta:check": "node --env-file-if-exists=.env.local scripts/meta-check.mjs",
     "meta:smoke": "node --env-file-if-exists=.env.local scripts/meta-smoke.mjs",
     "eval:models": "node --env-file-if-exists=.env.local scripts/compare-models.mjs",

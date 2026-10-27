@@ -23,7 +23,7 @@ function unscopedBoundaryClaim(s, explanation) {
 }
 
 export function createSession(problemId, language, workflow = 'baseline', motionConfig = {}) {
-  if(workflow==='claim-testing' && ['crossing','acceleration','flight'].includes(problemId)) return createClaimSession(language,problemId,motionConfig);
+  if(workflow==='claim-testing' && ['crossing','acceleration','flight','suction'].includes(problemId)) return createClaimSession(language,problemId,motionConfig);
   if(workflow!=='baseline') throw new Error('Invalid workflow.');
   if (!Object.hasOwn(problems, problemId) || !['en','zh'].includes(language)) throw new Error('Invalid problem or language.');
   return { problemId, language, phase:'explain', history:[], before:'', after:'', showGraph:false,

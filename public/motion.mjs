@@ -1,9 +1,9 @@
 // Prescribed 1D motion and ideal necessary force limits, not measured vehicle behavior.
 export const gravity=9.80665;
-export const motionTitle={en:'Roadster-inspired acceleration lab',zh:'Roadster 灵感加速度实验室'};
+export const motionTitle={en:'Acceleration & force lab',zh:'加速度与力实验室'};
 export const motionAssumptions={
- en:'Hypothetical 1D motion from rest, only for 0 ≤ t ≤ T; no measured Tesla data or performance specification. Constant total mass, level road, g=9.80665 m/s², all tire normal load available for propulsion: F=ma, N=mg, grip ceiling μmg, wheel P=Fv. No drag, rolling resistance, downforce, thrust, load transfer, motor torque curve, thermal limits, suspension, rotation or landing. Passing these two ideal limits does not establish real feasibility, safety or comfort. Endpoint derivatives are one-sided; start/cruise joins are assessed separately.',
- zh:'假想的一维运动，从静止开始，仅定义于 0 ≤ t ≤ T；并非 Tesla 实测数据或性能规格。总质量恒定、水平路面、g=9.80665 m/s²，所有轮胎的法向载荷均可用于驱动：F=ma、N=mg、抓地上限 μmg、轮端功率 P=Fv。不计空气阻力、滚动阻力、下压力、推力、载荷转移、电机扭矩曲线、热限制、悬架、旋转或着陆。通过这两个理想上限不代表真实可行、安全或舒适。端点导数为单侧值；起步和匀速衔接另行检查。',
+ en:'Hypothetical 1D motion from rest, only for 0 ≤ t ≤ T; no measured vehicle data or manufacturer performance specification. Constant total mass, level road, g=9.80665 m/s², all tire normal load available for propulsion: F=ma, N=mg, grip ceiling μmg, wheel P=Fv. No drag, rolling resistance, downforce, thrust, load transfer, motor torque curve, thermal limits, suspension, rotation or landing. Passing these two ideal limits does not establish real feasibility, safety or comfort. Endpoint derivatives are one-sided; start/cruise joins are assessed separately.',
+ zh:'假想的一维运动，从静止开始，仅定义于 0 ≤ t ≤ T；并非车辆实测数据或厂商性能规格。总质量恒定、水平路面、g=9.80665 m/s²，所有轮胎的法向载荷均可用于驱动：F=ma、N=mg、抓地上限 μmg、轮端功率 P=Fv。不计空气阻力、滚动阻力、下压力、推力、载荷转移、电机扭矩曲线、热限制、悬架、旋转或着陆。通过这两个理想上限不代表真实可行、安全或舒适。端点导数为单侧值；起步和匀速衔接另行检查。',
 };
 const scenarios=new Map();
 const defaults={massKg:2000,grip:1,powerKw:600};

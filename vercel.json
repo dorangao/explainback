@@ -1,0 +1,18 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "node scripts/build-vercel.mjs",
+  "installCommand": "npm install --ignore-scripts",
+  "outputDirectory": "dist",
+  "regions": ["iad1"],
+  "functions": {"api/index.js": {"maxDuration": 60}},
+  "rewrites": [{"source": "/api/:path*", "destination": "/api/index"}],
+  "headers": [{"source": "/(.*)", "headers": [
+    {"key": "Cache-Control", "value": "no-store"},
+    {"key": "X-Content-Type-Options", "value": "nosniff"},
+    {"key": "Referrer-Policy", "value": "no-referrer"},
+    {"key": "Cross-Origin-Resource-Policy", "value": "same-origin"},
+    {"key": "X-Robots-Tag", "value": "noindex, nofollow"},
+    {"key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"}
+  ]}]
+}
