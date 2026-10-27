@@ -21,7 +21,9 @@ McMurtry link is an attributed external example, not evidence validating our mod
 See [naming and source notes](docs/naming-and-sources.md). Dated development records
 and baseline archives retain their historical names.
 
-## Vercel tester preview
+## Hosted tester app
+
+Live at [explainback.app](https://explainback.app/) with tester login.
 
 The cloud entry point uses **Meta muse-spark-1.3 only**; local Ollama models are
 not exposed or contacted. Tester login, bilingual claim tests, guided vehicle
@@ -463,8 +465,9 @@ tests do not establish live access or mathematical feedback quality.
   transfer problem → compare reasoning. One answer is not lasting mastery.
 - Verified mathematics and deterministic graphs; no canned output presented
   as live AI feedback.
-- Planned hosting was `sketchplaywrite.com/try/explainback/`. The user is now
-  considering `explainback.app`; registration and a hosting change are unconfirmed.
+- Hosting moved from the earlier SketchPlayWrite proposal to
+  [explainback.app](https://explainback.app/). Vercel Production, domain ownership,
+  HTTPS and tester login were verified October 27, 2026.
 - Acceptance is user-reported. The participant guide was reviewed October 26:
   building period October 27–November 4, public repository, three-minute video,
   and submission due November 4 at 6 PM Pacific. Existing-prototype reuse and

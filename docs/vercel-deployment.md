@@ -183,3 +183,28 @@ The corrected hosted preview accepted the previously failing web-process topic.
 Its reviewed presentation supports stage selection and preserves the selected
 stage while switching English/Chinese. The provider console shows the actual
 `text.format.type=json_schema` request, without a fabricated tool call.
+
+
+## Production release verified
+
+Production URL: https://explainback.app/
+
+Runtime commit: `70d272091904e0531a416eb0bdb04aa345309d3c`, pushed to
+`feat/suction-design-lab`. Deployment: `dpl_41bdR9LtdxHdrLX3H7qEC29JnYzV`
+(https://explainback-9b1nswh0a-doran-gaos-projects.vercel.app).
+Vercel reported Ready / Production with explainback.app in its aliases and the
+matching Git SHA. Browser HTTPS and tester login succeeded; the login remained
+usable after the corrective deployment. On the custom domain, real process
+lesson generation and revision succeeded, followed by review, presentation,
+interactive stage selection and English/Chinese switching. The original
+claim-testing provider workflow remains unchanged.
+
+The Production Chinese guide returned accepted feedback, and the transfer
+question completed the lesson. The provider console displayed all three real
+calls (create, revise, guide), each accepted with HTTP 200, model, timing, and
+inspectable request/response records.
+
+Secrets were uploaded only after explicit approval for the respective Vercel
+environments. Configured key/password values, .env.local and local QA/eval
+outputs are excluded from Git and deployment uploads. Installed reference skills
+remain untracked local files. Only synthetic topics were used for live tests.

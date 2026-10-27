@@ -44,6 +44,10 @@ Consumes Task 1's UI; produces tested preview and exact-commit Production releas
 
 - [x] Run preview login, real creation, review, present, operate, language and console checks; fix observed failures.
 - [x] Run full tests/build/secret and upload checks; obtain a fresh review.
-- [ ] Commit scoped changes and push existing branch.
-- [ ] Configure Production server variables/Redis, deploy, assign domain and verify DNS/HTTPS and hosted smoke.
-- [ ] Record concrete evidence and remaining limitations.
+- [x] Commit scoped changes and push existing branch.
+- [x] Configure Production server variables/Redis, deploy, assign domain and verify DNS/HTTPS and hosted smoke.
+- [x] Record concrete evidence and remaining limitations.
+
+Completion evidence: docs/vercel-deployment.md. Runtime release `70d2720` includes
+the post-deploy structured-output correction, with 210 offline tests and real
+hosted model/process verification.
