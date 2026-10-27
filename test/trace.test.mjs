@@ -11,3 +11,14 @@ test('clear prevents a pending callback from resurrecting cleared records',()=>{
  const t=createTrace('secret');const c=t.start({input:'synthetic'});assert.equal(t.read()[0].outcome,'pending');
  t.clear();c.event({type:'response',status:200,body:{model:'test'}});c.finish('accepted');assert.deepEqual(t.read(),[]);
 });
+test('trace distinguishes prepared attempts from requests actually sent to a provider',()=>{
+ const trace=createTrace(),pending=trace.start({provider:'ollama',model:'example',input:'prepared'});
+ pending.finish('failed or rejected');assert.equal(trace.read()[0].requestSent,false);
+ const sent=trace.start({provider:'ollama',model:'example',input:'prepared'});sent.event({type:'request',body:{model:'example',messages:[]}});
+ assert.equal(trace.read()[1].requestSent,true);
+});
+test('trace redacts both provider and tester secrets, including repeated values',()=>{
+ const trace=createTrace(['provider-fixture','tester-fixture']);const row=trace.start({input:'provider-fixture tester-fixture provider-fixture'});
+ row.event({type:'response',status:200,body:{content:'tester-fixture',cookie:'hidden'}});
+ assert.doesNotMatch(JSON.stringify(trace.read()),/provider-fixture|tester-fixture|hidden/);
+});

@@ -1,4 +1,4 @@
-// Opt-in live check: at most six requests, synthetic adults only, no retries.
+// Opt-in live check: at most six requests, synthetic examples only, no retries.
 import assert from 'node:assert/strict';
 import { writeFile } from 'node:fs/promises';
 import { callMeta, DEFAULT_META_MODEL } from '../src/meta.mjs';
@@ -33,5 +33,5 @@ try{
  results.push({label:'live-smoke-failure',pass:false,error:'Request, native action, validation, or expected progression failed. No automatic retry.'});
  console.log('FAIL: live claim workflow smoke did not complete.');process.exitCode=1;
 }finally{
- await writeFile(new URL('../docs/claim-smoke-results.json',import.meta.url),JSON.stringify({syntheticAdultsOnly:true,scriptedInputs:true,independentHumanReview:false,model:process.env.META_MODEL||DEFAULT_META_MODEL,evaluatedAt:new Date().toISOString(),calls,maxCalls:6,results},null,2)+'\n');
+ await writeFile(new URL('../docs/claim-smoke-results.json',import.meta.url),JSON.stringify({syntheticExamplesOnly:true,scriptedInputs:true,independentHumanReview:false,model:process.env.META_MODEL||DEFAULT_META_MODEL,evaluatedAt:new Date().toISOString(),calls,maxCalls:6,results},null,2)+'\n');
 }
