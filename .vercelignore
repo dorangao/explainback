@@ -1,11 +1,11 @@
 *
-!api/
+!api
 !api/**
-!src/
+!src
 !src/**
-!public/
+!public
 !public/**
-!scripts/
+!scripts
 !scripts/build-vercel.mjs
 !package.json
 !package-lock.json

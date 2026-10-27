@@ -5,7 +5,7 @@ import {mountSuctionLab} from './suction-view.mjs';
 import {runSuctionDemo,suctionGuide,suctionGuideStages} from './suction-demo.mjs';
 import {suctionAssumptions} from './suction.mjs';
 import {flightAssumptions} from './flight.mjs';
-import {journeyScenario} from './journey.mjs';
+import {poweredJourneyScenario as journeyScenario} from './powered-journey.mjs';
 import {mountJourney} from './journey-view.mjs';
 import {demoPresets} from './demo-presets.mjs';
 import {demoGuide,guideStages} from './demo-guide.mjs';
@@ -183,7 +183,7 @@ function renderAutoDemo(){
  $('auto-demo-preview-title').textContent=zh?'本步预设与真实反馈':'This step’s preset and live feedback';
  $('auto-demo-note').textContent=!traceEnabled?(zh?'演示需启用 EXPLAINBACK_TRACE=1 并重启，以显示真实调用。':'Enable EXPLAINBACK_TRACE=1 and restart to show live calls in the guided demo.'):
   !authenticated?(zh?'请先登录测试账号。':'Sign in to tester access first.'):
-  (zh?`辅助例解 · 每步暂停 · 最多 ${maxCalls} 次模型调用。切换语言会重新开始。`:`Worked example · pauses at each step · up to ${maxCalls} model calls. Changing language restarts the demo.`);
+  (zh?`辅助例解 · 每步暂停 · 最多 ${maxCalls} 次模型调用。切换语言会停止脚本并保留当前画面；重新开始可切换模型回复语言。`:`Worked example · pauses at each step · up to ${maxCalls} model calls. Changing language stops the script and preserves the scene; restart for provider replies in the new language.`);
  const states=zh?{idle:suction?'倒挂测试能证明所有角度都能抓附吗？':'看起来平滑的特技，受力一定小吗？',running:autoWaiting?'已暂停 · 阅读后点击下一步':'进行中 · 请等待本步完成',complete:'演示完成 · 数值与推理已核验；计为辅助完成。',stopped:'演示已停止；已发送的请求可能仍会完成。',attention:'演示已停在当前步骤，请查看反馈；可手动继续。'}:{idle:suction?'Can a ceiling test prove grip at every angle?':'Does a smooth-looking stunt mean low forces?',running:autoWaiting?'Paused · read, then select Next':'In progress · wait for this step to finish',complete:'Demo complete · values and reasoning checked; assisted result.',stopped:'Demo stopped; an already sent request may still finish.',attention:'Demo stopped at this step. Inspect feedback; you can continue manually.'};
  $('auto-demo-status').textContent=states[autoState]+(autoState!=='idle'?` · ${autoCalls}/${maxCalls} ${zh?'次提交尝试':'submission attempts'}`:'')+(autoStopReason==='language'?(zh?' 点击开始，以新语言重新演示。':' Select Start to run in the new language.'):'');
  const presentation=demoPresentation(autoStage,language(),suction);
@@ -199,7 +199,7 @@ function renderAutoDemo(){
  $('auto-demo-reference').hidden=!guidedDemo;
  $('auto-demo-reference').textContent=!autoEvidence?(zh?'起点预览 · 先预测，再显示图像。':'Starting scene · graphs appear after the prediction.'):
   ['transfer','complete'].includes(session?.phase)?(zh?'初始示例参考 · 下方动画仍是 2000 kg、1.5 秒横滚，不是当前迁移题的参数。':'Primary reference · the animation still uses 2000 kg and a 1.5 s roll, not the fresh transfer values.'):
-  (zh?'初始演示 · 同一光标贯穿三个独立模型；每段结束后暂停。':'Primary demonstration · one cursor across three separate models; each segment ends with a pause.');
+  (zh?'初始演示 · 同一光标贯穿地面加速、动力起飞、横滚与动力着陆；每段结束后暂停。':'Primary demonstration · one cursor across ground acceleration, powered lift, roll and powered landing; each segment ends with a pause.');
  if(suction){$('auto-demo-reference').textContent=zh?'假想静力模型 · 未经真实测试 · 迁移题另用机器人参数':'Hypothetical static model · untested · transfer uses separate robot inputs';if(guidedDemo)suctionLab.set(suctionOptions());}
  applyExperienceMode();
 }
@@ -460,7 +460,7 @@ $('auto-demo-run').addEventListener('click',async()=>{
     if(preset){$('explanation').value=preset.text;$('explanation').dispatchEvent(new Event('input'));$('auto-demo-prompt').textContent=preset.text;if(data.phase==='transfer')data.answerFields.forEach((f,i)=>$(i===0?'transfer-asymptote':'transfer-crossing').value=preset.answer?.[f.key]??'');}
     const feedback=data.phase==='confirm'?data.claim.interpretation:data.history.at(-1)?.feedback;$('auto-demo-feedback').textContent=feedback?`${data.llm?.label??"Model"} · ${feedback}`:'';providerConsole.refresh();
    },
-   play:async(signal,stage)=>{if(isSuctionDemo)return suctionLab.play(signal,stage);const [from,to,rate]={acceleration:[0,journeyModel.launch,.5],flip:[journeyModel.launch,journeyModel.touchdown,.25],landing:[journeyModel.touchdown,journeyModel.end,.1]}[stage];return journey.playRange({signal,from,to,rate});},
+   play:async(signal,stage)=>{if(isSuctionDemo)return suctionLab.play(signal,stage);const [from,to,rate]={acceleration:[0,journeyModel.launch,.5],flip:[journeyModel.launch,journeyModel.landing,.25],landing:[journeyModel.landing,journeyModel.end,.25]}[stage];return journey.playRange({signal,from,to,rate});},
   });
  }catch(error){if(current()){autoState=error.name==='AbortError'?'stopped':'attention';if(error.name!=='AbortError')showError(language()==='zh'?'演示在此停止，请检查模型反馈或连接状态；不会自动重试。':error.message);}}
  finally{if(current()){autoRun=null;busy=false;journey.stop();suctionLab.stop();controls();renderDemo();await providerConsole.refresh();}}
@@ -469,7 +469,12 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)stopAutoDem
 $('llm-model').addEventListener('change',()=>{ready=Boolean(selectedTarget()?.configured);localize();controls();});
 $('auto-demo-kind').addEventListener('change',()=>{clear();$('topic').value=suctionDemoMode()?'suction':'flight';localize();});
 $('topic').addEventListener('change',()=>{if($('topic').value==='suction')$('auto-demo-kind').value='suction';else $('auto-demo-kind').value='vehicle';localize();renderMotionSetup();});
-$('language').addEventListener('change',()=>{stopAutoDemo('language');clear();localize();controls();});
+$('language').addEventListener('change',()=>{
+ // Language changes translate local teaching UI without discarding evidence or time.
+ // A scripted provider run keeps its original request language, so pause it here.
+ stopAutoDemo('language');localize();render();controls();
+ if(session)$('notice').textContent=language()==='zh'?'已保留进度。已有模型文本仍使用请求时的语言；重新开始可切换模型回复语言。':'Progress preserved. Existing provider text keeps its request language; restart for provider replies in the new language.';
+});
 $('start').addEventListener('click',async()=>{
   if(busy||session||!authenticated)return;
   busy=true;controls();const version=++generation;

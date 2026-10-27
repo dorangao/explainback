@@ -1,4 +1,4 @@
-import {validateLesson,experimentIds} from './lesson-schema.mjs';
+import {validateLesson,experimentIds,lessonLanguageWarnings} from './lesson-schema.mjs';
 import {lessonExperiment,experimentNames} from './lesson-experiments.mjs';
 import {chapterExperiment} from './generated-demo.mjs';
 import {formatDemoNumber} from './demo-model.mjs';
@@ -14,7 +14,7 @@ const presets=[{en:'Why does coffee cool more slowly as it approaches room tempe
 export function mountLessonStudio(root,{post,onBusy=()=>{},onTarget=()=>{}}){
  root.innerHTML=`<header class="ls-header"><p class="eyebrow" id="ls-tag"></p><h2 id="ls-heading"></h2><p id="ls-intro"></p></header>
  <div class="ls-layout"><div class="ls-main"><section id="ls-author" class="ls-panel"><label for="ls-topic" id="ls-topic-label"></label><textarea id="ls-topic" maxlength="600" rows="3"></textarea><label for="ls-creation" id="ls-creation-label"></label><select id="ls-creation"><option value="generated">New topic demo</option><option value="catalog">Existing experiments</option></select><div id="ls-presets" class="ls-actions"></div><div class="ls-actions"><button id="ls-create" type="button"></button><label class="ls-file"><span id="ls-import-label"></span><input id="ls-import" type="file" accept=".json,application/json"></label></div><p class="fine" id="ls-privacy"></p><details class="ls-details"><summary id="ls-coverage-label"></summary><p id="ls-coverage"></p></details></section>
- <p id="ls-status" role="status"></p><section id="ls-draft" class="ls-panel" hidden><p class="eyebrow" id="ls-draft-label"></p><h3 id="ls-draft-title"></h3><p id="ls-draft-intro"></p><p class="fine" id="ls-draft-note"></p><div id="ls-chapters"></div><details class="ls-details"><summary id="ls-edit-label"></summary><label><span id="ls-title-label"></span><input id="ls-title-edit" maxlength="80"></label><label><span id="ls-intro-label"></span><textarea id="ls-intro-edit" maxlength="200" rows="2"></textarea></label><div id="ls-text-editors"></div></details><div id="ls-review-gate"><label class="ls-review-check"><input id="ls-reviewed" type="checkbox"><span id="ls-review-label"></span></label></div><label for="ls-revision" id="ls-revision-label"></label><textarea id="ls-revision" maxlength="600" rows="2"></textarea><button type="button" id="ls-revise" class="example"></button><div class="ls-actions"><button type="button" id="ls-present"></button><button type="button" class="example" id="ls-export"></button></div></section>
+ <p id="ls-status" role="status"></p><section id="ls-draft" class="ls-panel" hidden><p class="eyebrow" id="ls-draft-label"></p><h3 id="ls-draft-title"></h3><p id="ls-draft-intro"></p><p class="fine" id="ls-draft-note"></p><p id="ls-language-warning" role="status" class="ls-provenance" hidden></p><div id="ls-chapters"></div><details class="ls-details"><summary id="ls-edit-label"></summary><label><span id="ls-title-label"></span><input id="ls-title-edit" maxlength="80"></label><label><span id="ls-intro-label"></span><textarea id="ls-intro-edit" maxlength="200" rows="2"></textarea></label><div id="ls-text-editors"></div></details><div id="ls-review-gate"><label class="ls-review-check"><input id="ls-reviewed" type="checkbox"><span id="ls-review-label"></span></label></div><label for="ls-revision" id="ls-revision-label"></label><textarea id="ls-revision" maxlength="600" rows="2"></textarea><button type="button" id="ls-revise" class="example"></button><div class="ls-actions"><button type="button" id="ls-present"></button><button type="button" class="example" id="ls-export"></button></div></section>
  <section id="ls-player" class="ls-panel" hidden><div class="ls-player-top"><p id="ls-progress" class="eyebrow"></p><button id="ls-back" type="button" class="text-button"></button></div><h3 id="ls-lesson-title"></h3><p id="ls-framing"></p><h4 id="ls-stage-title" tabindex="-1"></h4><blockquote id="ls-claim"></blockquote><div id="ls-predictions" class="ls-actions"></div><p id="ls-prediction" class="fine"></p>
  <p id="ls-provenance" class="ls-provenance" hidden></p><div id="ls-generated-controls"></div><label id="ls-output-wrap"><span id="ls-output-label"></span><select id="ls-output"></select></label><div id="ls-lab" hidden><label class="ls-variant"><span id="ls-variant-label"></span><select id="ls-variant"></select></label><div id="ls-visual"></div><p id="ls-caption" class="ls-caption"></p><label for="ls-scrub" class="fine" id="ls-scrub-label"></label><input id="ls-scrub" type="range" min="0" max="1" step="0.01" value="0"><div class="ls-actions"><button id="ls-play" type="button"></button><button id="ls-end" type="button" class="example"></button></div><div id="ls-metrics" class="ls-metrics"></div></div>
  <div id="ls-explanation" hidden><p class="eyebrow" id="ls-checked-label"></p><p id="ls-result"></p><p class="eyebrow" id="ls-authored-label"></p><p id="ls-authored"></p><button id="ls-ask" type="button" class="example"></button><p id="ls-feedback"></p><button id="ls-apply" type="button" hidden></button></div>
@@ -27,7 +27,7 @@ export function mountLessonStudio(root,{post,onBusy=()=>{},onTarget=()=>{}}){
  let reviewed=false;const pendingDefinitions=new Map();
  const hasGenerated=()=>Boolean(draft?.chapters.some(c=>c.experiment==='generated'));
  function reviewGate(){q('review-gate').hidden=!hasGenerated();q('reviewed').checked=reviewed;q('reviewed').disabled=busy||pendingDefinitions.size>0;q('present').disabled=busy||pendingDefinitions.size>0||(hasGenerated()&&!reviewed);}
- function dirty(){reviewed=false;reviewGate();}
+ function dirty(){reviewed=false;reviewGate();renderLanguageWarning();}
  const quantumControls=el('div');quantumControls.id='ls-quantum-controls';
  for(const id of ['measure','shots']){const b=el('button',undefined,'example');b.id='ls-'+id;b.type='button';quantumControls.append(b);}
  const measureNote=el('p',undefined,'fine');measureNote.id='ls-measure-note';quantumControls.append(measureNote);
@@ -39,7 +39,11 @@ export function mountLessonStudio(root,{post,onBusy=()=>{},onTarget=()=>{}}){
  function loadLesson(value){const checked=validateLesson(value);stop();draft=checked;reviewed=false;pendingDefinitions.clear();player=null;presenting=false;feedback=null;observation=null;counts=null;status='';render();}
  const presetButtons=presets.map((p,i)=>{const b=el('button',undefined,'example');b.type='button';b.addEventListener('click',()=>{if(!busy)q('topic').value=p[lang()];});q('presets').append(b);return b;});
  const choiceButtons=['agree','disagree','unsure'].map(value=>{const b=el('button',undefined,'example');b.type='button';b.addEventListener('click',()=>{player?.predict(value);renderPlayer();});q('predictions').append(b);return b;});
+ function renderLanguageWarning(){
+  const warnings=lessonLanguageWarnings(draft);q('language-warning').hidden=!warnings.length;q('language-warning').textContent=say('Review language quality: unexpected Cyrillic text was detected. Check both translations, then edit or ask Muse to revise. This hint is not a full language check. Fields: ','请审阅语言质量：检测到西里尔文字。请检查两种译文，编辑或让 Muse 修改。这只是提示，不是完整的语言检查。字段：')+warnings.join(', ');
+ }
  function renderDraft(){
+  renderLanguageWarning();
   q('draft').hidden=!draft||presenting;if(!draft)return;
   q('draft-title').textContent=draft.title[lang()];q('draft-intro').textContent=draft.intro[lang()];q('title-edit').value=draft.title[lang()];q('intro-edit').value=draft.intro[lang()];
   q('chapters').replaceChildren(...draft.chapters.map((chapter,i)=>{
@@ -165,7 +169,7 @@ export function mountLessonStudio(root,{post,onBusy=()=>{},onTarget=()=>{}}){
    for(const id of ['draft-title','draft-intro','lesson-title','framing','claim','prediction','authored','result','feedback','transfer-question','check-result','observations','caption','assumptions','progress'])q(id).textContent='';
    for(const id of ['chapters','text-editors','visual','metrics','generated-controls','transfer-choices'])q(id).replaceChildren();root.dataset.stage='';root.dataset.chapter='';root.dataset.progress='';
   }
-  if(next.language!==props.language){stop();feedback=null;status='';if(busy)invalidate();}
+  if(next.language!==props.language){stop();feedback=null;if(busy){invalidate();status=next.language==='zh'?'语言已切换，当前请求不再应用；请手动重试。':'Language changed; the pending result will not be applied. Retry explicitly.';}}
   if(next.visible===false)stop();props={...props,...next};
   modelId=props.targets.some(t=>t.id===modelId)?modelId:props.defaultModel??props.targets[0]?.id??'';
   if([...q('model').options].map(o=>o.value).join('|')!==props.targets.map(t=>t.id).join('|'))q('model').replaceChildren(...props.targets.map(t=>{const o=new Option(t.label,t.id);o.disabled=!t.configured;return o;}));q('model').value=modelId;render();

@@ -73,12 +73,90 @@ writes, reset, expiry and shared rate limits. No model calls were made. All
 synthetic keys were removed afterward. The temporary database is not a deployed
 application database.
 
-Actual Vercel provisioning/build/routing and a hosted browser walkthrough are
-still pending account access. The connector denied project creation, and the
-CLI requires the account owner's device sign-in. No deployment URL exists yet.
+## Initial preview (October 27, 2026)
+
+After the account owner authorized the CLI, project `explainback` was created in
+`doran-gaos-projects` (`prj_8y4jOH8v4zYVlNgRiwPfA0W0uAP5`). Its Node 22 build is
+**Ready / Preview** at:
+
+https://explainback-nbp8wnru1-doran-gaos-projects.vercel.app
+
+Deployment ID: `dpl_9jww7uMZHkKC7GP5EUBvRJxnCRX2`. This contains commit
+`b49d7f3` with a local `.vercelignore` correction: directory allowlist entries
+must omit their trailing slash for the CLI to traverse them. A dry run confirmed
+62 runtime files, with required app/API modules present and no environment
+files, credentials, local outputs, tests, docs or downloaded skills included.
+
+The dedicated `explainback-preview` Upstash database uses the free plan with
+automatic paid upgrades disabled, connected only to Preview. The account owner
+explicitly approved sending the existing Meta key and tester credentials to
+server-only sensitive Preview variables. Trace capture is enabled. The original
+`.env.local` credentials remain local and excluded from uploads.
+
+Vercel automatically assigned the first deployment to Production despite the
+preview request. A second deployment was confirmed as Preview, and the initial
+Production deployment was removed. No production deployment is retained.
+
+The current build succeeded. The real Redis integration check passed for shared
+login/session state, Meta-only routing, Chinese sessions, locks, trace writes,
+reset, expiry and quotas; its synthetic keys were removed afterward. Hosted browser/model-call verification was still pending at this initial checkpoint; see the release verification below. The Vercel connector's
+project-creation permission remained unavailable; CLI authorization provided the
+working deployment path.
 
 中文：Vercel 预览仅使用 Meta muse-spark，不访问局域网 Ollama。测试登录、学习会话、
 调用次数与已过滤的控制台记录存入共享 Redis。学习会话在创建 30 分钟后过期，登录
 最多持续 8 小时。退出立即撤销访问权限；重置删除当前会话与记录。密钥、密码和
 Redis 凭证只在 Vercel 服务端环境变量中配置。英文/中文切换、分步演示、动画、
 图表与模型请求/响应控制台沿用同一流程。
+
+
+## Release verification and production preparation (October 27, 2026)
+
+Release preview: https://explainback-hy601thk2-doran-gaos-projects.vercel.app
+(`dpl_6z3XsMHmBtXcSzxsy7rbRy7FudBW`). All 207 Node 22 tests pass, the public
+build succeeds, and secret-value and whitespace checks pass. The upload allowlist
+contains 63 runtime files and excludes environment files, credentials, local
+outputs, docs, tests and downloaded skills.
+
+Hosted browser checks used the real Meta provider and the shared Redis state:
+
+- Tester login and logout; protected workspace disappears after logout.
+- Coffee lesson creation, review gate, presentation, parameter changes resetting
+  prediction, output selection, playback, English/Chinese switching, numerical
+  transfer and completion.
+- Draft revision returns a reviewed bilingual lesson and resets the review gate.
+- Real English and Chinese explanations and visible filtered request/response,
+  usage and timing records in the provider console.
+- Full four-call vehicle claim/prediction/revision/transfer demo completes, with
+  pauses after ground acceleration, lift/roll and powered landing. At 8.5 seconds
+  the primary scene has y=0, vy=0 and vx=26.8224 m/s. Language switching preserves
+  its timeline position; existing provider prose stays in its request language.
+
+One initial generated Chinese sentence contained unrelated language fragments.
+Instructions now request proofreading; a Cyrillic-script review hint flags this
+specific failure class without prohibiting legitimate lesson topics. It updates
+as the author edits. It is not a complete language-quality validator. A later
+response incorrectly encoded the lesson as a string and was rejected without a
+retry. The prompt now explicitly requires a nested object and complete chapter
+objects. A subsequent fresh generation and revision were accepted. Stochastic
+model responses may still be rejected; failures retain the draft and remain
+visible when the language changes. Scientific claims still require review.
+
+The new powered journey is separate from the preserved ballistic/contact
+baseline. Lift and landing each assume 2mg upward thrust for T/2 seconds, with a
+T-second ballistic roll between them. The existing torque curve is reused;
+contact-stopping time/profile do not control powered landing. Forward velocity
+continues by inertia. Exact timing, abrupt thrust switches, fixed mass/inertia,
+no drag and no actuator/fuel/clearance/occupant simulation are explicit limits.
+
+A fresh review identified the old language-reset handler and a stale warning;
+both were fixed and checked in the hosted UI. No remaining review blockers.
+
+Production preparation is complete: the existing free Redis resource is
+connected to both Preview and Production (separate application namespaces),
+and the account owner explicitly approved the existing Meta key and tester
+credentials for server-only sensitive Production variables. Trace capture and
+`EXPLAINBACK_PUBLIC_ORIGINS=https://explainback.app` are configured. The domain
+is already Vercel-registered; project assignment, ownership and DNS verification
+succeeded without changing nameservers or unrelated DNS records. Production
+publication and HTTPS smoke verification follow this pre-release checkpoint.
