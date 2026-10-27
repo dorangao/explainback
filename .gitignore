@@ -1,0 +1,23 @@
+.env
+.env.*
+!.env.example
+node_modules/
+.DS_Store
+
+# Local credentials and private key material
+secrets/
+credentials*.json
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Local browser captures, diagnostics and generated evaluation output
+.playwright-mcp/
+output/
+*.log
+docs/local-evaluation.json
+docs/claim-smoke-results.json
+
+# Downloaded reference documents; authored notes and baseline source stay tracked
+docs/*.pdf

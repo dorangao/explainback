@@ -1,0 +1,13 @@
+async(page)=>{
+ await page.reload();await page.locator('#language').selectOption('en');await page.locator('#adult').check();
+ let release,ready;const gate=new Promise(r=>release=r),seen=new Promise(r=>ready=r);let calls=0;
+ await page.route('**/api/turn',async route=>{calls++;const response=await route.fetch();ready();await gate;await route.fulfill({response});});
+ try{
+  await page.locator('#auto-demo-run').click();await page.waitForFunction(()=>!document.querySelector('#auto-demo-next').disabled);await page.locator('#auto-demo-next').click();await seen;
+  await page.locator('#auto-demo-stop').click();release();
+  await page.waitForFunction(()=>!document.querySelector('#auto-demo-run').disabled);
+  const result={status:await page.locator('#auto-demo-status').textContent(),confirmationVisible:await page.locator('#confirm-claim').isVisible(),calls};
+  if(!result.confirmationVisible||calls!==1)throw new Error('Stop lost a completed response: '+JSON.stringify(result));
+  return result;
+ }finally{release();await page.unroute('**/api/turn');}
+}

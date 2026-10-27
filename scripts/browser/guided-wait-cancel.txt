@@ -1,0 +1,13 @@
+async(page)=>{
+ await page.reload();await page.locator('#adult').check();let calls=0;const listener=request=>{if(request.url().endsWith('/api/turn'))calls++;};page.on('request',listener);
+ try{
+  await page.locator('#auto-demo-run').click();await page.waitForFunction(()=>!document.querySelector('#auto-demo-next').disabled);
+  await page.waitForTimeout(1100);if(calls)throw new Error('Spent a call before Next');
+  await page.locator('#auto-demo-stop').click();await page.waitForTimeout(100);await page.locator('#auto-demo-next').evaluate(e=>e.click());
+  if(calls||!await page.locator('#auto-demo-next').isDisabled())throw new Error('Stopped gate still active');
+  await page.locator('#auto-demo-run').click();await page.waitForFunction(()=>!document.querySelector('#auto-demo-next').disabled);
+  await page.locator('#auto-demo-language').selectOption('zh');await page.waitForTimeout(100);
+  if(calls||await page.locator('#auto-demo-guide').isVisible()||await page.locator('#journey').isVisible())throw new Error('Language switch retained pending guide');
+  return {calls,nextDisabled:await page.locator('#auto-demo-next').isDisabled(),language:await page.locator('#language').inputValue()};
+ }finally{page.off('request',listener);}
+}

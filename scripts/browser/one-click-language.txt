@@ -1,0 +1,12 @@
+async(page)=>{
+ await page.reload();await page.locator('#adult').check();let release,ready;
+ const gate=new Promise(r=>release=r),seen=new Promise(r=>ready=r);let calls=0;
+ await page.route('**/api/turn',async route=>{calls++;const response=await route.fetch();ready();await gate;await route.fulfill({response});});
+ try{
+  await page.locator('#auto-demo-run').click();await page.waitForFunction(()=>!document.querySelector('#auto-demo-next').disabled);await page.locator('#auto-demo-next').click();await seen;
+  await page.locator('#language').selectOption('zh');release();await page.waitForTimeout(400);
+  const result={language:await page.locator('#language').inputValue(),workspaceHidden:await page.locator('#workspace').evaluate(e=>e.hidden),previewHidden:await page.locator('#auto-demo-preview').evaluate(e=>e.hidden),traceEmpty:(await page.locator('#trace-records').textContent())==='',status:await page.locator('#auto-demo-status').textContent(),calls};
+  if(result.language!=='zh'||!result.workspaceHidden||!result.previewHidden||!result.traceEmpty||calls!==1)throw new Error('Stale result after language switch: '+JSON.stringify(result));
+  return result;
+ }finally{release();await page.unroute('**/api/turn');}
+}

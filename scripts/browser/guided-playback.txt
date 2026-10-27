@@ -1,0 +1,20 @@
+async(page)=>page.evaluate(async()=>{
+ const {mountJourney}=await import('/assets/journey-view.mjs?guidedtest='+Date.now());
+ const {journeyScenario}=await import('/assets/journey.mjs');
+ const root=document.createElement('section');root.className='journey';document.body.append(root);
+ const view=mountJourney(root),scenario=journeyScenario();view.set({scenario,visible:true,language:'en',locked:true});
+ try{
+  if(typeof view.playRange!=='function')throw new Error('Missing segmented playback API');
+  const points=[];
+  for(const[from,to,phase]of [[0,1,'1 · Accelerate'],[1,2.5,'2 · Flip'],[2.5,2.8,'3 · Land']]){
+   const ok=await view.playRange({signal:new AbortController().signal,from,to,rate:1});
+   const time=Number(root.querySelector('#journey-time').value),label=root.querySelector('[aria-current="step"]').textContent;
+   await new Promise(r=>setTimeout(r,100));
+   if(!ok||time!==to||Number(root.querySelector('#journey-time').value)!==to||label!==phase)throw new Error(JSON.stringify({ok,time,to,label,phase}));
+   if(!root.querySelector('#journey-play').disabled)throw new Error('Manual playback must remain locked between guided segments');
+   points.push({time,label});
+  }
+  const controller=new AbortController(),pending=view.playRange({signal:controller.signal,from:0,to:1});controller.abort();if(await pending!==false)throw new Error('Cancellation claimed completion');
+  return points;
+ }finally{view.stop();root.remove();}
+})

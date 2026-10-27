@@ -1,0 +1,183 @@
+{
+  "capturedAt": "2026-10-27T04:29:03.994492+00:00",
+  "label": "Baseline before Next-guided demonstration",
+  "note": "Source only; excludes credentials; not eligibility evidence.",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "f6f77067b5a3f35ff26240f2a2c5faf51245841408d0dd9e8086bf59b18ddfaf"
+    },
+    {
+      "path": "package.json",
+      "sha256": "20911a2487140d5daec3b56232b3ca99ba85a733cb9ff5f02f7c842c8e86c4f1"
+    },
+    {
+      "path": "public/app.mjs",
+      "sha256": "23d1ef4d0c93261a3e8b0b5d396fc58be185832df7e98f6f256ba56e7a866c61"
+    },
+    {
+      "path": "public/demo-presets.mjs",
+      "sha256": "caf88d48b3856458ba0ac0a98cc908ff9f587018a89d7b3143b33c17f0d79df5"
+    },
+    {
+      "path": "public/demo-runner.mjs",
+      "sha256": "68c1f3694d8649d69995f4ec6b86dbb768555315a5ace27d41c9915b5cd8685e"
+    },
+    {
+      "path": "public/flight-view.mjs",
+      "sha256": "976e49fd123976e5251650be02eea72718c83abad6474ecd579dd4f4e5735b5f"
+    },
+    {
+      "path": "public/flight.mjs",
+      "sha256": "3555c42ffc107512eb6349f3fdbc2bdf5b52a4c7df508a2c17c9c708fbf5ba86"
+    },
+    {
+      "path": "public/graph.mjs",
+      "sha256": "8597250e97970741f348ec25798f2c199ec7fd4d048639a2426ad74e30016cb9"
+    },
+    {
+      "path": "public/index.html",
+      "sha256": "c229558624af6523d41792878134781c888712291f7a73b1f48562f855c0dbef"
+    },
+    {
+      "path": "public/journey-view.mjs",
+      "sha256": "9bb13900139bcdce72f0964d08546ba21184a15dc26a5facd3cd2c5ec2900a34"
+    },
+    {
+      "path": "public/journey.mjs",
+      "sha256": "dccbe64f70bc8d1a3b1ab46c9900a6395f0a687d4774b96c7fd37f4395039662"
+    },
+    {
+      "path": "public/math.mjs",
+      "sha256": "ea2ae78c25615fd9e3f4e0b93e8edc99d4cb76b3f13d0f96ad0e0e14c3cce167"
+    },
+    {
+      "path": "public/motion-graph.mjs",
+      "sha256": "8f5e5ed0dfb075c91b86c7a017333a57ad120c59fcd4a471257d4bc5f90a816a"
+    },
+    {
+      "path": "public/motion.mjs",
+      "sha256": "e8273a0094966732373e0f250713afe8c92d9000c4d64e4ef63c631da181d5c0"
+    },
+    {
+      "path": "public/physics-panel.mjs",
+      "sha256": "b07fc4641272641753cfcba1dda29fde15f2165dc89cf4f1e8c124e850eab91f"
+    },
+    {
+      "path": "public/provider-console.mjs",
+      "sha256": "d7a7aebf3047f7c39194116a265f391092a5ce8928476d55769440ccc6ba4e84"
+    },
+    {
+      "path": "public/style.css",
+      "sha256": "31f6a77b760aa5806e01854c549d689564d0e2ac708fc4647d54654230317cc0"
+    },
+    {
+      "path": "src/claim-domains.mjs",
+      "sha256": "038aadd49497c6996935b9c169b84f8680881e2887f205f7e9000f9005c239c9"
+    },
+    {
+      "path": "src/claim-testing.mjs",
+      "sha256": "932d6a50c2fd77a0ce2fc49a39df42b283473092048d58a1b4e42c591c67b727"
+    },
+    {
+      "path": "src/evidence.mjs",
+      "sha256": "66b411da7eb88b0d55437c93d260b67adfc7bb73bd618b6f8a644f6a274ca307"
+    },
+    {
+      "path": "src/flight-domain.mjs",
+      "sha256": "5afde00737b802ef2728b0cc806a3176e08390a5a5395ad73e925674cf9fa5dd"
+    },
+    {
+      "path": "src/flight-evidence.mjs",
+      "sha256": "f042efa47164314af347fe9c2e83a5217cc443d3256874be4a597cd77907efd5"
+    },
+    {
+      "path": "src/learning.mjs",
+      "sha256": "f43459dbcb3f0f87bc953079319ae6038b512494044fe00566eb000c3381d24d"
+    },
+    {
+      "path": "src/meta.mjs",
+      "sha256": "03e2a8995b5ebb93b9129b002da2b89f896ec343c12cafe3b9f3a74b5030069d"
+    },
+    {
+      "path": "src/motion-evidence.mjs",
+      "sha256": "549f0f70d8d5a1328df26e18cdc178bbcd90b6d413498aad3ae7b5720ee1ca1a"
+    },
+    {
+      "path": "src/problems.mjs",
+      "sha256": "0d5d64aa1f4531133dbb242c277bbf5127ec53d11cce04c65d26f161ccb87a7c"
+    },
+    {
+      "path": "src/server.mjs",
+      "sha256": "7716d83232b9bdf061cb8c356d204046e7aff4bf1b3c309034baa1737f5415be"
+    },
+    {
+      "path": "src/trace.mjs",
+      "sha256": "35168e1bcbf7992e57a859f71c14ce80e5619f62077d1152edd55e1f9bd3447f"
+    },
+    {
+      "path": "test/acceleration-claims.test.mjs",
+      "sha256": "126d3e53f448d56f8a73ec3010e26dbd10c4ff57f032d53145b12cad39ee12c8"
+    },
+    {
+      "path": "test/claim-testing.test.mjs",
+      "sha256": "86b4b6db399d435fd3a12df672e2e4b887b904a24ac1de2b484c25be025ef63f"
+    },
+    {
+      "path": "test/demo-presets.test.mjs",
+      "sha256": "7ad5cbab8e46fb1d44e893297b8d224593f7a12f71cca44ead56456836d71a60"
+    },
+    {
+      "path": "test/demo-runner.test.mjs",
+      "sha256": "0b4e936726ca8c542d9797e3fccec038ed39f417f652d288ed9be55bc715ba56"
+    },
+    {
+      "path": "test/evidence.test.mjs",
+      "sha256": "aea238bd4d9bfa3d990397884cb1f6857d84a544c950d5727b0760ed1463cb1f"
+    },
+    {
+      "path": "test/flight-claims.test.mjs",
+      "sha256": "85d4afecf148e0a0c772640abcc43bc66c82653dee75dbcc61e05739780fb83a"
+    },
+    {
+      "path": "test/flight.test.mjs",
+      "sha256": "9f8f449c64913c59502bb92d805afe946ab0a89a70bd34e1a31db833234f5e2a"
+    },
+    {
+      "path": "test/force-claims.test.mjs",
+      "sha256": "4ff2d04fc3972007652fb716fe6a6bc97f49720d224332ae15ef8cbffd081de2"
+    },
+    {
+      "path": "test/force-feel.test.mjs",
+      "sha256": "befa3768c503268ded85826c67f87129eb9ea4daeadabff0e79a84f91fd15a63"
+    },
+    {
+      "path": "test/journey.test.mjs",
+      "sha256": "67c6b7fa8b2505ddac03402517c4f36d4ca3d75ba8259b7281077cc36a9eec6d"
+    },
+    {
+      "path": "test/learning.test.mjs",
+      "sha256": "7916d1c8844cb72499fbdcc8f645550f0c70043a41eef3f96e1be1ff4dfe00f1"
+    },
+    {
+      "path": "test/meta.test.mjs",
+      "sha256": "8f4fcdd6e0014f82b5eee2e859a97f3bb6053ad5a7881765cd9419c5a094daad"
+    },
+    {
+      "path": "test/motion.test.mjs",
+      "sha256": "2f80efccbb376fdc3b83b42f8021bf2d1e601f9abf82d0a48e5252677227586e"
+    },
+    {
+      "path": "test/server.test.mjs",
+      "sha256": "01b0fc7e95b6a2eaae0bae05ef0416610fda824d041cdb442a3a863977df4381"
+    },
+    {
+      "path": "test/trace-server.test.mjs",
+      "sha256": "a18db10c2e85426fe8b4638772876ab48ed148e93cfe4572bc373f10bb06bad3"
+    },
+    {
+      "path": "test/trace.test.mjs",
+      "sha256": "adc6d88d87e2c6762fabf9737944cb4fa5ad05eb0148635994a63349c564d3ce"
+    }
+  ]
+}

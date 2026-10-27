@@ -1,0 +1,99 @@
+{
+  "label": "Existing acceleration lab baseline before force and feel extension",
+  "capturedAt": "2026-10-27T01:32:45.580069+00:00",
+  "note": "Source snapshot; not proof of event eligibility or creation date. No credentials included.",
+  "files": [
+    {
+      "path": "package.json",
+      "sha256": "20911a2487140d5daec3b56232b3ca99ba85a733cb9ff5f02f7c842c8e86c4f1"
+    },
+    {
+      "path": "public/app.mjs",
+      "sha256": "3ce70e5fa6f170f33afc205733a8573a6312e54dcddce902d0a5038c6e7bad70"
+    },
+    {
+      "path": "public/graph.mjs",
+      "sha256": "8597250e97970741f348ec25798f2c199ec7fd4d048639a2426ad74e30016cb9"
+    },
+    {
+      "path": "public/index.html",
+      "sha256": "46efb281b00a8abd99b9320afd89d69b91b7bf8ef8d7e106f84be0139468d0f0"
+    },
+    {
+      "path": "public/math.mjs",
+      "sha256": "ea2ae78c25615fd9e3f4e0b93e8edc99d4cb76b3f13d0f96ad0e0e14c3cce167"
+    },
+    {
+      "path": "public/motion-graph.mjs",
+      "sha256": "51e376e83d42d2eaf6dbdaaf7e3403208085c5380c4ce0d7c386892b798a94ac"
+    },
+    {
+      "path": "public/motion.mjs",
+      "sha256": "3a3bd1650001b0cddc920479a650090457dfb152d0148bd41606841a9ee0b1af"
+    },
+    {
+      "path": "public/style.css",
+      "sha256": "f41d2288e3edad8b699103c59beda04e8579aa870953720cb8796ee18c451dc2"
+    },
+    {
+      "path": "src/claim-domains.mjs",
+      "sha256": "6750efcb7823832823aa7134937835d8a19371f7b3bd61617076140786e8589c"
+    },
+    {
+      "path": "src/claim-testing.mjs",
+      "sha256": "8fc1051fa70cbe4b209d64e4c2d96db3b792c29d1ba70648390391335a6099e0"
+    },
+    {
+      "path": "src/evidence.mjs",
+      "sha256": "284dbf5f10ec4171842f907e570b09fb2950c63413c41bf3888179eb2a93b414"
+    },
+    {
+      "path": "src/learning.mjs",
+      "sha256": "4920f09085fe12d05e8cf85cd36e31d322ea71e2f382b5bee34d7634819176a8"
+    },
+    {
+      "path": "src/meta.mjs",
+      "sha256": "0578d87ad19184a1d3149c7c16ce2050771ced921622438b8663cd7de4fda25f"
+    },
+    {
+      "path": "src/motion-evidence.mjs",
+      "sha256": "6526a528cc87bbdeeadfbdd2cb3fee228306c54d50660973e70392112856df5f"
+    },
+    {
+      "path": "src/problems.mjs",
+      "sha256": "0d5d64aa1f4531133dbb242c277bbf5127ec53d11cce04c65d26f161ccb87a7c"
+    },
+    {
+      "path": "src/server.mjs",
+      "sha256": "1f56019e8a16cee2dec46b82b957ec14d8f517f493e07bc4e6facdb41e6a7b68"
+    },
+    {
+      "path": "test/acceleration-claims.test.mjs",
+      "sha256": "ed5eabfb7e1b3410d36e14dc46565fec61c997fa1e2f96ed3a0a7bee46fba520"
+    },
+    {
+      "path": "test/claim-testing.test.mjs",
+      "sha256": "9a4e357b9a994674c89467c58b2a0d85f966bf809ffe4237caf92d47007907b5"
+    },
+    {
+      "path": "test/evidence.test.mjs",
+      "sha256": "aea238bd4d9bfa3d990397884cb1f6857d84a544c950d5727b0760ed1463cb1f"
+    },
+    {
+      "path": "test/learning.test.mjs",
+      "sha256": "7916d1c8844cb72499fbdcc8f645550f0c70043a41eef3f96e1be1ff4dfe00f1"
+    },
+    {
+      "path": "test/meta.test.mjs",
+      "sha256": "92c54ebeded85b2c871064fa1af86b8c767b905a53f963c1665c1f8ed711f1b3"
+    },
+    {
+      "path": "test/motion.test.mjs",
+      "sha256": "2f80efccbb376fdc3b83b42f8021bf2d1e601f9abf82d0a48e5252677227586e"
+    },
+    {
+      "path": "test/server.test.mjs",
+      "sha256": "d89c7f401808b0d49ff5c27b310a78ac39fabc667d367072a9e62556f0d5e2ca"
+    }
+  ]
+}

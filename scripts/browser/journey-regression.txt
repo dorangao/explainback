@@ -1,0 +1,18 @@
+async (page) => page.evaluate(async () => {
+  const { mountJourney } = await import('/assets/journey-view.mjs?regression=' + Date.now());
+  const { journeyScenario } = await import('/assets/journey.mjs');
+  const parent = document.createElement('div'), root = document.createElement('section');
+  root.className = 'journey'; parent.append(root); document.body.append(parent);
+  const view = mountJourney(root), scenario = journeyScenario();
+  const settle = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  const show = async () => { parent.hidden = true; view.set({ scenario, visible:true, language:'en' }); parent.hidden = false; await settle(); };
+  await show();
+  const range=root.querySelector('#journey-time'); range.value='1'; range.dispatchEvent(new Event('input'));
+  view.set({scenario:null,visible:false,language:'en'}); await show();
+  const chart=root.querySelector('.journey-plots svg');
+  const result={time:range.value,chartUnits:chart.viewBox.baseVal.width,chartPixels:chart.getBoundingClientRect().width};
+  view.stop();root.remove();parent.remove();
+  if(result.time!=='0')throw new Error('New session retained time: '+JSON.stringify(result));
+  if(Math.abs(result.chartUnits-result.chartPixels)>2)throw new Error('Hidden layout left stale graph dimensions: '+JSON.stringify(result));
+  return result;
+})

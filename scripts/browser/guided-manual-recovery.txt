@@ -1,0 +1,9 @@
+async(page)=>{
+ await page.reload();await page.locator('#language').selectOption('en');await page.locator('#adult').check();
+ await page.locator('#auto-demo-run').click();await page.waitForFunction(()=>!document.querySelector('#auto-demo-next').disabled);
+ await page.locator('#auto-demo-next').click();await page.waitForFunction(()=>document.querySelector('#auto-demo-steps [aria-current="step"]').textContent.includes('Confirm')&&!document.querySelector('#auto-demo-next').disabled);
+ await page.locator('#auto-demo-stop').click();await page.locator('#confirm-claim').click();await page.waitForFunction(()=>!document.querySelector('#submit').disabled);
+ await page.locator('#demo-load').click();await page.locator('#submit').click();await page.waitForFunction(()=>!document.querySelector('#submit').disabled&&document.querySelector('#stage-label').textContent.includes('RECONCILE'),{},{timeout:40000});
+ const result={preview:await page.locator('#journey').getAttribute('data-preview'),graphsVisible:await page.locator('.journey-plots').isVisible(),playEnabled:await page.locator('#journey-play').isEnabled(),manualParent:await page.locator('#journey').evaluate(e=>e.parentElement.id),guideHidden:await page.locator('#auto-demo-guide').evaluate(e=>e.hidden)};
+ if(result.preview==='true'||!result.graphsVisible||!result.playEnabled||!result.guideHidden||result.manualParent!=='workspace')throw new Error(JSON.stringify(result));return result;
+}

@@ -1,0 +1,16 @@
+async(page)=>page.evaluate(async()=>{
+ const {mountJourney}=await import('/assets/journey-view.mjs?playtest='+Date.now());
+ const {journeyScenario}=await import('/assets/journey.mjs');
+ const root=document.createElement('section');root.className='journey';document.body.append(root);
+ const view=mountJourney(root),scenario=journeyScenario();view.set({scenario,visible:true,language:'en'});
+ try{
+  if(typeof view.playThrough!=='function')throw new Error('Missing full-playback completion API');
+  const controller=new AbortController(),cancelled=view.playThrough({signal:controller.signal});controller.abort();
+  if(await cancelled!==false)throw new Error('Cancelled playback reported completion');
+  const phases=new Set();const timer=setInterval(()=>phases.add(root.querySelector('[aria-current="step"]')?.textContent),30);
+  const complete=await view.playThrough({signal:new AbortController().signal});clearInterval(timer);
+  const result={complete,time:Number(root.querySelector('#journey-time').value),end:scenario.end,phases:[...phases]};
+  if(!complete||result.time!==result.end||result.phases.length!==3)throw new Error(JSON.stringify(result));
+  return result;
+ }finally{view.stop();root.remove();}
+})

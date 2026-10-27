@@ -1,0 +1,115 @@
+{
+  "capturedAt": "2026-10-27T02:56:42.819567+00:00",
+  "label": "Baseline before flip and landing extension",
+  "note": "Source snapshot, not proof of eligibility or original creation dates; excludes credentials.",
+  "files": [
+    {
+      "path": "public/app.mjs",
+      "sha256": "9aa1f89aa05f9c450d8f97385b6a2bcf7adfa003b21af1b67aba7768d2eca2a3"
+    },
+    {
+      "path": "public/graph.mjs",
+      "sha256": "8597250e97970741f348ec25798f2c199ec7fd4d048639a2426ad74e30016cb9"
+    },
+    {
+      "path": "public/index.html",
+      "sha256": "a858f6297d048045f503f91e1c8fc46cea546b142b6476d7c183494d0f6d746d"
+    },
+    {
+      "path": "public/math.mjs",
+      "sha256": "ea2ae78c25615fd9e3f4e0b93e8edc99d4cb76b3f13d0f96ad0e0e14c3cce167"
+    },
+    {
+      "path": "public/motion-graph.mjs",
+      "sha256": "8f5e5ed0dfb075c91b86c7a017333a57ad120c59fcd4a471257d4bc5f90a816a"
+    },
+    {
+      "path": "public/motion.mjs",
+      "sha256": "e8273a0094966732373e0f250713afe8c92d9000c4d64e4ef63c631da181d5c0"
+    },
+    {
+      "path": "public/physics-panel.mjs",
+      "sha256": "b07fc4641272641753cfcba1dda29fde15f2165dc89cf4f1e8c124e850eab91f"
+    },
+    {
+      "path": "public/style.css",
+      "sha256": "80a170dcdca6d6b29835b2b2d9db645835b7acc56496e2840843285a4cd22b14"
+    },
+    {
+      "path": "src/claim-domains.mjs",
+      "sha256": "a89fb54dd84f7a74aabcf80b33a649c98881be54dd4f3fbcf5410e8821232b0c"
+    },
+    {
+      "path": "src/claim-testing.mjs",
+      "sha256": "67ac9a47c164a8692918819d0c2a740a54a6a55f4cce1132d21515e8f2bf3d09"
+    },
+    {
+      "path": "src/evidence.mjs",
+      "sha256": "284dbf5f10ec4171842f907e570b09fb2950c63413c41bf3888179eb2a93b414"
+    },
+    {
+      "path": "src/learning.mjs",
+      "sha256": "4920f09085fe12d05e8cf85cd36e31d322ea71e2f382b5bee34d7634819176a8"
+    },
+    {
+      "path": "src/meta.mjs",
+      "sha256": "0578d87ad19184a1d3149c7c16ce2050771ced921622438b8663cd7de4fda25f"
+    },
+    {
+      "path": "src/motion-evidence.mjs",
+      "sha256": "549f0f70d8d5a1328df26e18cdc178bbcd90b6d413498aad3ae7b5720ee1ca1a"
+    },
+    {
+      "path": "src/problems.mjs",
+      "sha256": "0d5d64aa1f4531133dbb242c277bbf5127ec53d11cce04c65d26f161ccb87a7c"
+    },
+    {
+      "path": "src/server.mjs",
+      "sha256": "1adcc315d62b5d1592137ed2c14b84aa96c3b2f2591620e150a4a5fc3e6e8d97"
+    },
+    {
+      "path": "test/acceleration-claims.test.mjs",
+      "sha256": "126d3e53f448d56f8a73ec3010e26dbd10c4ff57f032d53145b12cad39ee12c8"
+    },
+    {
+      "path": "test/claim-testing.test.mjs",
+      "sha256": "9a4e357b9a994674c89467c58b2a0d85f966bf809ffe4237caf92d47007907b5"
+    },
+    {
+      "path": "test/evidence.test.mjs",
+      "sha256": "aea238bd4d9bfa3d990397884cb1f6857d84a544c950d5727b0760ed1463cb1f"
+    },
+    {
+      "path": "test/force-claims.test.mjs",
+      "sha256": "4ff2d04fc3972007652fb716fe6a6bc97f49720d224332ae15ef8cbffd081de2"
+    },
+    {
+      "path": "test/force-feel.test.mjs",
+      "sha256": "befa3768c503268ded85826c67f87129eb9ea4daeadabff0e79a84f91fd15a63"
+    },
+    {
+      "path": "test/learning.test.mjs",
+      "sha256": "7916d1c8844cb72499fbdcc8f645550f0c70043a41eef3f96e1be1ff4dfe00f1"
+    },
+    {
+      "path": "test/meta.test.mjs",
+      "sha256": "92c54ebeded85b2c871064fa1af86b8c767b905a53f963c1665c1f8ed711f1b3"
+    },
+    {
+      "path": "test/motion.test.mjs",
+      "sha256": "2f80efccbb376fdc3b83b42f8021bf2d1e601f9abf82d0a48e5252677227586e"
+    },
+    {
+      "path": "test/server.test.mjs",
+      "sha256": "d89c7f401808b0d49ff5c27b310a78ac39fabc667d367072a9e62556f0d5e2ca"
+    },
+    {
+      "path": "package.json",
+      "sha256": "20911a2487140d5daec3b56232b3ca99ba85a733cb9ff5f02f7c842c8e86c4f1"
+    },
+    {
+      "path": "README.md",
+      "sha256": "d87f80da109798357a60648c11e6c6d876aae79dae55a320dd80375a128365ad"
+    }
+  ]
+}

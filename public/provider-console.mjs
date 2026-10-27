@@ -1,0 +1,31 @@
+export function mountProviderConsole(root,post){
+ root.innerHTML='<summary id="trace-title"></summary><p id="trace-note" class="fine"></p><div class="journey-buttons"><button type="button" class="example" id="trace-refresh"></button><button type="button" class="example" id="trace-clear"></button></div><p id="trace-status" role="status"></p><div id="trace-records"></div>';
+ const q=id=>root.querySelector('#'+id);let enabled=false,sessionId=null,zh=false,version=0,followLatest=false,lastFollowed=0;
+ async function refresh(clear=false){
+  if(!enabled||!sessionId)return;const token=++version,id=sessionId;
+  q('trace-status').textContent=zh?'读取记录…':'Reading trace…';
+  try{const data=await post('/api/trace',{sessionId:id,...(clear?{clear:true}:{})});if(token!==version||id!==sessionId)return;
+   const openRows=new Set([...q('trace-records').querySelectorAll('details[open]')].map(d=>d.dataset.sequence));
+   q('trace-records').replaceChildren(...data.records.map(row=>{
+    const detail=document.createElement('details'),title=document.createElement('summary');
+    detail.dataset.sequence=String(row.sequence);detail.open=openRows.has(String(row.sequence))||(followLatest&&row===data.records.at(-1));
+    const outcomes=zh?{pending:'等待中',accepted:'已接受',discarded:'已丢弃','failed or rejected':'失败或未通过验证'}:{};
+    title.textContent=`#${row.sequence} · ${row.startedAt} · ${row.durationMs} ms · HTTP ${row.httpStatus??'—'} · ${outcomes[row.outcome]??row.outcome}`;detail.append(title);
+    for(const[label,value]of [[zh?'发送给 Meta 的请求（已过滤）':'Request sent to Meta (filtered)',row.request],[zh?'Meta 响应（已过滤）':'Meta response (filtered)',row.response??{error:row.error??(zh?'尚无响应':'No response yet')}]] ){
+     const h=document.createElement('h4'),pre=document.createElement('pre');h.textContent=label;pre.textContent=JSON.stringify(value,null,2);detail.append(h,pre);
+    }return detail;
+   }));q('trace-status').textContent=zh?`${data.records.length} 条记录 · 最多保留 12 次请求`:`${data.records.length} records · up to 12 requests retained`;
+   const latest=q('trace-records').lastElementChild;if(followLatest&&latest&&Number(latest.dataset.sequence)!==lastFollowed){lastFollowed=Number(latest.dataset.sequence);root.scrollTop+=latest.getBoundingClientRect().top-root.getBoundingClientRect().top-12;}
+  }catch{if(token===version)q('trace-status').textContent=zh?'记录不可用；会话可能已重置或过期。':'Trace unavailable; session may have reset or expired.';}
+ }
+ q('trace-refresh').addEventListener('click',()=>refresh());q('trace-clear').addEventListener('click',()=>refresh(true));
+ root.addEventListener('toggle',()=>{if(root.open)refresh();});
+ return {refresh,set({enabled:active,sessionId:id,language,followLatest:follow=false}){
+  zh=language==='zh';enabled=active;followLatest=follow;root.hidden=!active;
+  q('trace-title').textContent=zh?'开发者 · 模型请求 / 响应控制台':'Developer · Provider request / response console';
+  q('trace-note').textContent=zh?'EXPLAINBACK_TRACE=1 已启用。仅内存保留本会话的请求正文、工具响应、用量与耗时；不显示密钥、请求头、私有推理或原始错误正文。正文可能含核验答案，所以此会话计为开发演示。长记录会截断。重置、过期或服务器停止后删除。':'EXPLAINBACK_TRACE=1 is enabled. This session’s request bodies, tool responses, usage and timing stay in memory. Keys, headers, private reasoning and raw error bodies are omitted. Context can include checked answers, so this session is a developer demo. Long records are truncated. Reset, expiry or server shutdown deletes them.';
+  q('trace-refresh').textContent=zh?'刷新记录':'Refresh trace';q('trace-clear').textContent=zh?'清除记录':'Clear trace';
+  for(const c of [q('trace-refresh'),q('trace-clear')])c.disabled=!id;
+  if(id!==sessionId||!enabled){version++;sessionId=id;lastFollowed=0;q('trace-records').replaceChildren();q('trace-status').textContent=zh?'开始会话后，模型调用记录将显示在这里。':'Start a session to inspect provider calls here.';}
+ }};
+}

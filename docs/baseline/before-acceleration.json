@@ -1,0 +1,98 @@
+{
+  "capturedAt": "2026-10-27T00:47:33.198887+00:00",
+  "note": "Actual capture; not proof of original creation dates. Prior crossing workflow is baseline for this extension. No environment files.",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "c18bda873688ec4ecceb17a2f2b6bf74fc19a8c47fb59e4c1014e3d31ae23d34"
+    },
+    {
+      "path": "package.json",
+      "sha256": "20911a2487140d5daec3b56232b3ca99ba85a733cb9ff5f02f7c842c8e86c4f1"
+    },
+    {
+      "path": "public/app.mjs",
+      "sha256": "b9c41410e51c97122bfc012df891d8b79d7ef9fe02d64200912c689656bca5b4"
+    },
+    {
+      "path": "public/graph.mjs",
+      "sha256": "8597250e97970741f348ec25798f2c199ec7fd4d048639a2426ad74e30016cb9"
+    },
+    {
+      "path": "public/index.html",
+      "sha256": "08af0720b79a323bf626aecb865f3a113b08b7d435b7ea6526ae01f6d1997636"
+    },
+    {
+      "path": "public/math.mjs",
+      "sha256": "ea2ae78c25615fd9e3f4e0b93e8edc99d4cb76b3f13d0f96ad0e0e14c3cce167"
+    },
+    {
+      "path": "public/style.css",
+      "sha256": "ca845e9115cf7252dbaf2b9ae0ff956088b57f67d876ca06f70bb2ccf7ea151a"
+    },
+    {
+      "path": "scripts/claim-smoke.mjs",
+      "sha256": "494bbb73e800639fed73feb22808fa5ff4082abe8ddb39c85500c550f9e90f00"
+    },
+    {
+      "path": "scripts/evaluate.mjs",
+      "sha256": "6a1365321459d402484f797e7cef533d0618a8808f7cb47c70e337ee5b4a3364"
+    },
+    {
+      "path": "scripts/meta-check.mjs",
+      "sha256": "6d4a562402a2354fef42ff3faff7a4c9eacba4f19c53039dca7afcb48ecb3180"
+    },
+    {
+      "path": "scripts/meta-smoke.mjs",
+      "sha256": "e643f39060eeeafac962a2a8851698f5997e5e5e790f25d918bb2d7bd733f335"
+    },
+    {
+      "path": "scripts/security-check.mjs",
+      "sha256": "e0d6e343c89ba1ffbd3de976b8628d2926b6348a3a8eddaa7aeed71edb1f60bc"
+    },
+    {
+      "path": "src/claim-testing.mjs",
+      "sha256": "0ced4a6dfbd379c46c3f60765333a3aff58ef3e61da46d15892ae5976a010939"
+    },
+    {
+      "path": "src/evidence.mjs",
+      "sha256": "b597849bb4fd336265ff3c11a6d2d00ba898a1bc3e641c21f824a9a42a5c19db"
+    },
+    {
+      "path": "src/learning.mjs",
+      "sha256": "bf48bd3eb66204e9844c261d3d566e1db40faaadb12638b02dacf335436d5888"
+    },
+    {
+      "path": "src/meta.mjs",
+      "sha256": "0578d87ad19184a1d3149c7c16ce2050771ced921622438b8663cd7de4fda25f"
+    },
+    {
+      "path": "src/problems.mjs",
+      "sha256": "0d5d64aa1f4531133dbb242c277bbf5127ec53d11cce04c65d26f161ccb87a7c"
+    },
+    {
+      "path": "src/server.mjs",
+      "sha256": "6d34900fe762c417460e711c2ede8e5038d1798e8eac072c9a9fc1aeb13a20b9"
+    },
+    {
+      "path": "test/claim-testing.test.mjs",
+      "sha256": "9a4e357b9a994674c89467c58b2a0d85f966bf809ffe4237caf92d47007907b5"
+    },
+    {
+      "path": "test/evidence.test.mjs",
+      "sha256": "dfe9348a7734200b816ba03935b12138d86e6bb3eefcbb49a3f01fdea28f6107"
+    },
+    {
+      "path": "test/learning.test.mjs",
+      "sha256": "7916d1c8844cb72499fbdcc8f645550f0c70043a41eef3f96e1be1ff4dfe00f1"
+    },
+    {
+      "path": "test/meta.test.mjs",
+      "sha256": "92c54ebeded85b2c871064fa1af86b8c767b905a53f963c1665c1f8ed711f1b3"
+    },
+    {
+      "path": "test/server.test.mjs",
+      "sha256": "8e6bbd62393a4fd83d2eae050b80ba0b03f037f044e772ca44a48ca515e357a2"
+    }
+  ]
+}
