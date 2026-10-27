@@ -42,7 +42,7 @@ test('landing state checks both downward speed and unresolved spin; tampered evi
 test('flight model context is bilingual, scoped, and rejects incompatible experiment selections',async()=>{
  const s=checked('rotation-torque','flight-torque','zh');let input;
  await assessClaim(s,'再解释',async req=>{input=req;const x=d('ask_clarification','再解释',{assessment:'ambiguous'});delete x.action;return {model:'fixture',toolCall:{name:'ask_clarification',arguments:JSON.stringify(x)}};});
- assert.match(input.instructions,/Chinese/);assert.match(input.instructions,/not Tesla/);assert.match(input.instructions,/angular momentum/);assert.match(input.instructions,/not.*safe|no.*safety/i);
+ assert.match(input.instructions,/Chinese/);assert.match(input.instructions,/not measured vehicle/);assert.match(input.instructions,/angular momentum/);assert.match(input.instructions,/not.*safe|no.*safety/i);
  const f=createClaimSession('en','flight');assert.throws(()=>advanceClaim(f,'test',d('propose_claim','test',{kind:'landing-impulse',scope:'ideal-flight-and-contact',interpretation:'test',experimentId:'flight-torque'})));
 });
 test('a preset or trace-assisted first transfer never becomes independent evidence',()=>{

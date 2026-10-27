@@ -1,3 +1,4 @@
+import {suctionPresets} from './suction-presets.mjs';
 import {motionFormula,motionSummary,physicsSummary} from './motion.mjs';
 import {flightFormula,flightSummary} from './flight.mjs';
 const reasoning={
@@ -8,8 +9,8 @@ const reasoning={
   'I revise the equal-force claim: U=gT/2 and ∫(N−mg)dt=mU. Average contact force is mg+mU/D, not just mU/D. Longer stopping time reduces dynamic average force but increases travel UD/2. At equal m, U and D, constant and cosine profiles share the average; their peaks differ: constant equals average, pulse peaks at mg+2mU/D. These are body contact forces, not occupant loads or a safety verdict.',
   '我修正平均力等于峰值的说法：U=gT/2，∫(N−mg)dt=mU。平均接触力是 mg+mU/D，不只是 mU/D。更长制停时间降低动态平均力，却增大行程 UD/2。在相同 m、U、D 下，恒定和余弦曲线平均值相同；恒定峰值等于平均值，脉冲峰值是 mg+2mU/D。这是物体接触力，不是乘员载荷，也不证明安全。'],
  'landing-state':[
-  'I revise the upright claim: angle 2π does not imply zero angular speed. A retains 2π/T; B reaches zero spin using positive then negative torque. Both approach with downward speed U=gT/2. Vertical contact stops that velocity separately. Pitch/contact coupling, suspension and structural loads are omitted, so upright alone cannot establish a safe landing.',
-  '我修正姿态回正的说法：角度 2π 不表示角速度为零。A 仍有 2π/T，B 经正负力矩控制才停止旋转。两者接地时都具有向下速度 U=gT/2。竖直接触单独制停该速度，没有模拟俯仰耦合、悬架和结构载荷，因此不能仅凭回正断言安全。'],
+  'I revise the upright claim: angle 2π does not imply zero angular speed. A retains 2π/T; B reaches zero spin using positive then negative torque. Both approach with downward speed U=gT/2. Vertical contact stops that velocity separately. Roll/contact coupling, suspension and structural loads are omitted, so upright alone cannot establish a safe landing.',
+  '我修正姿态回正的说法：角度 2π 不表示角速度为零。A 仍有 2π/T，B 经正负力矩控制才停止旋转。两者接地时都具有向下速度 U=gT/2。竖直接触单独制停该速度，没有模拟横滚耦合、悬架和结构载荷，因此不能仅凭回正断言安全。'],
  'force-feasibility':[
   'I revise the mass claim: the same v(t) fixes a=dv/dt, but required force F=ma and wheel power P=Fv scale with mass. Weight is mg, not mass in kg. In the ideal tire limit F≤μmg, mass cancels, so required μ=a/g. Power is a separate limit. Passing these necessary ideal limits does not establish real feasibility or safety.',
   '我修正质量的说法：相同 v(t) 确定 a=dv/dt，但 F=ma 与轮端功率 P=Fv 都随质量增大。重量是 mg，不是以 kg 表示的质量。理想抓地限制 F≤μmg 中质量相消，所需 μ=a/g；功率是另一项限制。通过这些必要理想条件不代表实车可行或安全。'],
@@ -21,10 +22,11 @@ const reasoning={
   '我修正端点的说法：相同末速度和时间只固定平均加速度 V/T。瞬时加速度为 dv/dt，路程为 ∫v dt，需要整条曲线。余弦 B 与恒定 A 的总路程恰好都是 VT/2，但瞬时加速度不同；递增或递减曲线的路程也不同。仅凭端点不能确定这些量。'],
 };
 export function demoPresets(s,language='en'){
+ if(s?.problem.id==='suction')return suctionPresets(s,language);
  if(!s||!['flight','acceleration'].includes(s.problem.id)||['complete','confirm'].includes(s.phase))return [];
  const zh=language==='zh',i=zh?1:0,flight=s.problem.id==='flight';
  if(s.phase==='claim')return (flight?[
-  ['Torque & spin','力矩与旋转','In this model B starts and ends with zero spin, so torque must be zero throughout its turn.','在本模型中 B 初末角速度都为零，所以翻转全程的力矩都为零。'],
+  ['Torque & spin','力矩与旋转','In this model B starts and ends with zero spin, so torque must be zero throughout its turn.','在本模型中 B 初末角速度都为零，所以横滚全程的力矩都为零。'],
   ['Landing force','着陆力','In this vertical-only model, equal stopping impulse means average and peak contact force must be identical for every shape.','在此竖直模型中，相同制停冲量意味着任何曲线的平均与峰值接触力都相同。'],
   ['Upright versus stopped','回正与停止','In this ideal model, angle 2π means both A and B have zero angular speed at touchdown.','在此理想模型中，角度 2π 表示 A、B 接地时角速度都为零。'],
  ]:[

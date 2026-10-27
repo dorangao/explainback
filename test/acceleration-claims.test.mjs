@@ -12,7 +12,7 @@ test('acceleration claims share confirmation, evidence, replay and graph workflo
   const s=checked(language,{speedMph:30,duration:2,profileB:'falling'}),v=claimView(s);
   assert.equal(v.problem.id,'acceleration');assert.equal(v.graph.kind,'motion');assert.equal(v.graph.scenario.T,2);
   assert.equal(v.evidenceRecords[0].formulaId,'motion-30-2-falling');assert.equal(replayClaimEvidence(s,v.evidenceRecords[0].id).verified,true);
-  assert.match(v.assumptions,language==='zh'?/并非 Tesla/:/no measured Tesla/);
+  assert.match(v.assumptions,language==='zh'?/并非车辆实测/:/no measured vehicle/);
   assert.equal(v.answerFields[0].key,'averageAcceleration');
  }
 });
@@ -49,6 +49,6 @@ test('transfer graph help counts as assistance; old scenario evidence cannot unl
 test('motion model instructions, verified facts and learner values stay distinct from untrusted language',async()=>{
  const s=checked('zh');let req;
  await assessClaim(s,'解释',async a=>{req=a;return {model:'fixture',toolCall:{name:'ask_clarification',arguments:JSON.stringify(Object.fromEntries(Object.entries(d('ask_clarification','解释',{assessment:'ambiguous'})).filter(([k])=>k!=='action')))}};});
- assert.match(req.instructions,/Chinese/);assert.match(req.instructions,/HYPOTHETICAL/);assert.match(req.instructions,/not Tesla/);assert.doesNotMatch(req.instructions,/finite crossing versus end behavior/);
+ assert.match(req.instructions,/Chinese/);assert.match(req.instructions,/HYPOTHETICAL/);assert.match(req.instructions,/not measured vehicle/);assert.doesNotMatch(req.instructions,/finite crossing versus end behavior/);
  assert.equal(JSON.parse(req.input).evidenceRecords[0].method,'prescribed-velocity-calculus-v1');
 });
