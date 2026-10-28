@@ -27,5 +27,11 @@
     "vite.config.ts",
     "vitest.config.ts",
     "playwright.config.ts"
+  ],
+  "exclude": [
+    "frontend/**/*.test.ts",
+    "frontend/**/*.test.tsx",
+    "node_modules",
+    "dist"
   ]
 }

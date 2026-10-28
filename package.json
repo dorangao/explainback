@@ -19,13 +19,14 @@
     "eval:models": "node --env-file-if-exists=.env.local scripts/compare-models.mjs",
     "eval:studio": "node --env-file-if-exists=.env.local scripts/eval-studio.mjs",
     "llm:recover": "node --env-file-if-exists=.env.local scripts/recover-ollama.mjs",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
     "test:browser": "playwright test",
     "lint": "oxlint frontend e2e vite.config.ts vitest.config.ts playwright.config.ts",
     "format": "prettier --write frontend e2e *.ts",
     "format:check": "prettier --check frontend e2e *.ts",
     "test:unit": "vitest run",
-    "check": "npm run typecheck && npm run lint && npm test && npm run test:unit"
+    "check": "npm run typecheck && npm run lint && npm test && npm run test:unit",
+    "typecheck:app": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "react": "19.3.1",
