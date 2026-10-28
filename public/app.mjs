@@ -190,7 +190,7 @@ function renderAutoDemo(){
  $('auto-demo-note').textContent=!traceEnabled?(zh?'演示需启用 EXPLAINBACK_TRACE=1 并重启，以显示真实调用。':'Enable EXPLAINBACK_TRACE=1 and restart to show live calls in the guided demo.'):
   !authenticated?(zh?'请先登录测试账号。':'Sign in to tester access first.'):
   (zh?`辅助例解 · 每步暂停 · 最多 ${maxCalls} 次模型调用。切换语言会停止脚本并保留当前画面；重新开始可切换模型回复语言。`:`Worked example · pauses at each step · up to ${maxCalls} model calls. Changing language stops the script and preserves the scene; restart for provider replies in the new language.`);
- const states=zh?{idle:suction?'倒挂测试能证明所有角度都能抓附吗？':'看起来平滑的特技，受力一定小吗？',running:autoWaiting?'已暂停 · 阅读后点击下一步':'进行中 · 请等待本步完成',complete:'演示完成 · 数值与推理已核验；计为辅助完成。',stopped:'演示已停止；已发送的请求可能仍会完成。',attention:'演示已停在当前步骤，请查看反馈；可手动继续。'}:{idle:suction?'Can a ceiling test prove grip at every angle?':'Does a smooth-looking stunt mean low forces?',running:autoWaiting?'Paused · read, then select Next':'In progress · wait for this step to finish',complete:'Demo complete · values and reasoning checked; assisted result.',stopped:'Demo stopped; an already sent request may still finish.',attention:'Demo stopped at this step. Inspect feedback; you can continue manually.'};
+ const states=zh?{idle:suction?'倒挂测试能证明所有角度都能抓附吗？':'看起来平滑的特技，受力一定小吗？',running:autoWaiting?'已暂停 · 阅读后点击下一步':'进行中 · 请等待本步完成',complete:'演示完成 · 数值与推理已核验；计为辅助完成。可以再演示一次，或在下方继续用自己的解释。',stopped:'演示已停止；已发送的请求可能仍会完成。',attention:'演示已停在当前步骤，请查看反馈；可手动继续。'}:{idle:suction?'Can a ceiling test prove grip at every angle?':'Does a smooth-looking stunt mean low forces?',running:autoWaiting?'Paused · read, then select Next':'In progress · wait for this step to finish',complete:'Demo complete · values and reasoning checked; assisted result. Run it again, or continue with your own explanation below.',stopped:'Demo stopped; an already sent request may still finish.',attention:'Demo stopped at this step. Inspect feedback; you can continue manually.'};
  $('auto-demo-status').textContent=states[autoState]+(autoState!=='idle'?` · ${autoCalls}/${maxCalls} ${zh?'次提交尝试':'submission attempts'}`:'')+(autoStopReason==='language'?(zh?' 点击开始，以新语言重新演示。':' Select Start to run in the new language.'):'');
  const presentation=demoPresentation(autoStage,language(),suction);
  $('journey').dataset.plotFocus=guidedDemo?String(presentation.journeyFocus):'';
@@ -200,8 +200,10 @@ function renderAutoDemo(){
  $('auto-demo-run').disabled=!ready||!traceEnabled||!authenticated||busy||autoActive();$('auto-demo-stop').hidden=!autoActive();
  $('auto-demo-guide').hidden=!guidedDemo||!guide;
  if(guide){$('auto-demo-guide-title').textContent=guide[0];['claim','graph','result'].forEach((id,i)=>{$('guide-'+id).textContent=guide[i+1];$('guide-'+id+'-label').textContent=(zh?['说法 / 想法','怎么看图','结果 / 下一步']:['Claim / idea','Read the graph','Result / next action'])[i];});}
- $('auto-demo-next').disabled=!autoWaiting||!autoActive()||busy;
- $('auto-demo-next').textContent=autoState==='complete'?(zh?'已完成':'Finished'):`${zh?'下一步':'Next'} → ${guide?.[4]??''}`;
+ // A finished run keeps its button live as "Run again" so the end is never a dead control.
+ const finished=autoState==='complete'&&!autoActive();
+ $('auto-demo-next').disabled=finished?busy:(!autoWaiting||!autoActive()||busy);
+ $('auto-demo-next').textContent=finished?(zh?'已完成 · 再演示一次 ↻':'Finished · Run again ↻'):autoState==='complete'?(zh?'已完成':'Finished'):`${zh?'下一步':'Next'} → ${guide?.[4]??''}`;
  $('auto-demo-reference').hidden=!guidedDemo;
  $('auto-demo-reference').textContent=!autoEvidence?(zh?'起点预览 · 先预测，再显示图像。':'Starting scene · graphs appear after the prediction.'):
   ['transfer','complete'].includes(session?.phase)?(zh?'初始示例参考 · 下方动画仍是 2000 kg、1.5 秒横滚，不是当前迁移题的参数。':'Primary reference · the animation still uses 2000 kg and a 1.5 s roll, not the fresh transfer values.'):
@@ -222,7 +224,11 @@ function demoCheckpoint(_stage,signal){
   autoGate=gate;autoWaiting=true;signal.addEventListener('abort',cancel,{once:true});renderAutoDemo();
  });
 }
-$('auto-demo-next').addEventListener('click',event=>{if(event.detail>1||busy||!autoActive())return;autoGate?.next();});
+$('auto-demo-next').addEventListener('click',event=>{
+ if(event.detail>1||busy)return;
+ if(autoState==='complete'&&!autoActive()){$('auto-demo-run').click();return;}
+ if(autoActive())autoGate?.next();
+});
 $('auto-demo-next').addEventListener('keydown',event=>{if(event.repeat&&(event.key==='Enter'||event.key===' '))event.preventDefault();});
 $('auto-demo-language').addEventListener('change',()=>{$('language').value=$('auto-demo-language').value;$('language').dispatchEvent(new Event('change'));});
 
