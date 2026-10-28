@@ -1817,6 +1817,6 @@ body {
 .revision-changes li{display:grid;grid-template-columns:minmax(120px,180px) 1fr;gap:.3rem .9rem;align-items:start;font-size:.9rem;line-height:1.45}
 .revision-changes li del{color:#8c352b;background:#fbe7e2;text-decoration:line-through;padding:.05rem .3rem;border-radius:3px;overflow-wrap:anywhere}
 .revision-changes li ins{color:#145a4e;background:#dff0e6;text-decoration:none;padding:.05rem .3rem;border-radius:3px;overflow-wrap:anywhere}
-.revision-changes li del + ins{margin-left:.4rem}
+.revision-values{display:grid;gap:.3rem}.revision-values del,.revision-values ins{justify-self:start}
 .revision-label{font-weight:600;color:var(--ink,#20332f)}
 @media (max-width:600px){.revision-changes li{grid-template-columns:1fr}.revision-summary{padding:.9rem 1rem}.revision-summary-head{flex-direction:column}}

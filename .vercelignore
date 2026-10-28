@@ -16,3 +16,4 @@
 !vite.config.ts
 !tsconfig.json
 !playwright.config.ts
+!vitest.config.ts

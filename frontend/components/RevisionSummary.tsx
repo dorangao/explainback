@@ -82,16 +82,10 @@ export function RevisionSummary({
           {visible.map((change) => (
             <li key={change.path} data-kind={change.kind}>
               <span className="revision-label">{change.label[language]}</span>
-              {change.kind === "added" ? (
-                <ins>{change.after}</ins>
-              ) : change.kind === "removed" ? (
-                <del>{change.before}</del>
-              ) : (
-                <>
-                  <del>{change.before}</del>
-                  <ins>{change.after}</ins>
-                </>
-              )}
+              <span className="revision-values">
+                {change.kind !== "added" && <del>{change.before}</del>}
+                {change.kind !== "removed" && <ins>{change.after}</ins>}
+              </span>
             </li>
           ))}
         </ul>
