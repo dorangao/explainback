@@ -22,7 +22,7 @@ import { renderPhysicsPanel } from './physics-panel.mjs';
 const $ = id => document.getElementById(id);
 let playbackFrame=null,playbackLast=0;
 let session = null, generation = 0, busy = false, ready = false, catalog = [];
-let authenticated=false,authConfigured=false,codesConfigured=false,authBusy=false,authMessage='',authVersion=0,access=null,accessRefresh=null;
+let authenticated=false,authConfigured=false,codesConfigured=false,openAccess=false,authBusy=false,authMessage='',authVersion=0,access=null,accessRefresh=null;
 let traceEnabled=false,demoPresetUsed=false,journeyModel=null,providerTargets=[],defaultProviderId=null;
 const selectedTarget=()=>providerTargets.find(t=>t.id===$('llm-model').value);
 let experienceMode='demo';
@@ -604,12 +604,15 @@ function renderAccess(){
  $('tester-form').hidden=!authConfigured&&codesConfigured;$('code-form').hidden=!codesConfigured;
  $('code-heading').textContent=c.codeHeading;$('access-code-label').textContent=c.codeLabel;$('code-submit').textContent=authBusy?c.pending:c.codeSubmit;$('access-code').disabled=$('code-submit').disabled=authBusy;
  renderAccessBadge();
- $('tester-login').hidden=authenticated;$('tester-workspace').hidden=false;$('tester-logout').hidden=!authenticated;
+ $('tester-login').hidden=authenticated;$('tester-workspace').hidden=false;$('tester-logout').hidden=!authenticated||openAccess;
  $('tester-logout').disabled=authBusy;$('tester-message').hidden=!authMessage;$('tester-message').textContent=c.errors[authMessage]??'';
  if(!authenticated){$('connection').textContent=c.connection;$('connection').classList.remove('ready');}
 }
 function renderAccessBadge(){
- const c=authCopy[language()];$('access-badge').hidden=!authenticated||!access;if(authenticated&&access)$('access-badge').textContent=c.badge(access);
+ const c=authCopy[language()],zh=language()==='zh';
+ $('access-badge').hidden=!authenticated||(!access&&!openAccess);
+ if(authenticated&&access)$('access-badge').textContent=c.badge(access);
+ else if(authenticated&&openAccess)$('access-badge').textContent=zh?'本地开放访问 · EXPLAINBACK_OPEN_ACCESS=1 · 无需登录':'Local open access · EXPLAINBACK_OPEN_ACCESS=1 · no sign-in';
 }
 // Live requests change the code's remaining budget; refresh the badge after each one.
 function scheduleAccessRefresh(){
@@ -656,7 +659,7 @@ $('tester-logout').addEventListener('click',async()=>{
 });
 localize();controls();
 try{
- const status=await authRequest('/api/auth');authConfigured=status.configured;codesConfigured=status.codes===true;
+ const status=await authRequest('/api/auth');authConfigured=status.configured;codesConfigured=status.codes===true;openAccess=status.open===true;
  if(status.authenticated)await loadStatus(authVersion);else authMessage=authConfigured||codesConfigured?'':'TESTER_SETUP';
 }catch(error){authMessage=error.code??'NETWORK';}
 renderAccess();

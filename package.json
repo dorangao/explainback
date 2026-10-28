@@ -7,6 +7,7 @@
   },
   "scripts": {
     "dev": "node --env-file-if-exists=.env.local src/server.mjs",
+    "dev:open": "EXPLAINBACK_OPEN_ACCESS=1 node --env-file-if-exists=.env.local src/server.mjs",
     "start": "node --env-file-if-exists=.env.local src/server.mjs",
     "security:check": "node --env-file-if-exists=.env.local scripts/security-check.mjs",
     "eval:live": "node --env-file-if-exists=.env.local scripts/evaluate.mjs",
