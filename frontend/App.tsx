@@ -13,9 +13,9 @@ import { galleryIdFromHash } from "./lib/shared";
 import { Brand } from "./components/Brand";
 import { Studio } from "./components/Studio";
 import { AccessPanel } from "./components/AccessPanel";
-const LegacyLabs = lazy(() =>
-  import("./components/LegacyLabs").then((module) => ({
-    default: module.LegacyLabs,
+const Labs = lazy(() =>
+  import("./components/labs/Labs").then((module) => ({
+    default: module.Labs,
   })),
 );
 
@@ -298,7 +298,7 @@ export function App() {
             }
           >
             {visited.physics && (
-              <LegacyLabs
+              <Labs
                 key={`physics-${auth.identity}`}
                 kind="physics"
                 language={language}
@@ -310,7 +310,7 @@ export function App() {
               />
             )}
             {visited.quantum && (
-              <LegacyLabs
+              <Labs
                 key={`quantum-${auth.identity}`}
                 kind="quantum"
                 language={language}

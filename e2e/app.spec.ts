@@ -161,7 +161,7 @@ test("both retained labs mount, switch language, navigate and remount without er
     page.getByRole("heading", { name: "物理与数学", exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "退出登录", exact: true }).click();
-  await expect(page.locator(".legacy-workspace")).toHaveCount(0);
+  await expect(page.locator(".lab-workspace")).toHaveCount(0);
   expect(errors).toEqual([]);
 });
 
