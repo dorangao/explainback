@@ -1,10 +1,102 @@
 # ExplainBack / 讲给我听
 
-Explain it in your own words. Discover what you’re missing.
+**Turn a question into a bilingual, interactive lesson you can operate.**
+Meta's Muse drafts the lesson and its model; you review and revise it; code runs
+the experiment; the learner predicts, operates, explains and transfers.
 
-用自己的话讲出来，找到真正没懂的地方。
+把一个问题变成可操作的中英双语互动课程。Muse 起草课程与模型，作者审阅修改，
+代码负责运行实验，学习者先预测、再操作、解释，最后迁移到新情境。
+
+[![Gallery landing page](docs/screenshots/gallery-landing.jpg)](https://explainback.app/)
+
+## Try it in 60 seconds, no account needed
+
+**Live:** [explainback.app](https://explainback.app/) · **Source:** [dorangao/explainback](https://github.com/dorangao/explainback)
+
+1. Open a reviewed lesson from the gallery, or jump straight to one:
+   [Newton cooling](https://explainback.app/#lesson:cooling) ·
+   [Pendulum timing](https://explainback.app/#lesson:pendulum) ·
+   [HTTP caching](https://explainback.app/#lesson:web-cache) ·
+   [Acceleration, roll & landing](https://explainback.app/#lesson:vehicle) ·
+   [Quantum interference](https://explainback.app/#lesson:quantum)
+2. Predict whether the claim holds, run the experiment, change an input, then
+   answer a fresh case. Switch **English / 中文** at any point; your settings survive.
+3. Each card says where its content came from. Muse-drafted lessons were edited
+   after the [frozen evaluation](docs/studio-evaluation.md); the others are
+   hand-authored text over the existing checked experiments. Gallery playback
+   makes no model call.
+
+Creating and revising **new** lessons with Muse requires a tester sign-in
+(credentials are supplied to judges separately, never published here).
+
+## What Meta's model does here
+
+ExplainBack uses **Meta `muse-spark-1.3`** through the Responses API with
+structured output. The model never writes code that runs in the browser.
+
+- **Author a lesson from any question.** Muse returns a bounded, bilingual
+  lesson contract: a formula model with ranged inputs and axis, or an ordered
+  process diagram with a transfer question. The renderer compiles the formulas
+  in a tiny arithmetic language and checks finiteness across every input range.
+- **Revise on request.** Ask for one concrete change (a second output, a
+  neutral framing, a corrected term). Muse edits the draft; the review gate
+  stays unchecked until you look at what changed.
+- **Explain checked evidence.** After an experiment, Muse explains the learner's
+  prediction against values the code computed and suggests exactly one bounded
+  next action: replay, compare or transfer.
+- **Decline honestly.** Ambiguous or unsupported requests (a CFD simulation, a
+  safety certification) return a bilingual clarification instead of a made-up model.
+
+A frozen 12-case bilingual evaluation (6 topic pairs × EN/ZH, one attempt each,
+no retries) returned 12 valid contracts. The content review that followed is
+recorded with its open issues in [docs/studio-evaluation.md](docs/studio-evaluation.md).
+Automated passes are not teaching readiness, and the app says so on screen.
+
+## How it is built
+
+- Plain ES modules, no framework, no build step beyond copying `public/`.
+- Node 22 server with cookie tester auth, per-session request caps, a provider
+  router (Meta hosted; optional local Ollama for development), and an optional
+  request/response console for inspecting the actual model calls.
+- Vercel deployment with shared Redis session state; the cloud build exposes
+  Meta only.
+- 226 tests cover the lesson contract, the bounded expression compiler, every
+  gallery lesson in both languages, HTTP boundaries and provider routing.
+
+## Run it locally
+
+```sh
+cp .env.example .env.local   # add MODEL_API_KEY and tester credentials, keep mode 600
+npm install
+npm run dev                  # http://127.0.0.1:4173
+npm test
+```
+
+The gallery works without any key. Lesson creation needs `MODEL_API_KEY` from
+[dev.meta.ai](https://dev.meta.ai/) and the tester credentials described under
+[Tester login](#tester-login).
+
+## Where to look next
+
+- [Three-minute demo script](docs/studio-demo.md) and
+  [hackathon readiness tracker](docs/hackathon-readiness.md)
+- [Lesson Studio scope and limits](docs/lesson-studio.md)
+- [Vercel setup and retention](docs/vercel-deployment.md)
+- [Naming and source notes](docs/naming-and-sources.md): generic lab names,
+  hypothetical numbers, no sponsorship or endorsement claims.
+
+---
+
+Everything below is the detailed engineering and verification record, kept in
+the order it was written.
 
 ## Create lessons in the app
+
+Lesson Studio is now the default entry after sign-in. Use the short **Create →
+Review & revise → Operate** walkthrough, load an editable coffee question, then
+make an explicit Muse request. The revision starter only fills text; it never
+submits or approves a draft. Physics and quantum remain available through their
+area buttons and `#physics` / `#quantum` links. See the [three-minute demo](docs/studio-demo.md).
 
 **Create a lesson / 创建课程** turns a topic into an editable bilingual lesson using the configured model (Meta by default). Choose **Create a new topic demo** to generate an adjustable mathematical model or an interactive process diagram, including topics beyond the original eight experiments. Review its assumptions, formulas or steps, edit the definition or ask Muse to revise it, then present a guided prediction → experiment → explanation → transfer sequence. Switch between English and Chinese while operating the same demo.
 
@@ -21,7 +113,9 @@ McMurtry link is an attributed external example, not evidence validating our mod
 See [naming and source notes](docs/naming-and-sources.md). Dated development records
 and baseline archives retain their historical names.
 
-## Vercel tester preview
+## Hosted tester app
+
+Live at [explainback.app](https://explainback.app/) with tester login.
 
 The cloud entry point uses **Meta muse-spark-1.3 only**; local Ollama models are
 not exposed or contacted. Tester login, bilingual claim tests, guided vehicle
@@ -30,6 +124,10 @@ function instances. See [Vercel setup and retention](docs/vercel-deployment.md).
 `npm run dev` keeps the existing localhost workflow and multi-provider options.
 
 ## Hackathon direction
+
+See the [current readiness checklist](docs/hackathon-readiness.md) for requirements,
+completed work, submission gaps and proposed next priorities. Older plans and
+verification records describe their own dated checkpoints.
 
 ### Guided vehicle physics walkthrough
 
@@ -49,10 +147,12 @@ transfer, the animation remains explicitly labeled **primary reference**, with
 its original parameters rather than the fresh problem’s values.
 
 The hypothetical preset uses 2000 kg, 60 mph in 5 s with cosine acceleration,
-a 1.5 s controlled flip, and 0.3 s vertical stopping. Playback pauses at 5.0,
-6.5 and 6.8 s; Next begins each following segment. Acceleration plays at 0.5×,
-flip at 0.25×, and landing at 0.1× so each is readable. Graph cursors and model
-boundary labels stay synchronized. The math and separate-model assumptions remain.
+0.75 s upright lift thrust, a 1.5 s controlled sideways roll, and 0.75 s upright
+landing thrust, followed by 0.5 s ground coasting. Playback pauses at 5.0, 7.25
+and 8.5 s; Next begins each following segment. Acceleration plays at 0.5×,
+lift/roll and landing at 0.25×. Graph cursors and model-boundary labels stay
+synchronized. The baseline 0.3 s contact-stopping experiment remains separate
+and does not control the powered landing.
 
 A completed walkthrough uses four live provider calls. Waiting or playing does
 not call a provider. Unexpected feedback or errors stop without retries. Confirmation
@@ -61,8 +161,10 @@ The console requires a configured provider and `EXPLAINBACK_TRACE=1`; restart
 after changing that flag. Trace-off still permits manual learning workflows.
 
 Stop, reset, language switching, or hiding the tab prevents future steps. Sent
-requests may still finish and incur usage. Switching language resets the session;
-click Start for the new language. Stopping a pending request keeps its returned
+requests may still finish and incur usage. Switching language preserves the
+session evidence and animation position while stopping the scripted run. Existing
+provider text keeps its request language; restart to obtain provider replies in
+the new language. Stopping a pending request keeps its returned
 state usable, and continuing manually restores the ordinary animation layout.
 
 The earlier one-click prototype remains baseline work in
@@ -74,16 +176,19 @@ See [guided-demo verification](docs/guided-demo-verification.md) and the
 
 Choose an acceleration or flip/landing topic. Each manual topic has its own
 settings; the guided demo uses a fixed primary scenario with a shared mass. After confirming a claim and submitting a
-prediction, the **continuous journey** plays acceleration, a controlled flip,
-and vertical stopping on one clock. Three graph tracks share a cursor; select
-speed/drive force, rotation/torque, and vertical motion/contact force. Phase
+prediction, the **continuous journey** plays ground acceleration, upright lift,
+an airborne sideways roll, powered landing and ground coasting on one clock.
+Three graph tracks share a cursor; select speed/drive force, rotation/torque,
+and vertical motion/thrust/weight/ground support. Phase
 buttons jump to boundaries; playback supports 1×, 0.5×, 0.25× and 0.1×.
 
 The stages remain separate physics models. Horizontal exit speed carries into
-ideal coasting. Launch adds an assumed vertical impulse with no takeoff
-mechanism. Contact stops only vertical velocity; horizontal braking and
-post-touchdown rotation are not modeled. The orientation during contact is a
-snapshot. Position continuity is not proof of a feasible or safe stunt.
+ideal coasting without drag. Lift and landing assume total upright thrust of
+2mg; the roll uses an ideal force couple with zero net force. Exact burn timing
+gives zero vertical speed at touchdown, while horizontal speed continues.
+Fuel, actuator capability, vehicle clearance, suspension and occupant loads are
+not modeled. The original ballistic/contact experiment remains a separate
+baseline. Position continuity is not proof of a feasible or safe stunt.
 
 For an easy bilingual demo, use **Load preset / 载入预设**, then Submit at each
 step: claim → local confirmation → prediction → revision → worked transfer.
@@ -463,8 +568,9 @@ tests do not establish live access or mathematical feedback quality.
   transfer problem → compare reasoning. One answer is not lasting mastery.
 - Verified mathematics and deterministic graphs; no canned output presented
   as live AI feedback.
-- Planned hosting was `sketchplaywrite.com/try/explainback/`. The user is now
-  considering `explainback.app`; registration and a hosting change are unconfirmed.
+- Hosting moved from the earlier SketchPlayWrite proposal to
+  [explainback.app](https://explainback.app/). Vercel Production, domain ownership,
+  HTTPS and tester login were verified October 27, 2026.
 - Acceptance is user-reported. The participant guide was reviewed October 26:
   building period October 27–November 4, public repository, three-minute video,
   and submission due November 4 at 6 PM Pacific. Existing-prototype reuse and
@@ -526,3 +632,21 @@ node --env-file=.env.local scripts/eval-suction.mjs --live --cases=transfer-cita
 
 See [the verification record](docs/suction-lab-verification.md) and
 [the approved design](docs/superpowers/specs/2026-10-27-suction-lab-design.md).
+
+## Frozen generated-lesson evaluation
+
+Run `npm run eval:studio` with Node 22 to list the frozen cases without provider
+calls. Run `npm run eval:studio -- --live` for twelve sequential Meta
+`muse-spark-1.3` calls, or add `--cases=cooling-en,cooling-zh` for a labeled subset.
+No automatic retries and no Ollama calls. The checksum protects the fixed
+English/Chinese cases; reports stay in ignored `output/eval/`.
+
+The first run passed 12/12 automated checks, including eight drafts and four
+expected deferrals/refusals. Content review found teaching issues despite those
+passes. Read the [protocol, results and review findings](docs/studio-evaluation.md)
+before describing lesson quality. This small synthetic smoke suite does not
+measure learning effectiveness or general model accuracy.
+
+Provenance correction supplied by Doran: before October 26, only Muse API setup
+had been done; application work began October 26. Earlier “baseline” archives
+are development snapshots. [Hackathon checklist](docs/hackathon-readiness.md).

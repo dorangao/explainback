@@ -4,6 +4,16 @@ import assert from 'node:assert/strict';
 const bi = text => ({en:text,zh:'示例'+text});
 export const sampleLesson = () => ({version:1,title:bi('Test lesson'),intro:bi('Explore a claim.'),chapters:[{experiment:'acceleration',framing:bi('Compare two cars.'),explanation:bi('Check the slope and area.')}]});
 
+test('language review flags foreign-script contamination without forbidding legitimate subject matter',async()=>{
+ const {lessonLanguageWarnings}=await import('../public/lesson-schema.mjs');
+ assert.equal(typeof lessonLanguageWarnings,'function');
+ const lesson=sampleLesson();assert.deepEqual(lessonLanguageWarnings(lesson),[]);
+ lesson.chapters[0].framing.zh='咖啡却 долго在室温附近徘徊。';
+ assert.deepEqual(lessonLanguageWarnings(lesson),['chapters.0.framing.zh']);
+ lesson.chapters[0].framing.zh='热量 Q 与温差 ΔT 有关，k 的单位为 1/min。';
+ assert.deepEqual(lessonLanguageWarnings(lesson),[]);
+});
+
 test('lesson contract accepts bilingual lessons and rejects arbitrary operations, oversized content and missing translations',async()=>{
  const {validateLesson}=await import('../public/lesson-schema.mjs');
  const lesson=sampleLesson();assert.deepEqual(validateLesson(lesson),lesson);

@@ -1,5 +1,6 @@
 import {motionScenario,physicsAt} from './motion.mjs';
 import {flightScenario,flightAt,contactAt,rotationAt} from './flight.mjs';
+export {poweredJourneyScenario,poweredJourneyAt} from './powered-journey.mjs';
 
 export function journeyScenario(motion={},flight={}) {
  const m=motionScenario({profileB:'smooth',...motion}),f=flightScenario(flight);

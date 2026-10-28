@@ -74,3 +74,36 @@ test('tiny generated outputs use data-relative charts and visible significant di
   const marker=f.q('visual').children[0].children.find(n=>n.cx!==undefined&&n.cy!==undefined);assert.ok(Number(marker.cy)<100);
  }finally{f.restore();}
 });
+
+test('Studio demo starters are editable local actions that preserve an existing reviewed draft',async()=>{
+ let calls=0;const f=fixture(async()=>{calls++;return {records:[]};});try{
+  f.lab.loadLesson(coolingLesson());f.q('reviewed').checked=true;f.q('reviewed').events.change();
+  f.q('demo-topic').events.click();assert.match(f.q('topic').value,/coffee/);assert.equal(f.q('creation').value,'generated');
+  f.q('revision-example').events.click();assert.match(f.q('revision').value,/second output/);
+  assert.equal(calls,0);assert.equal(f.q('draft-title').textContent,'Cooling coffee');assert.equal(f.q('present').disabled,false);
+  const topic=f.q('topic').value;f.lab.set({...f.props,language:'zh'});assert.equal(f.q('topic').value,topic);
+  f.q('revision-example').events.click();assert.match(f.q('revision').value,/输出/);assert.equal(calls,0);
+ }finally{f.restore();}
+});
+test('revision starter uses process guidance and a real revision revokes review',async()=>{
+ const f=fixture(async path=>path==='/api/studio/session'?{sessionId:'session'}:path==='/api/studio/compose'?{status:'ready',lesson:processLesson(),attemptsRemaining:7}:{records:[]});try{
+  f.lab.loadLesson(processLesson());f.q('reviewed').checked=true;f.q('reviewed').events.change();
+  f.q('revision-example').events.click();assert.match(f.q('revision').value,/conditional/);
+  await f.q('revise').events.click();assert.equal(f.q('present').disabled,true);assert.equal(f.q('reviewed').checked,false);
+ }finally{f.restore();}
+});
+
+test('demo starters cannot change prompts or send extra calls during authoring',async()=>{
+ let finish,started,calls=0;const began=new Promise(r=>started=r);
+ const f=fixture(async path=>{
+  if(path==='/api/studio/session')return {sessionId:'session'};
+  if(path==='/api/studio/compose'){calls++;started();return new Promise(r=>finish=r);}return {records:[]};
+ });try{
+  f.lab.loadLesson(coolingLesson());f.q('topic').value='Keep this question';f.q('revision').value='Keep this revision';
+  const pending=f.q('create').events.click();await began;
+  assert.equal(f.q('demo-topic').disabled,true);assert.equal(f.q('revision-example').disabled,true);
+  f.q('demo-topic').events.click();f.q('revision-example').events.click();
+  assert.equal(f.q('topic').value,'Keep this question');assert.equal(f.q('revision').value,'Keep this revision');assert.equal(calls,1);
+  finish({status:'ready',lesson:coolingLesson(),attemptsRemaining:7});await pending;
+ }finally{f.restore();}
+});

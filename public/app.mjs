@@ -1,11 +1,13 @@
 import {mountQuantumLab} from './quantum-view.mjs';
 import {mountLessonStudio} from './lesson-studio.mjs';
+import {areaFromHash} from './studio-showcase.mjs';
+import {galleryIdFromHash} from './gallery-lessons.mjs';
 import {demoPresentation,defaultSuctionFocus} from './presentation.mjs';
 import {mountSuctionLab} from './suction-view.mjs';
 import {runSuctionDemo,suctionGuide,suctionGuideStages} from './suction-demo.mjs';
 import {suctionAssumptions} from './suction.mjs';
 import {flightAssumptions} from './flight.mjs';
-import {journeyScenario} from './journey.mjs';
+import {poweredJourneyScenario as journeyScenario} from './powered-journey.mjs';
 import {mountJourney} from './journey-view.mjs';
 import {demoPresets} from './demo-presets.mjs';
 import {demoGuide,guideStages} from './demo-guide.mjs';
@@ -28,23 +30,27 @@ let guidedDemo=false,autoEvidence=false,autoWaiting=false,autoGate=null;
 let autoRun=null,autoState='idle',autoStage='',autoCalls=0,autoStopReason='';
 const suctionLab=mountSuctionLab($('suction-lab'));
 const journey=mountJourney($('journey')),providerConsole=mountProviderConsole($('provider-console'),post);
-let activeArea=location.hash==='#studio'?'studio':location.hash==='#quantum'?'quantum':'physics',quantumBusy=false,studioBusy=false;
+let activeArea=areaFromHash(location.hash),quantumBusy=false,studioBusy=false;
 const quantumLab=mountQuantumLab($('quantum-area'),{post,onBusy:value=>{quantumBusy=value;renderAreaButtons();},onTarget:target=>{if(activeArea==='quantum'&&authenticated){$('connection').textContent=`${target?.label??'Model'} · ${target?.configured?t().ready:t().unavailable}`;$('connection').classList.toggle('ready',Boolean(target?.configured));}}});
 const lessonStudio=mountLessonStudio($('studio-area'),{post,onBusy:value=>{studioBusy=value;renderAreaButtons();},onTarget:target=>{if(activeArea==='studio'&&authenticated){$('connection').textContent=`${target?.label??'Model'} · ${target?.configured?t().ready:t().unavailable}`;$('connection').classList.toggle('ready',Boolean(target?.configured));}}});
 function renderAreaButtons(){
  for(const id of ['physics','quantum','studio']){$('area-'+id).disabled=busy||quantumBusy||studioBusy;$('area-'+id).setAttribute('aria-pressed',String(activeArea===id));}
 }
+// Signed-out visitors see Lesson Studio in gallery mode; other areas need tester access.
+const visibleArea=()=>authenticated?activeArea:'studio';
 function renderArea(){
- const zh=language()==='zh';$('area-physics').textContent=zh?'物理与数学':'Physics & math';$('area-quantum').textContent=zh?'量子计算':'Quantum computing';
- $('area-studio').textContent=zh?'创建课程':'Create a lesson';$('studio-area').setAttribute('aria-label',zh?'课程工作室':'Lesson Studio');
+ const zh=language()==='zh',area=visibleArea();$('area-physics').textContent=zh?'物理与数学':'Physics & math';$('area-quantum').textContent=zh?'量子计算':'Quantum computing';
+ $('area-studio').textContent=zh?'课程工作室':'Lesson Studio';$('studio-area').setAttribute('aria-label',zh?'课程工作室':'Lesson Studio');
+ $('headline').textContent=area==='studio'?(zh?'把好奇，变成可操作的实验。':'Turn curiosity into an experiment.'):t().headline;
+ $('subtitle').textContent=area==='studio'?(zh?'让 Muse 创建课程。审阅与修改，然后亲手检验其中的想法。':'Create a lesson with Muse. Review and revise it, then put its ideas to the test.'):t().subtitle;
  document.querySelector('.lab-areas').setAttribute('aria-label',zh?'学习区域':'Learning areas');$('quantum-area').setAttribute('aria-label',zh?'量子计算实验室':'Quantum computing lab');
  if(activeArea==='physics'&&authenticated){$('connection').textContent=`${selectedTarget()?.label??'Model'} · ${ready?t().ready:t().unavailable}`;$('connection').classList.toggle('ready',ready);}
- $('physics-area').hidden=activeArea!=='physics';renderAreaButtons();
- quantumLab.set({visible:activeArea==='quantum',language:language(),authenticated,traceEnabled,targets:providerTargets,defaultModel:defaultProviderId});
- lessonStudio.set({visible:activeArea==='studio',language:language(),authenticated,traceEnabled,targets:providerTargets,defaultModel:defaultProviderId});
+ $('physics-area').hidden=area!=='physics';document.querySelector('.lab-areas').hidden=!authenticated;renderAreaButtons();
+ quantumLab.set({visible:area==='quantum',language:language(),authenticated,traceEnabled,targets:providerTargets,defaultModel:defaultProviderId});
+ lessonStudio.set({visible:area==='studio',language:language(),authenticated,traceEnabled,targets:providerTargets,defaultModel:defaultProviderId});
 }
 for(const area of ['physics','quantum','studio'])$('area-'+area).addEventListener('click',()=>{
- if(busy||quantumBusy||studioBusy)return;stopAutoDemo();stopPlayback();journey.stop();suctionLab.stop();lessonStudio.stop();activeArea=area;history.replaceState(null,'',area==='physics'?location.pathname:'#'+area);renderArea();
+ if(busy||quantumBusy||studioBusy)return;stopAutoDemo();stopPlayback();journey.stop();suctionLab.stop();lessonStudio.stop();activeArea=area;history.replaceState(null,'','#'+area);renderArea();
 });
 const copy = {
   en: {
@@ -183,7 +189,7 @@ function renderAutoDemo(){
  $('auto-demo-preview-title').textContent=zh?'本步预设与真实反馈':'This step’s preset and live feedback';
  $('auto-demo-note').textContent=!traceEnabled?(zh?'演示需启用 EXPLAINBACK_TRACE=1 并重启，以显示真实调用。':'Enable EXPLAINBACK_TRACE=1 and restart to show live calls in the guided demo.'):
   !authenticated?(zh?'请先登录测试账号。':'Sign in to tester access first.'):
-  (zh?`辅助例解 · 每步暂停 · 最多 ${maxCalls} 次模型调用。切换语言会重新开始。`:`Worked example · pauses at each step · up to ${maxCalls} model calls. Changing language restarts the demo.`);
+  (zh?`辅助例解 · 每步暂停 · 最多 ${maxCalls} 次模型调用。切换语言会停止脚本并保留当前画面；重新开始可切换模型回复语言。`:`Worked example · pauses at each step · up to ${maxCalls} model calls. Changing language stops the script and preserves the scene; restart for provider replies in the new language.`);
  const states=zh?{idle:suction?'倒挂测试能证明所有角度都能抓附吗？':'看起来平滑的特技，受力一定小吗？',running:autoWaiting?'已暂停 · 阅读后点击下一步':'进行中 · 请等待本步完成',complete:'演示完成 · 数值与推理已核验；计为辅助完成。',stopped:'演示已停止；已发送的请求可能仍会完成。',attention:'演示已停在当前步骤，请查看反馈；可手动继续。'}:{idle:suction?'Can a ceiling test prove grip at every angle?':'Does a smooth-looking stunt mean low forces?',running:autoWaiting?'Paused · read, then select Next':'In progress · wait for this step to finish',complete:'Demo complete · values and reasoning checked; assisted result.',stopped:'Demo stopped; an already sent request may still finish.',attention:'Demo stopped at this step. Inspect feedback; you can continue manually.'};
  $('auto-demo-status').textContent=states[autoState]+(autoState!=='idle'?` · ${autoCalls}/${maxCalls} ${zh?'次提交尝试':'submission attempts'}`:'')+(autoStopReason==='language'?(zh?' 点击开始，以新语言重新演示。':' Select Start to run in the new language.'):'');
  const presentation=demoPresentation(autoStage,language(),suction);
@@ -199,7 +205,7 @@ function renderAutoDemo(){
  $('auto-demo-reference').hidden=!guidedDemo;
  $('auto-demo-reference').textContent=!autoEvidence?(zh?'起点预览 · 先预测，再显示图像。':'Starting scene · graphs appear after the prediction.'):
   ['transfer','complete'].includes(session?.phase)?(zh?'初始示例参考 · 下方动画仍是 2000 kg、1.5 秒横滚，不是当前迁移题的参数。':'Primary reference · the animation still uses 2000 kg and a 1.5 s roll, not the fresh transfer values.'):
-  (zh?'初始演示 · 同一光标贯穿三个独立模型；每段结束后暂停。':'Primary demonstration · one cursor across three separate models; each segment ends with a pause.');
+  (zh?'初始演示 · 同一光标贯穿地面加速、动力起飞、横滚与动力着陆；每段结束后暂停。':'Primary demonstration · one cursor across ground acceleration, powered lift, roll and powered landing; each segment ends with a pause.');
  if(suction){$('auto-demo-reference').textContent=zh?'假想静力模型 · 未经真实测试 · 迁移题另用机器人参数':'Hypothetical static model · untested · transfer uses separate robot inputs';if(guidedDemo)suctionLab.set(suctionOptions());}
  applyExperienceMode();
 }
@@ -460,7 +466,7 @@ $('auto-demo-run').addEventListener('click',async()=>{
     if(preset){$('explanation').value=preset.text;$('explanation').dispatchEvent(new Event('input'));$('auto-demo-prompt').textContent=preset.text;if(data.phase==='transfer')data.answerFields.forEach((f,i)=>$(i===0?'transfer-asymptote':'transfer-crossing').value=preset.answer?.[f.key]??'');}
     const feedback=data.phase==='confirm'?data.claim.interpretation:data.history.at(-1)?.feedback;$('auto-demo-feedback').textContent=feedback?`${data.llm?.label??"Model"} · ${feedback}`:'';providerConsole.refresh();
    },
-   play:async(signal,stage)=>{if(isSuctionDemo)return suctionLab.play(signal,stage);const [from,to,rate]={acceleration:[0,journeyModel.launch,.5],flip:[journeyModel.launch,journeyModel.touchdown,.25],landing:[journeyModel.touchdown,journeyModel.end,.1]}[stage];return journey.playRange({signal,from,to,rate});},
+   play:async(signal,stage)=>{if(isSuctionDemo)return suctionLab.play(signal,stage);const [from,to,rate]={acceleration:[0,journeyModel.launch,.5],flip:[journeyModel.launch,journeyModel.landing,.25],landing:[journeyModel.landing,journeyModel.end,.25]}[stage];return journey.playRange({signal,from,to,rate});},
   });
  }catch(error){if(current()){autoState=error.name==='AbortError'?'stopped':'attention';if(error.name!=='AbortError')showError(language()==='zh'?'演示在此停止，请检查模型反馈或连接状态；不会自动重试。':error.message);}}
  finally{if(current()){autoRun=null;busy=false;journey.stop();suctionLab.stop();controls();renderDemo();await providerConsole.refresh();}}
@@ -469,7 +475,12 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)stopAutoDem
 $('llm-model').addEventListener('change',()=>{ready=Boolean(selectedTarget()?.configured);localize();controls();});
 $('auto-demo-kind').addEventListener('change',()=>{clear();$('topic').value=suctionDemoMode()?'suction':'flight';localize();});
 $('topic').addEventListener('change',()=>{if($('topic').value==='suction')$('auto-demo-kind').value='suction';else $('auto-demo-kind').value='vehicle';localize();renderMotionSetup();});
-$('language').addEventListener('change',()=>{stopAutoDemo('language');clear();localize();controls();});
+$('language').addEventListener('change',()=>{
+ // Language changes translate local teaching UI without discarding evidence or time.
+ // A scripted provider run keeps its original request language, so pause it here.
+ stopAutoDemo('language');localize();render();controls();
+ if(session)$('notice').textContent=language()==='zh'?'已保留进度。已有模型文本仍使用请求时的语言；重新开始可切换模型回复语言。':'Progress preserved. Existing provider text keeps its request language; restart for provider replies in the new language.';
+});
 $('start').addEventListener('click',async()=>{
   if(busy||session||!authenticated)return;
   busy=true;controls();const version=++generation;
@@ -574,8 +585,8 @@ $('flight-play').addEventListener('click',()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopPlayback();});
 for(const [id,topic]of [['vehicle-acceleration','acceleration'],['vehicle-flight','flight']])$(id).addEventListener('click',()=>{if(busy)return;if((session?.problem.id||$('topic').value)===topic)return;clear();$('topic').value=topic;localize();controls();});
 const authCopy={
- en:{heading:'Sign in to the lab',kicker:'EARLY ACCESS',description:'Use your shared tester account to explore the prototype.',username:'Username',password:'Password',submit:'Sign in',logout:'Sign out',pending:'Please wait…',connection:'Tester sign-in required',note:'Use synthetic examples. Do not enter real student or private information.',errors:{TESTER_SETUP:'Set EXPLAINBACK_TESTER_USERNAME and EXPLAINBACK_TESTER_PASSWORD (12–512 characters) in .env.local or the server environment, then restart.',TESTER_CREDENTIALS:'Username or password is incorrect.',TESTER_RATE:'Too many login attempts. Try again in one minute.',TESTER_CAPACITY:'Tester session limit reached. Sign out another session or wait for expiry.',TESTER_REQUIRED:'Your session ended. Please sign in again.',NETWORK:'The server could not be reached. Try again.'}},
- zh:{heading:'登录学习实验室',kicker:'早期测试',description:'使用共享测试账号体验此原型。',username:'用户名',password:'密码',submit:'登录',logout:'退出登录',pending:'请稍候……',connection:'请先登录测试账号',note:'请使用虚构示例，不输入真实学生资料或私人信息。',errors:{TESTER_SETUP:'请在 .env.local 或服务端环境中设置 EXPLAINBACK_TESTER_USERNAME 和 EXPLAINBACK_TESTER_PASSWORD（12–512 个字符），然后重启。',TESTER_CREDENTIALS:'用户名或密码不正确。',TESTER_RATE:'登录尝试过多，请在一分钟后重试。',TESTER_CAPACITY:'测试会话数量已达上限。请退出其他会话或等待会话过期。',TESTER_REQUIRED:'会话已结束，请重新登录。',NETWORK:'无法连接服务器，请重试。'}},
+ en:{heading:'Sign in to the lab',kicker:'EARLY ACCESS',description:'The reviewed lessons above open without an account. Sign in with a tester account to create and revise new lessons with Muse.',username:'Username',password:'Password',submit:'Sign in',logout:'Sign out',pending:'Please wait…',connection:'Tester sign-in required',note:'Use synthetic examples. Do not enter real student or private information.',errors:{TESTER_SETUP:'Set EXPLAINBACK_TESTER_USERNAME and EXPLAINBACK_TESTER_PASSWORD (12–512 characters) in .env.local or the server environment, then restart.',TESTER_CREDENTIALS:'Username or password is incorrect.',TESTER_RATE:'Too many login attempts. Try again in one minute.',TESTER_CAPACITY:'Tester session limit reached. Sign out another session or wait for expiry.',TESTER_REQUIRED:'Your session ended. Please sign in again.',NETWORK:'The server could not be reached. Try again.'}},
+ zh:{heading:'登录学习实验室',kicker:'早期测试',description:'上方经审阅的课程无需账号即可打开。登录测试账号后，可用 Muse 创建和修改新课程。',username:'用户名',password:'密码',submit:'登录',logout:'退出登录',pending:'请稍候……',connection:'请先登录测试账号',note:'请使用虚构示例，不输入真实学生资料或私人信息。',errors:{TESTER_SETUP:'请在 .env.local 或服务端环境中设置 EXPLAINBACK_TESTER_USERNAME 和 EXPLAINBACK_TESTER_PASSWORD（12–512 个字符），然后重启。',TESTER_CREDENTIALS:'用户名或密码不正确。',TESTER_RATE:'登录尝试过多，请在一分钟后重试。',TESTER_CAPACITY:'测试会话数量已达上限。请退出其他会话或等待会话过期。',TESTER_REQUIRED:'会话已结束，请重新登录。',NETWORK:'无法连接服务器，请重试。'}},
 };
 function renderAccess(){
  renderArea();
@@ -583,7 +594,7 @@ function renderAccess(){
  for(const [id,key]of [['tester-heading','heading'],['tester-kicker','kicker'],['tester-description','description'],['tester-username-label','username'],['tester-password-label','password'],['tester-note','note']])$(id).textContent=c[key];
  $('tester-submit').textContent=authBusy?c.pending:c.submit;$('tester-logout').textContent=c.logout;
  $('tester-submit').disabled=authBusy||!authConfigured;for(const id of ['tester-username','tester-password'])$(id).disabled=authBusy||!authConfigured;
- $('tester-login').hidden=authenticated;$('tester-workspace').hidden=!authenticated;$('tester-logout').hidden=!authenticated;
+ $('tester-login').hidden=authenticated;$('tester-workspace').hidden=false;$('tester-logout').hidden=!authenticated;
  $('tester-logout').disabled=authBusy;$('tester-message').hidden=!authMessage;$('tester-message').textContent=c.errors[authMessage]??'';
  if(!authenticated){$('connection').textContent=c.connection;$('connection').classList.remove('ready');}
 }
@@ -621,3 +632,4 @@ try{
  if(status.authenticated)await loadStatus(authVersion);else authMessage=authConfigured?'':'TESTER_SETUP';
 }catch(error){authMessage=error.code??'NETWORK';}
 renderAccess();
+{const deepLink=galleryIdFromHash(location.hash);if(deepLink)lessonStudio.openGallery(deepLink);}

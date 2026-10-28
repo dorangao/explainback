@@ -1,8 +1,16 @@
 # ExplainBack hackathon plan: test a claim, inspect the evidence, try again
 
+Current tracking: [October 27 readiness checklist](../../hackathon-readiness.md).
+This October 26 plan remains a historical scope record.
+
+**Oct 27 provenance correction from Doran:** before Oct 26, only Muse API-key
+setup was done; application work started Oct 26. References below to an existing
+prototype/baseline mean earlier development snapshots, not a pre-event app.
+The kickoff/build-window date boundary still needs clarification; see the tracker.
+
 Revised October 26, 2026, Pacific time. Proposed build scope, not an eligibility ruling or authorization to publish. This plan supersedes the earlier plans for hackathon scope; those files remain records of the existing prototype.
 
-Implementation update: the crossing P0 core is now implemented locally. See [verification and contribution record](../../claim-testing-verification.md). Actual work began October 26 Pacific; baseline reuse and competition eligibility remain unresolved. P1 evaluation and submission work remain open.
+Implementation update: the crossing P0 core is now implemented locally. See [verification and contribution record](../../claim-testing-verification.md). Actual work began October 26 Pacific; the kickoff/build-window date boundary and competition eligibility remain unresolved. P1 evaluation and submission work remain open.
 
 ## Product promise
 
@@ -157,7 +165,7 @@ Recorded sessions must be labeled; live calls must actually use the stated model
 
 ## Organizer questions to resolve
 
-1. May a solo Indie Developer entrant extend an existing local prototype if the baseline and event-built features are clearly identified? The prototype predates the listed October 27 building period.
+1. Updated Oct 27: application development began Oct 26 after the kickoff; only Muse API setup preceded Oct 26. Does this qualify when the guide lists Oct 27–Nov 4 as the building period? Earlier baseline wording referred to development iterations.
 2. Does this bounded workflow—learner-confirmed claims, model-selected experiments, deterministic mathematical evidence, and transfer verification—fit the event's guidance excluding simple education chatbots?
 3. What access is required for the live product: must it have a public hosted URL, or is reproducible local setup with a working demo acceptable?
 

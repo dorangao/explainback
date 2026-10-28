@@ -2,6 +2,20 @@
 import {validateDemo,demoSchema} from './demo-model.mjs';
 export const experimentIds=Object.freeze(['acceleration','roll','landing','suction','qubit','interference','entanglement','search']);
 const shape=(o,keys)=>o&&typeof o==='object'&&!Array.isArray(o)&&Object.keys(o).sort().join('|')===[...keys].sort().join('|');
+// A review hint, not language certification: foreign scripts can be legitimate
+// lesson subject matter. Preserve the draft so the author can inspect/revise it.
+export function lessonLanguageWarnings(lesson){
+ const paths=[];
+ function visit(value,path=[]){
+  if(!value||typeof value!=='object')return;
+  for(const [key,item] of Object.entries(value)){
+   const next=[...path,key];
+   if(['en','zh'].includes(key)&&typeof item==='string'&&/\p{Script=Cyrillic}/u.test(item))paths.push(next.join('.'));
+   else if(item&&typeof item==='object')visit(item,next);
+  }
+ }
+ visit(lesson);return paths;
+}
 function bilingual(value,max){
  if(!shape(value,['en','zh'])||Object.values(value).some(s=>typeof s!=='string'||!s.trim()||s.length>max))throw new Error('Both languages need bounded text.');
  return {en:value.en.trim(),zh:value.zh.trim()};

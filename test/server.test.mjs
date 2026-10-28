@@ -21,10 +21,30 @@ test('serves the workspace but never serves environment or server files', async 
   const page = await fetch(origin);
   assert.equal(page.status, 200);
   assert.match(await page.text(), /ExplainBack/);
+  const studioAsset = await fetch(origin + '/assets/studio-showcase.mjs');
+  assert.equal(studioAsset.status, 200);
+  assert.match(studioAsset.headers.get('content-type'), /javascript/);
+  assert.match(await studioAsset.text(), /areaFromHash/);
   for (const path of ['/.env.local', '/src/meta.mjs', '/package.json', '/docs/', '/assets/../.env.local']) {
     assert.equal((await fetch(origin + path)).status, 404);
   }
   assert.match(page.headers.get('content-security-policy'), /default-src 'self'/);
+});
+
+test('serves the full browser module dependency graph', async t => {
+  const { origin } = await running(t), pending = [origin + '/assets/app.mjs'], seen = new Set();
+  while (pending.length) {
+    const url = pending.pop();
+    if (seen.has(url)) continue;
+    seen.add(url);
+    const response = await fetch(url);
+    assert.equal(response.status, 200, url);
+    assert.match(response.headers.get('content-type'), /javascript/, url);
+    for (const match of (await response.text()).matchAll(/(?:from\s*|import\s*)['"](\.[^'"]+)['"]/g)) {
+      pending.push(new URL(match[1], url).href);
+    }
+  }
+  assert.ok(seen.size > 20);
 });
 
 test('rejects cross-origin requests and requires synthetic examples', async t => {

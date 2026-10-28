@@ -1,0 +1,9 @@
+# Studio-first demonstration and frozen lesson evaluation
+
+User-selected scope, October 27: lead with Lesson Studio (new topic → review/revise → operate) and freeze/evaluate twelve bilingual generated-lesson cases. The user clarified that before October 26 only Muse API key setup was done; application work began October 26. Development baseline snapshots do not mean pre-event implementation.
+
+Keep the existing stack and review gates. Default to Studio on a fresh app entry, retain explicit physics/quantum routes, and show a short bilingual walkthrough using editable prompts and explicit model calls. A prepared cooling topic helps demonstrate creation beyond the catalog. A revision starter asks for a meaningful second output or a clearer process assumption; it never submits automatically. The curated vehicle animation remains separate.
+
+Freeze six English/Chinese pairs before evaluating: cooling and pendulum mathematical models; web caching and water-cycle processes; an ambiguous request; an unsupported request for actual calibrated 3D CFD. Store exact prompts, expected response categories, independently computed numeric probes, and manual content/language review criteria in versioned data plus a checksum. Run Meta only, sequentially, one request per case, without retries or repair. Report failures and denominators; distinguish automated contract/numeric checks from manual scientific review. Preserve original frozen cases and first-run reports during fixes. Local raw outputs stay ignored; a sanitized report goes in docs.
+
+No new model provider, arbitrary code execution, automatic review approval, credential disclosure, deployment, commit, push, organizer message or submission is part of this scope. Existing uncommitted readiness docs are carried forward. Work stays in the current feature checkout to preserve this task's in-progress files and local demo environment.
