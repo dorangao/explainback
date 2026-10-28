@@ -73,10 +73,14 @@ function localOrigin(req){
 export function createHandler({
   configured, modelCall, router = createProviderRouter(),
   traceEnabled = process.env.EXPLAINBACK_TRACE === '1',
-  testerCredentials = {},accessCodes=parseAccessCodes(process.env.EXPLAINBACK_ACCESS_CODES),
+  testerCredentials = {},accessCodes=parseAccessCodes(process.env.EXPLAINBACK_ACCESS_CODES),openAccess=process.env.EXPLAINBACK_OPEN_ACCESS==='1',
   state=createMemoryState(),auth=createTesterAuth({...testerCredentials,accessCodes:accessCodes.codes??accessCodes,onRevoke:owner=>state.revokeOwner(owner)}),getOrigin=localOrigin,
 } = {}) {
   const codes=accessCodes.codes??accessCodes;
+  // Local development only: EXPLAINBACK_OPEN_ACCESS=1 treats every request as one shared
+  // signed-in tester. The cloud handler passes openAccess:false, so it cannot apply on Vercel.
+  const OPEN_ID='local-open-access';
+  const access=openAccess?{...auth,async authenticate(cookie){return await auth.authenticate(cookie)??{id:OPEN_ID,audience:null};},async active(id){return id===OPEN_ID||await auth.active(id);}}:auth;
   // Configuration problems are reported by position only; code values never reach logs.
   for(const warning of accessCodes.warnings??[])console.warn('EXPLAINBACK_ACCESS_CODES '+warning);
   const redacted=[process.env.MODEL_API_KEY?.trim(),testerCredentials.password??process.env.EXPLAINBACK_TESTER_PASSWORD,...codes.map(c=>c.code)];
@@ -97,13 +101,13 @@ export function createHandler({
         const data = await readFile(new URL(`../public/${name}`, import.meta.url));
         res.writeHead(200, { ...safeHeaders, 'Content-Type': type }); res.end(data); return;
       }
-      const tester=await auth.authenticate(req.headers.cookie);
-      if(req.method==='GET'&&path==='/api/auth'){json(200,{configured:auth.configured,codes:auth.codesConfigured===true,authenticated:Boolean(tester)});return;}
+      const tester=await access.authenticate(req.headers.cookie);
+      if(req.method==='GET'&&path==='/api/auth'){json(200,{configured:access.configured,codes:access.codesConfigured===true,open:openAccess,authenticated:Boolean(tester)});return;}
       if(req.method==='POST'&&['/api/login','/api/logout'].includes(path)){
         if(req.headers.origin!==origin)throw new RequestError(403,'This action must come from this app.');
         const body=await readJSON(req);
-        if(path==='/api/logout'){await auth.revoke(req.headers.cookie);json(200,{authenticated:false},{'Set-Cookie':auth.expiredCookie??expiredTesterCookie});return;}
-        try{const result=await auth.login(body,req.headers.cookie);json(200,{authenticated:true},{'Set-Cookie':result.cookie});}
+        if(path==='/api/logout'){await access.revoke(req.headers.cookie);json(200,{authenticated:false},{'Set-Cookie':access.expiredCookie??expiredTesterCookie});return;}
+        try{const result=await access.login(body,req.headers.cookie);json(200,{authenticated:true},{'Set-Cookie':result.cookie});}
         catch(error){if(!error.status)throw error;json(error.status,{error:error.message,code:error.code});}return;
       }
       if(path.startsWith('/api/')&&!tester){json(401,{error:'Sign in to tester access.',code:'TESTER_REQUIRED'});return;}
@@ -116,7 +120,7 @@ export function createHandler({
       if (req.method !== 'POST' || !['/api/studio/session','/api/studio/compose','/api/studio/guide','/api/quantum/session','/api/quantum/explain','/api/session', '/api/turn', '/api/reset', '/api/claim', '/api/replay',...(traceEnabled?['/api/trace']:[])].includes(path)) { json(404, { error: 'Not found.' }); return; }
       if (req.headers.origin !== origin) throw new RequestError(403, 'This action must come from this app.');
       const body = await readJSON(req,path==='/api/studio/compose'||path==='/api/studio/guide'?48_000:16_384);
-      if(!await auth.active(tester.id)){json(401,{error:'Sign in to tester access.',code:'TESTER_REQUIRED'});return;}
+      if(!await access.active(tester.id)){json(401,{error:'Sign in to tester access.',code:'TESTER_REQUIRED'});return;}
       if(path==='/api/quantum/session'||path==='/api/studio/session'){
         if(body.synthetic!==true||!['en','zh'].includes(body.language))throw new RequestError(400,'Choose a language and synthetic quantum demo.');
         const target=selected(body.llm);if(!target.configured)throw new RequestError(503,'Selected provider is not configured.');
@@ -168,7 +172,7 @@ export function createHandler({
         try{
           await trace?.flush();const options={...args,...(call?{onTrace:call.event}:{})};
           const result=readLessonAuthor(await(modelCall?modelCall(options):router.call(s.llm.id,options)),mode,body.creation);
-          if(!await auth.active(tester.id)){call?.finish('discarded');await state.remove(body.sessionId);throw new RequestError(401,'Sign in to tester access.');}
+          if(!await access.active(tester.id)){call?.finish('discarded');await state.remove(body.sessionId);throw new RequestError(401,'Sign in to tester access.');}
           if(!await state.get(body.sessionId))throw new RequestError(409,'Session was reset; response discarded.');
           call?.finish('accepted');try{await trace?.flush();}catch{}
           await save(trace?.read());json(200,{...result,llm:s.llm,attemptsRemaining:8-s.attempts});return;
@@ -190,7 +194,7 @@ export function createHandler({
         try{
           await trace?.flush();const options={...args,...(call?{onTrace:call.event}:{})};
           const result=readQuantumCoach(await (modelCall?modelCall(options):router.call(s.llm.id,options)));
-          if(!await auth.active(tester.id)){call?.finish('discarded');await state.remove(body.sessionId);throw new RequestError(401,'Sign in to tester access.');}
+          if(!await access.active(tester.id)){call?.finish('discarded');await state.remove(body.sessionId);throw new RequestError(401,'Sign in to tester access.');}
           if(!await state.get(body.sessionId))throw new RequestError(409,'Session was reset; response discarded.');
           call?.finish('accepted');try{await trace?.flush();}catch{}
           await save(trace?.read());json(200,{...result,llm:s.llm,attemptsRemaining:8-s.attempts});return;
@@ -235,7 +239,7 @@ export function createHandler({
           const options={...args,...(traceCall?{onTrace:traceCall.event}:{})};
           return modelCall?modelCall(options):router.call(s.llm.id,options);
         }, body.answer);
-        if(!await auth.active(tester.id)){traceCall?.finish('discarded');await state.remove(body.sessionId);json(401,{error:'Sign in to tester access.',code:'TESTER_REQUIRED'});return;}
+        if(!await access.active(tester.id)){traceCall?.finish('discarded');await state.remove(body.sessionId);json(401,{error:'Sign in to tester access.',code:'TESTER_REQUIRED'});return;}
         if (!await state.get(body.sessionId)) throw new RequestError(409, 'Session was reset; the response was discarded.');
         const next=advance(s, body.explanation.trim(), result, body.answer);
         traceCall?.finish('accepted');
@@ -273,5 +277,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error('PORT must be an integer from 1024 to 65535.');
   const server = createApp();
   server.on('error', () => { console.error('Could not start the local server. Check whether the port is already in use.'); process.exitCode = 1; });
-  server.listen(port, '127.0.0.1', () => console.log(`ExplainBack local tester prototype: http://127.0.0.1:${port}`));
+  server.listen(port, '127.0.0.1', () => {
+    console.log(`ExplainBack local tester prototype: http://127.0.0.1:${port}`);
+    if (process.env.EXPLAINBACK_OPEN_ACCESS === '1') console.warn('EXPLAINBACK_OPEN_ACCESS=1: no sign-in required on this local server. Never set this in a hosted environment.');
+  });
 }

@@ -13,7 +13,7 @@ async function running(t,options={}){
 }
 test('all learning and trace APIs require login; credentials never cause provider calls',async t=>{
  let calls=0;const {origin,post,login}=await running(t,{modelCall:()=>{calls++;throw new Error('unexpected');}});
- assert.deepEqual(await(await fetch(origin+'/api/auth')).json(),{configured:true,codes:false,authenticated:false});
+ assert.deepEqual(await(await fetch(origin+'/api/auth')).json(),{configured:true,codes:false,open:false,authenticated:false});
  assert.equal((await fetch(origin+'/api/status')).status,401);
  for(const path of ['/api/session','/api/turn','/api/claim','/api/replay','/api/trace','/api/reset'])assert.equal((await post(path,start)).status,401);
  assert.equal((await post('/api/login',testerCredentials,'',{Origin:'https://example.com'})).status,403);
@@ -26,7 +26,7 @@ test('all learning and trace APIs require login; credentials never cause provide
 test('missing tester configuration closes access without exposing environment',async t=>{
  const {post,origin}=await running(t,{testerCredentials:{username:'',password:''}});
  assert.equal((await post('/api/login',testerCredentials)).status,503);assert.equal((await post('/api/session',start)).status,401);
- assert.deepEqual(await(await fetch(origin+'/api/auth')).json(),{configured:false,codes:false,authenticated:false});
+ assert.deepEqual(await(await fetch(origin+'/api/auth')).json(),{configured:false,codes:false,open:false,authenticated:false});
 });
 test('each login owns its sessions and traces; cookie rotation and logout revoke them',async t=>{
  let calls=0;const {post,login}=await running(t,{modelCall:async args=>{calls++;return clarification(JSON.parse(args.input).explanation);}});
