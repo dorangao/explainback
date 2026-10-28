@@ -7,6 +7,7 @@ import {parseAccessCodes,budgetFor,publicAudience} from './access-codes.mjs';
 import {createTrace} from './trace.mjs';
 import {createMemoryState} from './state.mjs';
 import { createServer } from 'node:http';
+import {serveFrontend} from './static.mjs';
 import { readFile } from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
@@ -96,6 +97,7 @@ export function createHandler({
       if(!origin)throw new RequestError(403,'This host is not allowed.');
       const url = new URL(req.url, origin);
       const path = url.pathname;
+      if (!path.startsWith('/api/') && await serveFrontend(req,res,safeHeaders)) return;
       if (req.method === 'GET' && files.has(path)) {
         const [name, type] = files.get(path);
         const data = await readFile(new URL(`../public/${name}`, import.meta.url));

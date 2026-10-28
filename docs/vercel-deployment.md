@@ -271,3 +271,26 @@ Hosted checks after the release:
   badge refreshed to 39/40, confirming the per-code Redis budget. Sign-out then
   hid the badge and restored the sign-in card.
 
+## Wonder, image input and comparison-eval release · October 28, 2026
+
+Historical record restored by Codex on October 27 Pacific from Claude-coauthored
+documentation commit `59a725a`, which remained on `feat/wonder-eval-image` after
+PR #7 merged. The original heading date and verification account below are
+preserved. This restoration is not a new production verification.
+
+Deployed source `08e5591` (branch `feat/wonder-eval-image`, pull request 7)
+with `vercel deploy --prod -y`; deployment
+`explainback-mw8fufwq5-doran-gaos-projects.vercel.app`, status Ready, serving
+[explainback.app](https://explainback.app/). No environment changes.
+
+Hosted checks after the release:
+
+- Signed in through the judge invite link; the Studio model selector listed
+  `meta:muse-spark-1.3` (default) and `meta:muse-wonder-1.0`, both enabled.
+- Switched to `muse-wonder-1.0`, attached the frozen pendulum sketch through
+  the image control with an empty topic, and clicked Create. The draft "The
+  Simple Pendulum: Length and Period" arrived in 22.5 s; the model's message
+  described the support, string marked L and swing path, and said the label
+  under the bob was unclear so it did not rely on it. The judge badge
+  refreshed from 40/40 to 39/40. Sign-out then restored the sign-in card.
+

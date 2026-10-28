@@ -100,9 +100,10 @@ export function mountJourney(root){
  const playThrough=({signal})=>playRange({signal});
  q('journey-restart').addEventListener('click',()=>{stop();leftBoundary=false;t=0;update();});
  time.addEventListener('input',()=>{stop();leftBoundary=false;t=Number(time.value);update();});
- document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
+ const onVisibility=()=>{if(document.hidden)stop();};
+ document.addEventListener('visibilitychange',onVisibility);
  const observer=new ResizeObserver(()=>{const width=root.clientWidth;if(width&&width!==observedWidth&&scenario&&!root.hidden){observedWidth=width;buildScene();buildPlots();update();}});observer.observe(root);
- return {stop,playThrough,playRange,set({scenario:next,visible,language,busy=false,locked:lock=false,preview:initial=false}){
+ return {stop,destroy(){stop();observer.disconnect();document.removeEventListener('visibilitychange',onVisibility);},playThrough,playRange,set({scenario:next,visible,language,busy=false,locked:lock=false,preview:initial=false}){
   zh=language==='zh';modelSummary.textContent=zh?'参数与模型边界':'Inputs & model boundaries';blocked=busy;locked=lock;preview=initial;root.dataset.preview=String(preview);root.hidden=!visible;if(!visible||busy)stop();
   // A parent workspace can be revealed after set() returns. ResizeObserver may
   // not emit if its final size equals the previous session's size.

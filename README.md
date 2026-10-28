@@ -7,7 +7,10 @@ the experiment; the learner predicts, operates, explains and transfers.
 把一个问题变成可操作的中英双语互动课程。Muse 起草课程与模型，作者审阅修改，
 代码负责运行实验，学习者先预测、再操作、解释，最后迁移到新情境。
 
-[![Gallery landing page](docs/screenshots/gallery-landing.jpg)](https://explainback.app/)
+[![React learning library (local implementation)](docs/screenshots/react-library-desktop.png)](docs/react-ui-verification.md)
+
+The screenshot shows the local React migration. Hosted release history is tracked
+separately in the [deployment notes](docs/vercel-deployment.md).
 
 ## Try it in 60 seconds, no account needed
 
@@ -65,23 +68,32 @@ not teaching readiness, and the app says so on screen.
 
 ## How it is built
 
-- Plain ES modules, no framework, no build step beyond copying `public/`.
+- React 19 + TypeScript + Vite own the shell, access flow, gallery, lesson
+  authoring/review and player. Pure lesson/math modules remain shared JavaScript.
+- Physics and quantum workspaces load on demand through scoped lifecycle
+  adapters. The existing Node API and hosted auth/storage boundaries remain intact.
 - Node 22 server with cookie tester auth, per-session request caps, a provider
   router (Meta hosted; optional local Ollama for development), and an optional
   request/response console for inspecting the actual model calls.
 - Vercel deployment with shared Redis session state; the cloud build exposes
   Meta only.
-- 226 tests cover the lesson contract, the bounded expression compiler, every
-  gallery lesson in both languages, HTTP boundaries and provider routing.
+- Node tests cover lesson contracts, calculations, HTTP and provider boundaries;
+  Playwright exercises the built React workflows. See the
+  [migration verification](docs/react-ui-verification.md) for current results.
 
 ## Run it locally
 
 ```sh
 cp .env.example .env.local   # add MODEL_API_KEY and tester credentials, keep mode 600
-npm install
+npm ci                        # use Node 22 (22.23.1 verified)
 npm run dev                  # http://127.0.0.1:4173
 npm run dev:open             # same, with sign-in skipped (local only; the cloud build ignores the flag)
+npm run typecheck
 npm test
+npm run build
+npx playwright install chromium  # first browser-test run only
+npm run test:browser
+npm start                    # serves the last production build on port 4173
 ```
 
 The gallery works without any key. Lesson creation needs `MODEL_API_KEY` from
@@ -90,6 +102,8 @@ The gallery works without any key. Lesson creation needs `MODEL_API_KEY` from
 
 ## Where to look next
 
+- [Shared Codex / Claude progress ledger](docs/implementation/progress-ledger.md):
+  current source baseline, work ownership, verification and the UI/branding backlog.
 - [Three-minute demo script](docs/studio-demo.md) and
   [hackathon readiness tracker](docs/hackathon-readiness.md)
 - [Lesson Studio scope and limits](docs/lesson-studio.md)

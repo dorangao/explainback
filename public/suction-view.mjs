@@ -101,7 +101,11 @@ export function mountSuctionLab(root){
   async play(signal,stage){stop();reset();focus=stage==='tilt'?'orientation':stage;if(stage==='pressure'){angle=0;metric='pressure';}if(stage==='ceiling')angle=180;if(stage==='tilt')angle=180;if(stage==='leakage'){angle=180;metric='leakage';}draw();
    return new Promise(resolve=>{const start=performance.now(),duration=matchMedia('(prefers-reduced-motion: reduce)').matches?0:1400;let finished=false;
     const finish=ok=>{if(finished)return;finished=true;cancelPlay=null;stop();signal.removeEventListener('abort',abort);resolve(ok);};const abort=()=>finish(false);cancelPlay=abort;signal.addEventListener('abort',abort,{once:true});if(signal.aborted){finish(false);return;}
-    const tick=now=>{const u=duration?Math.min(1,(now-start)/duration):1;if(stage==='pressure')pressure=scenario.pressurePa*u;if(stage==='tilt')angle=180-45*u;if(stage==='leakage')gap=scenario.gapMm*(1+u);draw();if(u===1)finish(true);else frame=requestAnimationFrame(tick);};frame=requestAnimationFrame(tick);timer=setTimeout(()=>tick(start+duration),duration+250);
+    const advance=u=>{if(finished)return;if(stage==='pressure')pressure=scenario.pressurePa*u;if(stage==='tilt')angle=180-45*u;if(stage==='leakage')gap=scenario.gapMm*(1+u);draw();if(u===1)finish(true);};
+    const tick=now=>{advance(duration?Math.min(1,(now-start)/duration):1);if(!finished)frame=requestAnimationFrame(tick);};
+    frame=requestAnimationFrame(tick);
+    // The fallback is the final state, independent of floating-point clock subtraction.
+    timer=setTimeout(()=>advance(1),duration+250);
    });
   },
  };

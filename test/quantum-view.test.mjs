@@ -6,7 +6,7 @@ class El{
  querySelector(selector){if(!this.nodes.has(selector))this.nodes.set(selector,new El());return this.nodes.get(selector);}querySelectorAll(){return [];}
 }
 function fixture(post=async()=>({records:[]})){
- const saved={document:globalThis.document,Option:globalThis.Option};globalThis.document={createElement:()=>new El(),createElementNS:()=>new El()};globalThis.Option=class{constructor(label,value){this.textContent=label;this.value=value;}};
+ const saved={document:globalThis.document,Option:globalThis.Option};globalThis.document={addEventListener(){},removeEventListener(){},createElement:()=>new El(),createElementNS:()=>new El()};globalThis.Option=class{constructor(label,value){this.textContent=label;this.value=value;}};
  const root=new El(),lab=mountQuantumLab(root,{post});lab.set({visible:true,authenticated:true,language:'en',traceEnabled:false,targets:[{id:'meta:test',label:'Test',configured:true,timeoutMs:100}],defaultModel:'meta:test'});
  return {root,lab,q:id=>root.querySelector('#q-'+id),restore:()=>Object.assign(globalThis,saved)};
 }
