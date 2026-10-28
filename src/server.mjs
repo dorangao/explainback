@@ -119,7 +119,7 @@ export function createHandler({
       }
       if (req.method !== 'POST' || !['/api/studio/session','/api/studio/compose','/api/studio/guide','/api/quantum/session','/api/quantum/explain','/api/session', '/api/turn', '/api/reset', '/api/claim', '/api/replay',...(traceEnabled?['/api/trace']:[])].includes(path)) { json(404, { error: 'Not found.' }); return; }
       if (req.headers.origin !== origin) throw new RequestError(403, 'This action must come from this app.');
-      const body = await readJSON(req,path==='/api/studio/compose'||path==='/api/studio/guide'?48_000:16_384);
+      const body = await readJSON(req,path==='/api/studio/compose'?1_400_000:path==='/api/studio/guide'?48_000:16_384);
       if(!await access.active(tester.id)){json(401,{error:'Sign in to tester access.',code:'TESTER_REQUIRED'});return;}
       if(path==='/api/quantum/session'||path==='/api/studio/session'){
         if(body.synthetic!==true||!['en','zh'].includes(body.language))throw new RequestError(400,'Choose a language and synthetic quantum demo.');
@@ -165,6 +165,7 @@ export function createHandler({
         const mode=path==='/api/studio/compose'?'compose':path==='/api/studio/guide'?'guide':null;
         if(!mode)throw new RequestError(400,'Use this session for Lesson Studio only.');
         let args;try{args=lessonAuthorRequest(body,mode);}catch{throw new RequestError(400,'Use a short topic or a valid lesson and experiment.');}
+        if(args.images&&s.llm.provider!=='meta')throw new RequestError(400,'Image input needs a Meta model. Switch the model or remove the image.');
         if(s.attempts>=8||!await state.consumeTurn(bucket,limit)){const failure=quotaExceeded();failure.attemptsRemaining=8-s.attempts;throw failure;}
         s.attempts++;await save();
         const trace=traceEnabled?createTrace(redacted,{initial:await state.readTrace(body.sessionId),onChange:rows=>state.writeTrace(body.sessionId,rows,lock)}):null;

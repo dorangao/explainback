@@ -134,7 +134,7 @@ sent, rules accepted, or submission made by this update.
 ### Stretch, only after P0/P1
 
 - [ ] **X01 — Bounded experiment proposal:** implement and evaluate one parameter-change → prediction → computation → reconciliation cycle.
-- [ ] **X02 — Sketch input:** one confirmed force-diagram interpretation path, with ambiguous/missing/reversed-arrow controls in both languages.
+- [~] **X02 — Sketch input:** Oct 28: Lesson Studio accepts a photo/sketch/diagram with the compose request (bounded data URL, browser downscaling, traces omit bytes) and a frozen two-case pendulum-sketch suite exists. Ambiguous/missing/reversed-arrow controls and a confirmation step remain open.
 - [ ] **X03 — Open-weight demonstration:** only if an eligible Meta model completes the actual lesson workflow acceptably. A local provider selector or Qwen run is not proof for the Meta open-weight award. Keep the two Ollama models exclusive.
 
 ## Proposed three-minute story

@@ -35,7 +35,68 @@ npm run eval:studio
 npm run eval:studio -- --live
 # Explicit smaller rerun; never present a subset as the full suite
 npm run eval:studio -- --live --cases=cooling-en,cooling-zh
+# Compare models on the same frozen cases, with an optional rubric judge
+npm run eval:studio -- --live --models=meta:muse-spark-1.3,meta:muse-wonder-1.0 --judge=meta:muse-spark-1.3
+# Image-input suite: a frozen pendulum sketch, EN and ZH prompts
+npm run eval:studio -- --live --suite=studio-image-v1 --models=meta:muse-spark-1.3,meta:muse-wonder-1.0
 ```
+
+## Comparing models and judging drafts (October 28)
+
+### First live comparison run (October 28, 2026)
+
+Three frozen text cases (`cooling-en`, `pendulum-zh`, `web-cache-en`) and the
+two image cases, one attempt each, `muse-spark-1.3` as judge. Local reports are
+under `output/eval/studio-v1-2026-10-28T03-54-39.077Z-69effe18/` and
+`output/eval/studio-image-v1-2026-10-28T03-56-22.513Z-6de7d4ab/` (ignored).
+
+| Suite · model | Contracts | Automated | Mean latency | Tokens in/out | Judge mean /10 |
+|---|---|---|---|---|---|
+| text · muse-spark-1.3 | 3/3 | 3/3 | 7.1 s | 6421/5307 | 8.0 |
+| text · muse-wonder-1.0 | 3/3 | 3/3 | 16.1 s | 2917/6131 | 8.67 |
+| image · muse-spark-1.3 | 2/2 | 2/2 | 10.9 s | 4491/5275 | 9.5 |
+| image · muse-wonder-1.0 | 2/2 | 2/2 | 20.9 s | 2155/4180 | 8.0 |
+
+What the run showed, beyond the pass counts:
+
+- Both models read the sketch as a pendulum with a string marked L and said the
+  mark under the bob was unreadable instead of inventing a mass value.
+- Wonder is roughly twice as slow here and reports fewer input tokens for the
+  same prompt; the 50 s request budget held with margin.
+- The judge found a real content error the numeric probes cannot see: Wonder's
+  `pendulum-zh` draft labelled the length axis `m/s^2`. It also flagged, in
+  both models, transfer questions that omit the checked time or length and do
+  not ask for a number with units, and explanations that reveal the claim's
+  answer. These are the next author-prompt revision targets; rerun this
+  comparison after changing the prompt and compare against these numbers.
+- An earlier run of the same cases had several `judge-failed` rows; the cause
+  was the judge's 1,500-token output budget being consumed by reasoning. The
+  budget is now 4,000 and failures record a sanitized reason. Wonder's image
+  drafts had also failed the one-chapter check; the image suite now allows two
+  chapters, which the author prompt permits, and the suite was re-frozen.
+
+
+`--models=` runs the same frozen cases against up to four Meta models in turn,
+writes `<model>/report.{json,md}` for each, and a `comparison.{json,md}` with
+contracts, automated passes, mean latency, token totals and (when used) mean
+rubric score per model, plus a per-case grid. One attempt per case per model;
+differences from one run are observations, not a ranking.
+
+`--judge=meta:<model>` asks the named model to score every **ready** draft on a
+fixed five-item rubric (neutral framing, precise quantity names, transfer
+question clarity, bilingual parity, explicit assumptions; 0–2 each, max 10) and
+list up to six quoted issues. Judge output is stored under `judge` on each case
+and summarised separately. It is one model's opinion about wording and
+pedagogy. It never counts toward "automated checks passed" and cannot establish
+scientific validity. Use it to find revision targets and to compare prompt
+versions against the preserved baseline, then confirm by human review.
+
+`--suite=studio-image-v1` sends a frozen sketch
+(`eval/images/pendulum-sketch.png`, SHA-256 recorded in the suite and verified
+on load) with an EN and a ZH prompt. Automated checks are deliberately loose:
+valid contract, model renderer, and at least one output with a time unit. What
+the model says it saw, and whether the lesson follows the sketch, is review
+material.
 
 The CLI forces Meta `muse-spark-1.3` even if the local default changes. Neither
 Ollama model is invoked. Provider errors and contract/expectation failures remain

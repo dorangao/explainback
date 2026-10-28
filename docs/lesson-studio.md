@@ -2,6 +2,24 @@
 
 The user asked to move lesson creation into ExplainBack so a topic can become a lesson that the app presents and operates. Carry forward the preference for direct implementation and the bilingual, claim-testing learning loop.
 
+## Image input and model choice (October 28)
+
+**Add a photo, sketch or diagram** sits above the Create button. The browser
+reads the file, downscales anything over about 1 MB to at most 1280 px JPEG,
+shows a thumbnail, and sends the data URL once with the compose request. The
+server accepts PNG, JPEG, WebP or GIF data URLs up to 1.2 million characters,
+forwards them as a Responses user message with `input_text` and `input_image`
+parts, and records only `[image omitted · N chars]` in traces. A topic is
+optional when an image is attached. Muse is told the image is untrusted subject
+matter and asked to say in its message what it saw and what it could not read.
+Image input needs a Meta model; selecting a local Ollama model returns a clear
+error without sending anything.
+
+The model selector now offers **muse-spark-1.3** (default) and
+**muse-wonder-1.0** locally and on Vercel. Wonder is larger and slower, so its
+request budget is 50 s against Spark's 30 s. Switching models starts a new
+provider session and keeps the draft.
+
 ## Studio-first presentation (October 27)
 
 Studio is now the default entry. A short Create → Review & revise → Operate

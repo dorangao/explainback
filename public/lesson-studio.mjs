@@ -17,7 +17,7 @@ export function mountLessonStudio(root,{post,onBusy=()=>{},onTarget=()=>{}}){
  root.innerHTML=`<header class="ls-header"><p class="eyebrow" id="ls-tag"></p><h2 id="ls-heading"></h2><p id="ls-intro"></p></header>
  <section id="ls-gallery" class="ls-gallery" aria-labelledby="ls-gallery-title"><p class="eyebrow" id="ls-gallery-tag"></p><h3 id="ls-gallery-title"></h3><p id="ls-gallery-intro"></p><div id="ls-gallery-cards" class="ls-gallery-cards"></div><p class="fine" id="ls-gallery-note"></p></section>
  <section id="ls-walkthrough" class="ls-walkthrough" aria-labelledby="ls-walkthrough-title"><h3 id="ls-walkthrough-title"></h3><ol id="ls-walkthrough-steps"></ol><button id="ls-demo-topic" type="button" class="example"></button><p id="ls-starter-note" class="fine"></p></section>
- <div class="ls-layout"><div class="ls-main"><section id="ls-author" class="ls-panel"><label for="ls-topic" id="ls-topic-label"></label><textarea id="ls-topic" maxlength="600" rows="3"></textarea><label for="ls-creation" id="ls-creation-label"></label><select id="ls-creation"><option value="generated">New topic demo</option><option value="catalog">Existing experiments</option></select><div id="ls-presets" class="ls-actions"></div><div class="ls-actions"><button id="ls-create" type="button"></button><label class="ls-file"><span id="ls-import-label"></span><input id="ls-import" type="file" accept=".json,application/json"></label></div><p class="fine" id="ls-privacy"></p><details class="ls-details"><summary id="ls-coverage-label"></summary><p id="ls-coverage"></p></details></section>
+ <div class="ls-layout"><div class="ls-main"><section id="ls-author" class="ls-panel"><label for="ls-topic" id="ls-topic-label"></label><textarea id="ls-topic" maxlength="600" rows="3"></textarea><label for="ls-creation" id="ls-creation-label"></label><select id="ls-creation"><option value="generated">New topic demo</option><option value="catalog">Existing experiments</option></select><div id="ls-presets" class="ls-actions"></div><div class="ls-image"><label class="ls-file"><span id="ls-image-label"></span><input id="ls-image" type="file" accept="image/png,image/jpeg,image/webp,image/gif"></label><div id="ls-image-preview" class="ls-image-preview" hidden><img id="ls-image-thumb" alt=""><span id="ls-image-name" class="fine"></span><button type="button" id="ls-image-remove" class="text-button"></button></div><p class="fine" id="ls-image-note"></p></div><div class="ls-actions"><button id="ls-create" type="button"></button><label class="ls-file"><span id="ls-import-label"></span><input id="ls-import" type="file" accept=".json,application/json"></label></div><p class="fine" id="ls-privacy"></p><details class="ls-details"><summary id="ls-coverage-label"></summary><p id="ls-coverage"></p></details></section>
  <p id="ls-status" role="status"></p><section id="ls-draft" class="ls-panel" hidden><p class="eyebrow" id="ls-draft-label"></p><h3 id="ls-draft-title"></h3><p id="ls-draft-intro"></p><p class="fine" id="ls-draft-note"></p><p id="ls-language-warning" role="status" class="ls-provenance" hidden></p><div id="ls-chapters"></div><details class="ls-details"><summary id="ls-edit-label"></summary><label><span id="ls-title-label"></span><input id="ls-title-edit" maxlength="80"></label><label><span id="ls-intro-label"></span><textarea id="ls-intro-edit" maxlength="200" rows="2"></textarea></label><div id="ls-text-editors"></div></details><div id="ls-review-gate"><label class="ls-review-check"><input id="ls-reviewed" type="checkbox"><span id="ls-review-label"></span></label></div><label for="ls-revision" id="ls-revision-label"></label><button id="ls-revision-example" type="button" class="text-button"></button><textarea id="ls-revision" maxlength="600" rows="2"></textarea><button type="button" id="ls-revise" class="example"></button><div class="ls-actions"><button type="button" id="ls-present"></button><button type="button" class="example" id="ls-export"></button><button type="button" class="text-button" id="ls-close"></button></div></section>
  <section id="ls-player" class="ls-panel" hidden><div class="ls-player-top"><p id="ls-progress" class="eyebrow"></p><button id="ls-back" type="button" class="text-button"></button></div><h3 id="ls-lesson-title"></h3><p id="ls-framing"></p><h4 id="ls-stage-title" tabindex="-1"></h4><blockquote id="ls-claim"></blockquote><div id="ls-predictions" class="ls-actions"></div><p id="ls-prediction" class="fine"></p>
  <p id="ls-provenance" class="ls-provenance" hidden></p><p id="ls-operate-note" class="fine"></p><div id="ls-generated-controls"></div><label id="ls-output-wrap"><span id="ls-output-label"></span><select id="ls-output"></select></label><div id="ls-lab" hidden><label class="ls-variant"><span id="ls-variant-label"></span><select id="ls-variant"></select></label><div id="ls-visual"></div><p id="ls-caption" class="ls-caption"></p><label for="ls-scrub" class="fine" id="ls-scrub-label"></label><input id="ls-scrub" type="range" min="0" max="1" step="0.01" value="0"><div class="ls-actions"><button id="ls-play" type="button"></button><button id="ls-end" type="button" class="example"></button></div><div id="ls-metrics" class="ls-metrics"></div></div>
@@ -28,7 +28,25 @@ export function mountLessonStudio(root,{post,onBusy=()=>{},onTarget=()=>{}}){
  const q=id=>root.querySelector('#ls-'+id),trace=mountProviderConsole(q('console'),post,{prefix:'studio-trace'});
  let props={language:'en',authenticated:false,visible:false,targets:[],defaultModel:null,traceEnabled:false},modelId='',session=null,epoch=0,busy=false,remaining=8;
  let draft=null,player=null,presenting=false,status='',feedback=null,transferResult=null,frame=null,playing=false,lastTime=0,observation=null,counts=null;
- let reviewed=false,galleryId=null;const pendingDefinitions=new Map();
+ let reviewed=false,galleryId=null,image=null;const pendingDefinitions=new Map();
+ // Attached learner image: a bounded data URL, downscaled in the browser. Bytes never leave the page except in the compose request.
+ const IMAGE_LIMIT=1_200_000,IMAGE_EDGE=1280;
+ async function prepareImage(file){
+  const original=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=()=>reject(new Error('read'));r.readAsDataURL(file);});
+  if(!/^data:image\/(png|jpeg|gif|webp);base64,/.test(original))throw new Error('type');
+  if(original.length<=IMAGE_LIMIT&&!/^data:image\/gif/.test(original))return original;
+  const bitmap=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=()=>reject(new Error('decode'));i.src=original;});
+  const scale=Math.min(1,IMAGE_EDGE/Math.max(bitmap.width,bitmap.height)),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+  canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);
+  for(const quality of [.85,.7,.55]){const out=canvas.toDataURL('image/jpeg',quality);if(out.length<=IMAGE_LIMIT)return out;}
+  throw new Error('size');
+ }
+ function renderImage(){
+  q('image-label').textContent=say('Add a photo, sketch or diagram (optional)','添加照片、草图或示意图（可选）');
+  q('image-note').textContent=image?say('The image is sent once with Create. Muse reads labels, arrows and numbers from it; nothing is uploaded until you click Create.','点击创建时图片会随请求发送一次。Muse 会读取其中的标签、箭头和数字；点击创建前不会上传。'):say('PNG, JPEG, WebP or GIF. Large photos are downscaled in your browser before sending. Image input needs a Meta model.','支持 PNG、JPEG、WebP 或 GIF。大图会先在浏览器中缩小再发送。图片输入需要 Meta 模型。');
+  q('image-preview').hidden=!image;q('image-remove').textContent=say('Remove image','移除图片');q('image-remove').disabled=busy;q('image').disabled=busy||!props.authenticated;
+  if(image){q('image-thumb').src=image.dataUrl;q('image-thumb').alt=say('Attached image preview','已附加图片预览');q('image-name').textContent=`${image.name} · ${Math.round(image.dataUrl.length*3/4/1024)} KB`;}
+ }
  const hasGenerated=()=>Boolean(draft?.chapters.some(c=>c.experiment==='generated'));
  function reviewGate(){q('review-gate').hidden=!hasGenerated();q('reviewed').checked=reviewed;q('reviewed').disabled=busy||pendingDefinitions.size>0;q('present').disabled=busy||pendingDefinitions.size>0||(hasGenerated()&&!reviewed);}
  function dirty(){reviewed=false;reviewGate();renderLanguageWarning();}
@@ -130,7 +148,7 @@ export function mountLessonStudio(root,{post,onBusy=()=>{},onTarget=()=>{}}){
   q('replay').hidden=['predict','complete'].includes(stage);q('back').disabled=q('replay').disabled=q('check').disabled=busy;
  }
  function render(){
-  root.hidden=!props.visible;if(props.visible)onTarget(target());q('author').hidden=presenting||!props.authenticated;q('model-panel').hidden=!props.authenticated;root.querySelector('.ls-header').hidden=!props.authenticated;renderGallery();
+  renderImage();root.hidden=!props.visible;if(props.visible)onTarget(target());q('author').hidden=presenting||!props.authenticated;q('model-panel').hidden=!props.authenticated;root.querySelector('.ls-header').hidden=!props.authenticated;renderGallery();
   const walkthrough=studioWalkthrough(lang(),draft?.chapters[0]?.demo?.kind);
   q('walkthrough').hidden=presenting||Boolean(draft);q('walkthrough-title').textContent=walkthrough.title;
   q('walkthrough-steps').replaceChildren(...walkthrough.steps.map(step=>{const item=el('li');item.append(el('strong',step.title),el('span',step.detail));return item;}));
@@ -152,15 +170,15 @@ export function mountLessonStudio(root,{post,onBusy=()=>{},onTarget=()=>{}}){
  }
  async function request(mode,revise=false){
   if(busy||!props.authenticated||!target()?.configured||remaining===0)return;
-  if(mode==='compose'&&!revise&&!q('topic').value.trim()){status=say('Enter a topic or choose a starting point.','请输入主题或选择一个示例。');render();return;}
-  let body;try{body=mode==='compose'?{topic:q('topic').value.trim()||draft?.title[lang()],creation:q('creation').value,...(revise?{draft:validateLesson(draft),revision:q('revision').value}: {})}:{lesson:validateLesson(player.lesson),chapter:player.state.chapter,variant:player.state.variant,prediction:player.state.prediction,language:lang(),controls:player.state.controls,metric:player.state.metric};}catch{status=say('Review the lesson text and try again.','请检查课程文字后重试。');render();return;}
+  if(mode==='compose'&&!revise&&!q('topic').value.trim()&&!image){status=say('Enter a topic or choose a starting point.','请输入主题或选择一个示例。');render();return;}
+  let body;try{body=mode==='compose'?{topic:q('topic').value.trim()||(image&&!revise?'':draft?.title[lang()]),creation:q('creation').value,...(image&&!revise?{image:image.dataUrl}:{}),...(revise?{draft:validateLesson(draft),revision:q('revision').value}: {})}:{lesson:validateLesson(player.lesson),chapter:player.state.chapter,variant:player.state.variant,prediction:player.state.prediction,language:lang(),controls:player.state.controls,metric:player.state.metric};}catch{status=say('Review the lesson text and try again.','请检查课程文字后重试。');render();return;}
   const token=++epoch,picked=target();stop();setBusy(true);status='';feedback=null;render();let poll;
   try{
    const send=(path,data)=>post(path,data,{timeoutMs:(picked.timeoutMs??60000)+65000});
    if(!session){const created=await send('/api/studio/session',{synthetic:true,language:lang(),llm:picked.id});if(token!==epoch){post('/api/reset',{sessionId:created.sessionId}).catch(()=>{});return;}session=created;trace.set({enabled:props.traceEnabled,sessionId:session.sessionId,language:lang()});}
    poll=setInterval(()=>{if(token===epoch)trace.refresh();},1000);
    const reply=await send(`/api/studio/${mode}`,{sessionId:session.sessionId,...body});if(token!==epoch)return;remaining=reply.attemptsRemaining;
-   if(mode==='compose'){if(reply.status==='ready'){loadLesson(reply.lesson);status=say('Draft ready. Review, edit, then present.','草稿已就绪。审阅、编辑后开始演示。');}else status=reply.message[lang()];}else feedback=reply;
+   if(mode==='compose'){if(reply.status==='ready'){loadLesson(reply.lesson);status=(image&&!revise?say('Draft ready from your image. Review, edit, then present.','已根据图片生成草稿。审阅、编辑后开始演示。'):say('Draft ready. Review, edit, then present.','草稿已就绪。审阅、编辑后开始演示。'))+(reply.message?.[lang()]?`\n${reply.message[lang()]}`:'');if(!revise)image=null;}else status=reply.message[lang()];}else feedback=reply;
   }catch(error){if(token===epoch){if(error.status===404)session=null;if(error.attemptsRemaining===0)remaining=0;status=error.status===409?say('The provider is busy or its state needs attention. Retry explicitly after it is ready.','提供商忙碌或其状态需要处理。就绪后请手动重试。'):say('The request could not be completed or validated. Your lesson is preserved. Retry explicitly.','请求未完成或未通过验证，课程已保留。请手动重试。');}}
   finally{if(poll)clearInterval(poll);if(token===epoch){setBusy(false);render();await trace.refresh();}}
  }
@@ -194,12 +212,19 @@ export function mountLessonStudio(root,{post,onBusy=()=>{},onTarget=()=>{}}){
  q('answer').addEventListener('input',()=>{if(player?.state.stage==='transfer'){transferResult=null;player.editAnswer();q('check-result').textContent='';q('next').disabled=true;}});
  q('apply').addEventListener('click',()=>{if(busy||!feedback||!player)return;stop();const action=feedback.nextAction;feedback=null;observation=null;counts=null;if(action==='compare')player.variant(1-player.state.variant);else if(action==='replay')player.replay();else player.next();transferResult=null;q('answer').value='';renderPlayer();});
  q('export').addEventListener('click',()=>{if(!draft||busy||pendingDefinitions.size)return;try{const lesson=validateLesson(draft),blob=new Blob([JSON.stringify(lesson,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=el('a');link.href=url;link.download='explainback-lesson.json';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch{status=say('Complete the lesson text before exporting.','请补全课程文字后导出。');render();}});
+ q('image').addEventListener('change',async()=>{
+  const file=q('image').files?.[0];q('image').value='';if(!file||busy||!props.authenticated)return;const token=epoch;
+  try{if(file.size>12_000_000)throw new Error('size');const dataUrl=await prepareImage(file);if(token!==epoch)return;image={dataUrl,name:file.name.slice(0,60)};status=say('Image attached. Add a question if you like, then click Create.','已附加图片。可以补充问题，然后点击创建。');}
+  catch(error){image=null;status=error.message==='size'?say('Choose an image under 12 MB that can be reduced to about 1 MB.','请选择小于 12 MB、可缩小到约 1 MB 的图片。'):say('Choose a PNG, JPEG, WebP or GIF image.','请选择 PNG、JPEG、WebP 或 GIF 图片。');}
+  render();
+ });
+ q('image-remove').addEventListener('click',()=>{if(busy)return;image=null;status='';render();});
  q('import').addEventListener('change',async()=>{const file=q('import').files?.[0];if(!file||busy)return;const token=epoch;try{if(file.size>40000)throw new Error();const input=await file.text();if(token!==epoch||!props.authenticated||busy)return;loadLesson(JSON.parse(input));status=say('Imported draft. Review the text before presenting. No model call was made.','已导入草稿。演示前请审阅文字。未调用模型。');}catch{status=say('This file is not a valid version 1 or 2 lesson (file limit 40 KB).','文件不是有效的版本 1 或 2 课程（文件上限 40 KB）。');}q('import').value='';render();});
  render();
  // Invite links land a signed-in reviewer on an editable starter topic; no request is sent.
  function loadStarter(){if(busy||!props.authenticated)return false;q('topic').value=studioWalkthrough(lang()).topic;q('creation').value='generated';status=say('Starter topic loaded. Click Create a lesson to make one real Muse request.','已载入起始主题。点击“创建课程”将真正调用一次 Muse。');render();q('topic').focus();return true;}
  return {loadLesson,openGallery,loadStarter,stop,set(next){
-  const lost=props.authenticated&&!next.authenticated;if(lost){
+  const lost=props.authenticated&&!next.authenticated;if(lost){image=null;
    stop();invalidate(false);draft=null;player=null;presenting=false;reviewed=false;galleryId=null;pendingDefinitions.clear();status='';feedback=null;observation=null;counts=null;transferResult=null;
    for(const id of ['topic','answer','title-edit','intro-edit','import','revision'])q(id).value='';
    for(const id of ['draft-title','draft-intro','lesson-title','framing','claim','prediction','authored','result','feedback','transfer-question','check-result','observations','caption','assumptions','progress'])q(id).textContent='';

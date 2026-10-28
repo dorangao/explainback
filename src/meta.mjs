@@ -1,6 +1,9 @@
 // Server/CLI module only. Never bundle this module with a browser application.
 export const META_ENDPOINT = 'https://api.meta.ai/v1/responses';
 export const DEFAULT_META_MODEL = 'muse-spark-1.3';
+// Models offered by default. Wonder is larger and slower, so it gets a longer budget.
+export const DEFAULT_META_MODELS = ['muse-spark-1.3', 'muse-wonder-1.0'];
+export const metaTimeoutMs = model => (model.startsWith('muse-wonder') ? 50_000 : 30_000);
 
 export async function callMeta({
   apiKey,
@@ -11,6 +14,7 @@ export async function callMeta({
   maxOutputTokens = 2048,
   tools,
   structuredOutput = false,
+  images,
   timeoutMs = 30_000,
   fetchImpl = globalThis.fetch,
   onTrace,
@@ -21,15 +25,21 @@ export async function callMeta({
   if (typeof input !== 'string' || !input.trim()) {
     throw new Error('input must be non-empty text.');
   }
+  if (images !== undefined && (!Array.isArray(images) || !images.length || images.length > 4 || images.some(u => typeof u !== 'string' || !/^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(u) || u.length > 2_000_000))) {
+    throw new Error('images must be one to four base64 data URLs.');
+  }
   if(structuredOutput&&(!Array.isArray(tools)||tools.length!==1||!tools[0].parameters))throw new Error('Structured output needs one named schema.');
 
   const signal = AbortSignal.timeout(timeoutMs);
   const trace=event=>{try{onTrace?.(event);}catch{/* Diagnostics must not affect calls. */}};
-  const body={model,input,store:false,max_output_tokens:maxOutputTokens,
+  // Multimodal requests use one user message with text plus image parts (Responses API shape).
+  const content=images?[{type:'input_text',text:input},...images.map(image_url=>({type:'input_image',image_url}))]:null;
+  const body={model,input:content?[{type:'message',role:'user',content}]:input,store:false,max_output_tokens:maxOutputTokens,
     ...(instructions?{instructions}:{}),...(reasoningEffort?{reasoning:{effort:reasoningEffort}}:{}),
     ...(structuredOutput?{text:{format:{type:'json_schema',name:tools[0].name,schema:tools[0].parameters,strict:true}}}:tools?{tools,tool_choice:'auto',parallel_tool_calls:false}:{})};
   if(structuredOutput)body.instructions=(instructions??'')+'\nTransport for this request: return the '+tools[0].name+' argument object directly as JSON matching the response schema. This is a structured response, not a tool invocation.';
-  trace({type:'request',body});
+  // Traces never carry image bytes; only the part type and size are recorded.
+  trace({type:'request',body:content?{...body,input:[{type:'message',role:'user',content:content.map(part=>part.type==='input_image'?{type:'input_image',image_url:`[image omitted · ${part.image_url.length} chars]`}:part)}]}:body});
   let response;
   try {
     response = await fetchImpl(META_ENDPOINT, {
