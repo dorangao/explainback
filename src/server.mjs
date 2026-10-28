@@ -19,7 +19,7 @@ import { motionScenario, motionTitle } from '../public/motion.mjs';
 const files = new Map([
   ['/', ['index.html', 'text/html; charset=utf-8']],
   ...['demo-model','generated-demo','demo-review'].map(name=>[`/assets/${name}.mjs`,[`${name}.mjs`,'text/javascript; charset=utf-8']]),
-  ...['lesson-schema','lesson-experiments','lesson-player','lesson-studio','studio-showcase'].map(name=>[`/assets/${name}.mjs`,[`${name}.mjs`,'text/javascript; charset=utf-8']]),
+  ...['lesson-schema','lesson-experiments','lesson-player','lesson-studio','studio-showcase','gallery-lessons'].map(name=>[`/assets/${name}.mjs`,[`${name}.mjs`,'text/javascript; charset=utf-8']]),
   ...['quantum','quantum-content','quantum-view'].map(name=>[`/assets/${name}.mjs`,[`${name}.mjs`,'text/javascript; charset=utf-8']]),
   ['/assets/app.mjs', ['app.mjs', 'text/javascript; charset=utf-8']],
   ['/assets/math.mjs', ['math.mjs', 'text/javascript; charset=utf-8']],

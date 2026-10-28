@@ -1,8 +1,94 @@
 # ExplainBack / 讲给我听
 
-Explain it in your own words. Discover what you’re missing.
+**Turn a question into a bilingual, interactive lesson you can operate.**
+Meta's Muse drafts the lesson and its model; you review and revise it; code runs
+the experiment; the learner predicts, operates, explains and transfers.
 
-用自己的话讲出来，找到真正没懂的地方。
+把一个问题变成可操作的中英双语互动课程。Muse 起草课程与模型，作者审阅修改，
+代码负责运行实验，学习者先预测、再操作、解释，最后迁移到新情境。
+
+[![Gallery landing page](docs/screenshots/gallery-landing.jpg)](https://explainback.app/)
+
+## Try it in 60 seconds, no account needed
+
+**Live:** [explainback.app](https://explainback.app/) · **Source:** [dorangao/explainback](https://github.com/dorangao/explainback)
+
+1. Open a reviewed lesson from the gallery, or jump straight to one:
+   [Newton cooling](https://explainback.app/#lesson:cooling) ·
+   [Pendulum timing](https://explainback.app/#lesson:pendulum) ·
+   [HTTP caching](https://explainback.app/#lesson:web-cache) ·
+   [Acceleration, roll & landing](https://explainback.app/#lesson:vehicle) ·
+   [Quantum interference](https://explainback.app/#lesson:quantum)
+2. Predict whether the claim holds, run the experiment, change an input, then
+   answer a fresh case. Switch **English / 中文** at any point; your settings survive.
+3. Each card says where its content came from. Muse-drafted lessons were edited
+   after the [frozen evaluation](docs/studio-evaluation.md); the others are
+   hand-authored text over the existing checked experiments. Gallery playback
+   makes no model call.
+
+Creating and revising **new** lessons with Muse requires a tester sign-in
+(credentials are supplied to judges separately, never published here).
+
+## What Meta's model does here
+
+ExplainBack uses **Meta `muse-spark-1.3`** through the Responses API with
+structured output. The model never writes code that runs in the browser.
+
+- **Author a lesson from any question.** Muse returns a bounded, bilingual
+  lesson contract: a formula model with ranged inputs and axis, or an ordered
+  process diagram with a transfer question. The renderer compiles the formulas
+  in a tiny arithmetic language and checks finiteness across every input range.
+- **Revise on request.** Ask for one concrete change (a second output, a
+  neutral framing, a corrected term). Muse edits the draft; the review gate
+  stays unchecked until you look at what changed.
+- **Explain checked evidence.** After an experiment, Muse explains the learner's
+  prediction against values the code computed and suggests exactly one bounded
+  next action: replay, compare or transfer.
+- **Decline honestly.** Ambiguous or unsupported requests (a CFD simulation, a
+  safety certification) return a bilingual clarification instead of a made-up model.
+
+A frozen 12-case bilingual evaluation (6 topic pairs × EN/ZH, one attempt each,
+no retries) returned 12 valid contracts. The content review that followed is
+recorded with its open issues in [docs/studio-evaluation.md](docs/studio-evaluation.md).
+Automated passes are not teaching readiness, and the app says so on screen.
+
+## How it is built
+
+- Plain ES modules, no framework, no build step beyond copying `public/`.
+- Node 22 server with cookie tester auth, per-session request caps, a provider
+  router (Meta hosted; optional local Ollama for development), and an optional
+  request/response console for inspecting the actual model calls.
+- Vercel deployment with shared Redis session state; the cloud build exposes
+  Meta only.
+- 226 tests cover the lesson contract, the bounded expression compiler, every
+  gallery lesson in both languages, HTTP boundaries and provider routing.
+
+## Run it locally
+
+```sh
+cp .env.example .env.local   # add MODEL_API_KEY and tester credentials, keep mode 600
+npm install
+npm run dev                  # http://127.0.0.1:4173
+npm test
+```
+
+The gallery works without any key. Lesson creation needs `MODEL_API_KEY` from
+[dev.meta.ai](https://dev.meta.ai/) and the tester credentials described under
+[Tester login](#tester-login).
+
+## Where to look next
+
+- [Three-minute demo script](docs/studio-demo.md) and
+  [hackathon readiness tracker](docs/hackathon-readiness.md)
+- [Lesson Studio scope and limits](docs/lesson-studio.md)
+- [Vercel setup and retention](docs/vercel-deployment.md)
+- [Naming and source notes](docs/naming-and-sources.md): generic lab names,
+  hypothetical numbers, no sponsorship or endorsement claims.
+
+---
+
+Everything below is the detailed engineering and verification record, kept in
+the order it was written.
 
 ## Create lessons in the app
 

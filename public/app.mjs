@@ -1,6 +1,7 @@
 import {mountQuantumLab} from './quantum-view.mjs';
 import {mountLessonStudio} from './lesson-studio.mjs';
 import {areaFromHash} from './studio-showcase.mjs';
+import {galleryIdFromHash} from './gallery-lessons.mjs';
 import {demoPresentation,defaultSuctionFocus} from './presentation.mjs';
 import {mountSuctionLab} from './suction-view.mjs';
 import {runSuctionDemo,suctionGuide,suctionGuideStages} from './suction-demo.mjs';
@@ -35,16 +36,18 @@ const lessonStudio=mountLessonStudio($('studio-area'),{post,onBusy:value=>{studi
 function renderAreaButtons(){
  for(const id of ['physics','quantum','studio']){$('area-'+id).disabled=busy||quantumBusy||studioBusy;$('area-'+id).setAttribute('aria-pressed',String(activeArea===id));}
 }
+// Signed-out visitors see Lesson Studio in gallery mode; other areas need tester access.
+const visibleArea=()=>authenticated?activeArea:'studio';
 function renderArea(){
- const zh=language()==='zh';$('area-physics').textContent=zh?'物理与数学':'Physics & math';$('area-quantum').textContent=zh?'量子计算':'Quantum computing';
+ const zh=language()==='zh',area=visibleArea();$('area-physics').textContent=zh?'物理与数学':'Physics & math';$('area-quantum').textContent=zh?'量子计算':'Quantum computing';
  $('area-studio').textContent=zh?'课程工作室':'Lesson Studio';$('studio-area').setAttribute('aria-label',zh?'课程工作室':'Lesson Studio');
- $('headline').textContent=activeArea==='studio'?(zh?'把好奇，变成可操作的实验。':'Turn curiosity into an experiment.'):t().headline;
- $('subtitle').textContent=activeArea==='studio'?(zh?'让 Muse 创建课程。审阅与修改，然后亲手检验其中的想法。':'Create a lesson with Muse. Review and revise it, then put its ideas to the test.'):t().subtitle;
+ $('headline').textContent=area==='studio'?(zh?'把好奇，变成可操作的实验。':'Turn curiosity into an experiment.'):t().headline;
+ $('subtitle').textContent=area==='studio'?(zh?'让 Muse 创建课程。审阅与修改，然后亲手检验其中的想法。':'Create a lesson with Muse. Review and revise it, then put its ideas to the test.'):t().subtitle;
  document.querySelector('.lab-areas').setAttribute('aria-label',zh?'学习区域':'Learning areas');$('quantum-area').setAttribute('aria-label',zh?'量子计算实验室':'Quantum computing lab');
  if(activeArea==='physics'&&authenticated){$('connection').textContent=`${selectedTarget()?.label??'Model'} · ${ready?t().ready:t().unavailable}`;$('connection').classList.toggle('ready',ready);}
- $('physics-area').hidden=activeArea!=='physics';renderAreaButtons();
- quantumLab.set({visible:activeArea==='quantum',language:language(),authenticated,traceEnabled,targets:providerTargets,defaultModel:defaultProviderId});
- lessonStudio.set({visible:activeArea==='studio',language:language(),authenticated,traceEnabled,targets:providerTargets,defaultModel:defaultProviderId});
+ $('physics-area').hidden=area!=='physics';document.querySelector('.lab-areas').hidden=!authenticated;renderAreaButtons();
+ quantumLab.set({visible:area==='quantum',language:language(),authenticated,traceEnabled,targets:providerTargets,defaultModel:defaultProviderId});
+ lessonStudio.set({visible:area==='studio',language:language(),authenticated,traceEnabled,targets:providerTargets,defaultModel:defaultProviderId});
 }
 for(const area of ['physics','quantum','studio'])$('area-'+area).addEventListener('click',()=>{
  if(busy||quantumBusy||studioBusy)return;stopAutoDemo();stopPlayback();journey.stop();suctionLab.stop();lessonStudio.stop();activeArea=area;history.replaceState(null,'','#'+area);renderArea();
@@ -582,8 +585,8 @@ $('flight-play').addEventListener('click',()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopPlayback();});
 for(const [id,topic]of [['vehicle-acceleration','acceleration'],['vehicle-flight','flight']])$(id).addEventListener('click',()=>{if(busy)return;if((session?.problem.id||$('topic').value)===topic)return;clear();$('topic').value=topic;localize();controls();});
 const authCopy={
- en:{heading:'Sign in to the lab',kicker:'EARLY ACCESS',description:'Use your shared tester account to explore the prototype.',username:'Username',password:'Password',submit:'Sign in',logout:'Sign out',pending:'Please wait…',connection:'Tester sign-in required',note:'Use synthetic examples. Do not enter real student or private information.',errors:{TESTER_SETUP:'Set EXPLAINBACK_TESTER_USERNAME and EXPLAINBACK_TESTER_PASSWORD (12–512 characters) in .env.local or the server environment, then restart.',TESTER_CREDENTIALS:'Username or password is incorrect.',TESTER_RATE:'Too many login attempts. Try again in one minute.',TESTER_CAPACITY:'Tester session limit reached. Sign out another session or wait for expiry.',TESTER_REQUIRED:'Your session ended. Please sign in again.',NETWORK:'The server could not be reached. Try again.'}},
- zh:{heading:'登录学习实验室',kicker:'早期测试',description:'使用共享测试账号体验此原型。',username:'用户名',password:'密码',submit:'登录',logout:'退出登录',pending:'请稍候……',connection:'请先登录测试账号',note:'请使用虚构示例，不输入真实学生资料或私人信息。',errors:{TESTER_SETUP:'请在 .env.local 或服务端环境中设置 EXPLAINBACK_TESTER_USERNAME 和 EXPLAINBACK_TESTER_PASSWORD（12–512 个字符），然后重启。',TESTER_CREDENTIALS:'用户名或密码不正确。',TESTER_RATE:'登录尝试过多，请在一分钟后重试。',TESTER_CAPACITY:'测试会话数量已达上限。请退出其他会话或等待会话过期。',TESTER_REQUIRED:'会话已结束，请重新登录。',NETWORK:'无法连接服务器，请重试。'}},
+ en:{heading:'Sign in to the lab',kicker:'EARLY ACCESS',description:'The reviewed lessons above open without an account. Sign in with a tester account to create and revise new lessons with Muse.',username:'Username',password:'Password',submit:'Sign in',logout:'Sign out',pending:'Please wait…',connection:'Tester sign-in required',note:'Use synthetic examples. Do not enter real student or private information.',errors:{TESTER_SETUP:'Set EXPLAINBACK_TESTER_USERNAME and EXPLAINBACK_TESTER_PASSWORD (12–512 characters) in .env.local or the server environment, then restart.',TESTER_CREDENTIALS:'Username or password is incorrect.',TESTER_RATE:'Too many login attempts. Try again in one minute.',TESTER_CAPACITY:'Tester session limit reached. Sign out another session or wait for expiry.',TESTER_REQUIRED:'Your session ended. Please sign in again.',NETWORK:'The server could not be reached. Try again.'}},
+ zh:{heading:'登录学习实验室',kicker:'早期测试',description:'上方经审阅的课程无需账号即可打开。登录测试账号后，可用 Muse 创建和修改新课程。',username:'用户名',password:'密码',submit:'登录',logout:'退出登录',pending:'请稍候……',connection:'请先登录测试账号',note:'请使用虚构示例，不输入真实学生资料或私人信息。',errors:{TESTER_SETUP:'请在 .env.local 或服务端环境中设置 EXPLAINBACK_TESTER_USERNAME 和 EXPLAINBACK_TESTER_PASSWORD（12–512 个字符），然后重启。',TESTER_CREDENTIALS:'用户名或密码不正确。',TESTER_RATE:'登录尝试过多，请在一分钟后重试。',TESTER_CAPACITY:'测试会话数量已达上限。请退出其他会话或等待会话过期。',TESTER_REQUIRED:'会话已结束，请重新登录。',NETWORK:'无法连接服务器，请重试。'}},
 };
 function renderAccess(){
  renderArea();
@@ -591,7 +594,7 @@ function renderAccess(){
  for(const [id,key]of [['tester-heading','heading'],['tester-kicker','kicker'],['tester-description','description'],['tester-username-label','username'],['tester-password-label','password'],['tester-note','note']])$(id).textContent=c[key];
  $('tester-submit').textContent=authBusy?c.pending:c.submit;$('tester-logout').textContent=c.logout;
  $('tester-submit').disabled=authBusy||!authConfigured;for(const id of ['tester-username','tester-password'])$(id).disabled=authBusy||!authConfigured;
- $('tester-login').hidden=authenticated;$('tester-workspace').hidden=!authenticated;$('tester-logout').hidden=!authenticated;
+ $('tester-login').hidden=authenticated;$('tester-workspace').hidden=false;$('tester-logout').hidden=!authenticated;
  $('tester-logout').disabled=authBusy;$('tester-message').hidden=!authMessage;$('tester-message').textContent=c.errors[authMessage]??'';
  if(!authenticated){$('connection').textContent=c.connection;$('connection').classList.remove('ready');}
 }
@@ -629,3 +632,4 @@ try{
  if(status.authenticated)await loadStatus(authVersion);else authMessage=authConfigured?'':'TESTER_SETUP';
 }catch(error){authMessage=error.code??'NETWORK';}
 renderAccess();
+{const deepLink=galleryIdFromHash(location.hash);if(deepLink)lessonStudio.openGallery(deepLink);}

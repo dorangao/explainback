@@ -9,14 +9,6 @@
   <header class="topbar"><a class="wordmark" href="/">ExplainBack<span>讲给我听</span></a><span id="connection" class="connection" role="status">Checking model configuration…</span><button id="tester-logout" class="example" type="button" hidden>Sign out</button></header>
   <main>
     <div class="intro"><div><p class="eyebrow" id="eyebrow">LEARNING LAB · TESTER PREVIEW</p><h1 id="headline">Make your reasoning visible.</h1><p id="subtitle">Explain in your own words. Find one gap. Try the idea somewhere new.</p></div><label class="language-label">Language / 语言<select id="language"><option value="en">English</option><option value="zh">中文</option></select></label></div>
-    <section id="tester-login" class="tester-login" aria-labelledby="tester-heading">
-      <p id="tester-kicker" class="eyebrow">EARLY ACCESS</p><h2 id="tester-heading">Sign in to the lab</h2>
-      <p id="tester-description">Use your shared tester account to explore the prototype.</p>
-      <form id="tester-form"><label for="tester-username" id="tester-username-label">Username</label><input id="tester-username" name="username" autocomplete="username" maxlength="80" required>
-      <label for="tester-password" id="tester-password-label">Password</label><input id="tester-password" name="password" type="password" autocomplete="current-password" maxlength="512" required>
-      <button id="tester-submit" type="submit" disabled>Sign in</button></form>
-      <p id="tester-message" class="error" role="alert" hidden></p><p id="tester-note" class="fine">Use synthetic examples. Do not enter real student or private information.</p>
-    </section>
     <div id="tester-workspace" hidden>
     <nav class="lab-areas" aria-label="Learning areas"><button type="button" id="area-studio" aria-pressed="true">Lesson Studio</button><button type="button" id="area-physics" aria-pressed="false">Physics &amp; math</button><button type="button" id="area-quantum" aria-pressed="false">Quantum computing</button></nav>
     <div id="physics-area">
@@ -92,6 +84,14 @@
     <section id="quantum-area" class="quantum-area" aria-label="Quantum computing lab" hidden></section>
     <section id="studio-area" class="lesson-studio" aria-label="Lesson Studio" hidden></section>
     </div>
+    <section id="tester-login" class="tester-login" aria-labelledby="tester-heading">
+      <p id="tester-kicker" class="eyebrow">EARLY ACCESS</p><h2 id="tester-heading">Sign in to the lab</h2>
+      <p id="tester-description">Use your shared tester account to explore the prototype.</p>
+      <form id="tester-form"><label for="tester-username" id="tester-username-label">Username</label><input id="tester-username" name="username" autocomplete="username" maxlength="80" required>
+      <label for="tester-password" id="tester-password-label">Password</label><input id="tester-password" name="password" type="password" autocomplete="current-password" maxlength="512" required>
+      <button id="tester-submit" type="submit" disabled>Sign in</button></form>
+      <p id="tester-message" class="error" role="alert" hidden></p><p id="tester-note" class="fine">Use synthetic examples. Do not enter real student or private information.</p>
+    </section>
   </main>
   <footer><span id="footer-left">Independent learning prototype · Synthetic examples · Temporary sessions</span><span id="footer-right">Model feedback + deterministic graphs</span></footer>
 </body>

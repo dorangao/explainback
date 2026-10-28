@@ -117,7 +117,7 @@ sent, rules accepted, or submission made by this update.
 - [ ] **R03 · Build + Doran · Oct 28 — Contribution ledger.** Record API setup before Oct 26 and application work from Oct 26, then list features, known dates, files/commits and demo timestamps. Label development snapshots accurately; keep unknown dates explicit. The user-provided timeline is recorded above; detailed ledger remains open.
 - [x] **R04 · Doran + Build · Oct 27 — Choose the main story.** User chose Studio-first: help an adult learner/author turn a question into a reviewable interactive lesson. [Selected script](studio-demo.md)
 - [ ] **R05 · Build · Oct 29 — Source/release alignment.** Integrate the deployed powered-journey and structured-output fixes into reviewed main, then record final source SHA and deployment SHA. PR #2 merged the earlier Studio commit; subsequent release fixes are on the feature branch.
-- [ ] **R06 · Build + Doran · Oct 30 — Judge access.** Establish an organizer-acceptable way to provide tester access without publishing the shared password. Check a fresh browser, session expiry, quotas and recovery; ensure reviewers can reach the intended lesson. Do not remove authentication silently.
+- [ ] **R06 · Build + Doran · Oct 30 — Judge access.** Partly addressed Oct 27: five reviewed lessons now open at explainback.app without sign-in (`#lesson:<id>` deep links; playback makes no provider call). Creation/revision still needs tester access; establish an organizer-acceptable way to provide it without publishing the shared password. Check a fresh browser, session expiry, quotas and recovery; ensure reviewers can reach the intended lesson. Do not remove authentication silently.
 - [ ] **R07 · Build · Oct 30 — Publishable source package.** Check setup from a clean clone; choose a source license with Doran; review assets/attributions and the full proposed history for secrets. Keep raw eval outputs private and publish only sanitized summaries. No LICENSE or GitHub test workflow was found in the inspected tracked tree.
 
 ### P1 — Make the submission convincing
@@ -211,3 +211,5 @@ tokens, private provider responses or tester personal information here.
 - Oct 27: user requested commit, push and deployment. Studio-first runtime
   `3f947d5` is published at explainback.app; hosted entry/language/area smoke
   checks passed. No main merge, organizer message or submission.
+
+- Oct 27 (later): added the signed-out lesson gallery (cooling, pendulum, HTTP caching, vehicle, quantum) with per-lesson provenance, and rewrote the README top as a judge-facing pitch. Local tests 226/226; not yet committed or deployed.
