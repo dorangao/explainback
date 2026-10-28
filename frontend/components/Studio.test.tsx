@@ -277,3 +277,81 @@ describe("Studio generated lesson player", () => {
   });
 });
 vi.stubGlobal("scrollTo", () => {});
+
+describe("Explain it back", () => {
+  it("sends the learner's own explanation to the guide and shows the verdict and follow-up", async () => {
+    const bodies: Record<string, unknown>[] = [];
+    const post: Post = async (path, body) => {
+      if (path === "/api/studio/session")
+        return { sessionId: "s1", attemptsRemaining: 8 } as never;
+      if (path === "/api/studio/guide") {
+        bodies.push(body as Record<string, unknown>);
+        return {
+          verdict: "partly",
+          explanation: "You saw that the cache answers faster; say why.",
+          followUp:
+            "What does the browser skip when the cache already holds the page?",
+          nextAction: "transfer",
+          attemptsRemaining: 7,
+          model: "test",
+          elapsedMs: 800,
+          usage: null,
+        } as never;
+      }
+      return { records: [] } as never;
+    };
+    mount({ authenticated: true, status, lessonId: "web-cache" }, post);
+    await screen.findByRole("heading", {
+      name: /Loading a web page with a cache/,
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^Agree$/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Test this claim/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Show final state/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Explain the result/ }));
+    const check = screen.getByRole("button", {
+      name: /Check my explanation with Muse/,
+    }) as HTMLButtonElement;
+    expect(check.disabled).toBe(true);
+    fireEvent.change(
+      screen.getByLabelText(/Explain what changed and why, in your own words/),
+      { target: { value: "  The cached copy skips the network round trip. " } },
+    );
+    expect(check.disabled).toBe(false);
+    fireEvent.click(check);
+    expect(
+      await screen.findByText("Partly supported by the evidence"),
+    ).toBeTruthy();
+    expect(screen.getByText(/What does the browser skip/)).toBeTruthy();
+    expect(document.querySelector(".request-summary")?.textContent).toMatch(
+      /test explained this result · 0\.8 s/,
+    );
+    expect(bodies).toHaveLength(1);
+    expect(bodies[0].explanation).toBe(
+      "The cached copy skips the network round trip.",
+    );
+    expect(bodies[0].prediction).toBe("agree");
+    // The plain "ask Muse" button sends no learner text.
+    fireEvent.click(
+      screen.getByRole("button", { name: /Ask Muse to explain this result/ }),
+    );
+    await waitFor(() => expect(bodies).toHaveLength(2));
+    expect(bodies[1].explanation).toBeUndefined();
+  });
+  it("keeps the textarea without access and explains that feedback needs it", async () => {
+    mount({ lessonId: "web-cache" });
+    await screen.findByRole("heading", {
+      name: /Loading a web page with a cache/,
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^Agree$/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Test this claim/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Show final state/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Explain the result/ }));
+    expect(
+      screen.getByLabelText(/Explain what changed and why, in your own words/),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: /Check my explanation with Muse/ }),
+    ).toBeNull();
+    expect(screen.getByText(/needs creation access/)).toBeTruthy();
+  });
+});

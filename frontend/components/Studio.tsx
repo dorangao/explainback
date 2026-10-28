@@ -162,7 +162,10 @@ export function Studio({
     setTopic(studioWalkthrough(language).topic);
     setCreation("generated");
   }, [starter, authenticated, closeLesson, language]);
-  async function request(mode: "compose" | "guide", revisionText?: string) {
+  // `text` is the revision request for compose, or the learner's own explanation for guide.
+  async function request(mode: "compose" | "guide", text?: string) {
+    const revisionText = mode === "compose" ? text : undefined,
+      learnerText = mode === "guide" ? text?.trim() : undefined;
     if (
       busyRef.current ||
       !authenticated ||
@@ -204,6 +207,7 @@ export function Studio({
               language,
               controls: player!.state.controls,
               metric: player!.state.metric,
+              ...(learnerText ? { explanation: learnerText } : {}),
             };
     } catch {
       setMessage(t(language, "Studio.completeBothLanguagesAndValidate"));
@@ -624,7 +628,7 @@ export function Studio({
               busy={busy}
               canAsk={canRequest}
               feedback={feedback}
-              onGuide={() => void request("guide")}
+              onGuide={(own) => void request("guide", own)}
               onClearFeedback={clearFeedback}
               onBack={() => setPresenting(false)}
               onLibrary={closeLesson}

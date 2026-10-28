@@ -244,7 +244,33 @@ export const messages = {
     en: "Enter a finite number.",
     zh: "请输入有限数值。",
   },
+  "LessonPlayer.checkMyExplanationWithMuse": {
+    en: "Check my explanation with Muse",
+    zh: "让 Muse 评估我的解释",
+  },
   "LessonPlayer.experiment": { en: "Experiment", zh: "实验" },
+  "LessonPlayer.explainItBack": { en: "EXPLAIN IT BACK", zh: "换你来解释" },
+  "LessonPlayer.explainWhatChangedAndWhy": {
+    en: "Explain what changed and why, in your own words",
+    zh: "用你自己的话解释：什么变了，为什么",
+  },
+  "LessonPlayer.followUpQuestion": { en: "Follow-up question", zh: "追问" },
+  "LessonPlayer.museFeedbackOnYourExplanation": {
+    en: "Muse feedback on your explanation needs creation access. The reviewed explanation below is always available.",
+    zh: "让 Muse 评估你的解释需要创建权限；下方经审阅的解释始终可见。",
+  },
+  "LessonPlayer.notYetSupported": {
+    en: "Not yet supported by the evidence",
+    zh: "尚未得到证据支持",
+  },
+  "LessonPlayer.partlySupported": {
+    en: "Partly supported by the evidence",
+    zh: "部分得到证据支持",
+  },
+  "LessonPlayer.supportedByTheEvidence": {
+    en: "Supported by the evidence",
+    zh: "与证据一致",
+  },
   "LessonPlayer.experimentProgress": {
     en: "Experiment progress",
     zh: "实验进度",

@@ -10,6 +10,11 @@ const measure = measureQuantum as (state: unknown) => {
   outcome: number;
 };
 const sample = sampleQuantum as (state: unknown) => number[];
+const verdictKeys = {
+  supported: "LessonPlayer.supportedByTheEvidence",
+  partly: "LessonPlayer.partlySupported",
+  unsupported: "LessonPlayer.notYetSupported",
+} as const;
 export function LessonPlayer({
   player,
   language,
@@ -28,7 +33,7 @@ export function LessonPlayer({
   busy: boolean;
   canAsk: boolean;
   feedback: Feedback | null;
-  onGuide: () => void;
+  onGuide: (explanation?: string) => void;
   onClearFeedback: () => void;
   onBack: () => void;
   onLibrary: () => void;
@@ -43,7 +48,9 @@ export function LessonPlayer({
       state: unknown;
       outcome: number;
     } | null>(null),
-    [counts, setCounts] = useState<number[] | null>(null);
+    [counts, setCounts] = useState<number[] | null>(null),
+    // The learner's own explanation, kept per chapter so a replay does not erase it.
+    [own, setOwn] = useState<Record<number, string>>({});
   const heading = useRef<HTMLHeadingElement>(null),
     state = player.state;
   // The player mutates in place; chapter, variant, metric and controls key the memo.
@@ -53,7 +60,8 @@ export function LessonPlayer({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- experimentKey summarises the mutable player state
     [player, language, experimentKey],
   );
-  const chapter = player.lesson.chapters[state.chapter];
+  const chapter = player.lesson.chapters[state.chapter],
+    ownText = own[state.chapter] ?? "";
   // Pause when the lesson is hidden, busy or re-localised; playback resumes only on request.
   const pauseKey = `${language}/${visible}/${busy}`;
   const lastPause = useRef(pauseKey);
@@ -352,12 +360,57 @@ export function LessonPlayer({
                 {t(language, "LessonPlayer.calculatedEvidence")}
               </p>
               <p>{e.result}</p>
+              <div className="explain-back">
+                <p className="eyebrow">
+                  {t(language, "LessonPlayer.explainItBack")}
+                </p>
+                <label htmlFor={`${formId}-own`}>
+                  {t(language, "LessonPlayer.explainWhatChangedAndWhy")}
+                </label>
+                <textarea
+                  id={`${formId}-own`}
+                  rows={3}
+                  maxLength={700}
+                  disabled={busy}
+                  value={ownText}
+                  onChange={(event) =>
+                    setOwn({ ...own, [state.chapter]: event.target.value })
+                  }
+                />
+                <div className="explain-back-actions">
+                  {canAsk ? (
+                    <button
+                      disabled={busy || !ownText.trim()}
+                      onClick={() => onGuide(ownText.trim())}
+                    >
+                      {busy
+                        ? say(language, "Muse is working…", "Muse 正在处理…")
+                        : t(
+                            language,
+                            "LessonPlayer.checkMyExplanationWithMuse",
+                          )}
+                    </button>
+                  ) : (
+                    <p className="fine">
+                      {t(
+                        language,
+                        "LessonPlayer.museFeedbackOnYourExplanation",
+                      )}
+                    </p>
+                  )}
+                  <span className="fine">{ownText.length}/700</span>
+                </div>
+              </div>
               <p className="eyebrow">
                 {t(language, "LessonPlayer.authoredExplanationReviewable")}
               </p>
               <p>{chapter.explanation[language]}</p>
               {canAsk && (
-                <button className="secondary" disabled={busy} onClick={onGuide}>
+                <button
+                  className="secondary"
+                  disabled={busy}
+                  onClick={() => onGuide()}
+                >
                   {say(
                     language,
                     busy
@@ -369,7 +422,22 @@ export function LessonPlayer({
               )}
               {feedback && (
                 <div className="model-feedback">
+                  {feedback.verdict && (
+                    <p>
+                      <span className="verdict" data-verdict={feedback.verdict}>
+                        {t(language, verdictKeys[feedback.verdict])}
+                      </span>
+                    </p>
+                  )}
                   <p>{feedback.explanation}</p>
+                  {feedback.followUp && (
+                    <p className="follow-up">
+                      <strong>
+                        {t(language, "LessonPlayer.followUpQuestion")}:
+                      </strong>{" "}
+                      {feedback.followUp}
+                    </p>
+                  )}
                   <button
                     className="secondary"
                     disabled={busy}

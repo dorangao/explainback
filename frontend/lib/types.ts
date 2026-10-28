@@ -161,10 +161,14 @@ export type ReplyMetrics = {
   elapsedMs?: number;
   usage?: Usage | null;
 };
+export type Verdict = "supported" | "partly" | "unsupported";
 export type Feedback = ReplyMetrics & {
   explanation: string;
   nextAction: "replay" | "compare" | "transfer";
   attemptsRemaining: number;
+  // Present when the learner's own explanation was assessed.
+  verdict?: Verdict;
+  followUp?: string;
 };
 export type ComposeReply = ReplyMetrics & {
   status: "ready" | "unsupported";
