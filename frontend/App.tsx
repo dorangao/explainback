@@ -1,3 +1,4 @@
+import { t } from "./lib/messages";
 import {
   lazy,
   Suspense,
@@ -55,11 +56,7 @@ export function App() {
   const setLang = useCallback((value: Language) => setLanguage(value), []);
   useEffect(() => {
     document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
-    document.title = say(
-      language,
-      "ExplainBack · Learn by explaining",
-      "ExplainBack 讲给我听 · 在实验中理解",
-    );
+    document.title = t(language, "App.explainbackLearnByExplaining");
     try {
       localStorage.setItem("explainback-language", language);
     } catch {}
@@ -148,7 +145,7 @@ export function App() {
   return (
     <div className="app-shell">
       <a className="skip-link" href="#main-content">
-        {say(language, "Skip to content", "跳到主要内容")}
+        {t(language, "App.skipToContent")}
       </a>
       <header className="site-header">
         <a
@@ -160,7 +157,7 @@ export function App() {
           <Brand />
         </a>
         <nav
-          aria-label={say(language, "Main navigation", "主导航")}
+          aria-label={t(language, "App.mainNavigation")}
           className="main-nav"
         >
           <a
@@ -168,14 +165,14 @@ export function App() {
             onClick={() => setLibraryVisit((n) => n + 1)}
             aria-current={area === "studio" ? "page" : undefined}
           >
-            {say(language, "Explore", "探索")}
+            {t(language, "App.explore")}
           </a>
           <a
             href="#create"
             onClick={() => setLibraryVisit((n) => n + 1)}
             aria-current={area === "create" ? "page" : undefined}
           >
-            {say(language, "Create", "创建")}
+            {t(language, "App.create")}
           </a>
           {auth.info.authenticated && (
             <>
@@ -183,13 +180,13 @@ export function App() {
                 href="#physics"
                 aria-current={area === "physics" ? "page" : undefined}
               >
-                {say(language, "Physics", "物理")}
+                {t(language, "App.physics")}
               </a>
               <a
                 href="#quantum"
                 aria-current={area === "quantum" ? "page" : undefined}
               >
-                {say(language, "Quantum", "量子")}
+                {t(language, "App.quantum")}
               </a>
             </>
           )}
@@ -212,7 +209,7 @@ export function App() {
               disabled={auth.working}
               onClick={() => void auth.logout()}
             >
-              {say(language, "Sign out", "退出登录")}
+              {t(language, "App.signOut")}
             </button>
           ) : (
             !auth.info.authenticated && (
@@ -221,7 +218,7 @@ export function App() {
                 onClick={openAccess}
                 disabled={auth.loading}
               >
-                {say(language, "Preview access", "预览权限")}
+                {t(language, "App.previewAccess")}
               </button>
             )
           )}
@@ -230,16 +227,12 @@ export function App() {
       {auth.info.authenticated && (auth.status?.access || auth.info.open) && (
         <div className="access-strip" role="status">
           {auth.info.open
-            ? say(
-                language,
-                "Local development · open access",
-                "本地开发 · 开放访问",
-              )
-            : `${auth.status?.access?.label} · ${auth.status?.access?.remaining}/${auth.status?.access?.quota} ${say(language, "live requests left this hour", "次模型请求剩余 / 小时")}`}
+            ? t(language, "App.localDevelopmentOpenAccess")
+            : `${auth.status?.access?.label} · ${auth.status?.access?.remaining}/${auth.status?.access?.quota} ${t(language, "App.liveRequestsLeftThisHour")}`}
           {auth.status?.access?.expiresAt && (
             <span>
               {" "}
-              · {say(language, "Expires", "到期")}{" "}
+              · {t(language, "App.expires")}{" "}
               {new Intl.DateTimeFormat(language === "zh" ? "zh-CN" : "en-US", {
                 dateStyle: "medium",
               }).format(auth.status.access.expiresAt)}
@@ -250,11 +243,7 @@ export function App() {
       <main id="main-content" ref={main} tabIndex={-1}>
         {auth.loading && (
           <p className="connection-note" role="status">
-            {say(
-              language,
-              "Opening your learning studio…",
-              "正在打开学习工作室…",
-            )}
+            {t(language, "App.openingYourLearningStudio")}
           </p>
         )}
         <Studio
@@ -289,11 +278,7 @@ export function App() {
           <Suspense
             fallback={
               <p role="status">
-                {say(
-                  language,
-                  "Opening the experiment bench…",
-                  "正在打开实验工作台…",
-                )}
+                {t(language, "App.openingTheExperimentBench")}
               </p>
             }
           >
@@ -327,22 +312,12 @@ export function App() {
           !auth.info.authenticated &&
           (area === "physics" || area === "quantum") && (
             <section className="creation-locked">
-              <h1>
-                {say(language, "Open the experiment bench", "打开实验工作台")}
-              </h1>
-              <p>
-                {say(
-                  language,
-                  "These guided labs need preview access. Reviewed lessons are open to everyone.",
-                  "这些引导演示需要预览权限，经审阅的课程对所有人开放。",
-                )}
-              </p>
+              <h1>{t(language, "App.openTheExperimentBench")}</h1>
+              <p>{t(language, "App.theseGuidedLabsNeedPreview")}</p>
               <button onClick={openAccess}>
-                {say(language, "Preview access", "预览权限")}
+                {t(language, "App.previewAccess")}
               </button>
-              <a href="#studio">
-                {say(language, "Explore lessons", "探索课程")}
-              </a>
+              <a href="#studio">{t(language, "App.exploreLessons")}</a>
             </section>
           )}
         {showAccess && (
@@ -369,32 +344,18 @@ export function App() {
                 : "连接需要检查，互动课程库仍可使用。",
             )}{" "}
             <button className="text-button" onClick={openAccess}>
-              {say(language, "Sign in", "登录")}
+              {t(language, "App.signIn")}
             </button>
           </p>
         )}
       </main>
       <footer className="site-footer">
         <Brand compact />
-        <p>
-          {say(
-            language,
-            "A little curiosity. A clearer explanation.",
-            "一点好奇，更清晰的理解。",
-          )}
-        </p>
+        <p>{t(language, "App.aLittleCuriosityAClearer")}</p>
         <span>
-          {say(
-            language,
-            "Independent learning prototype",
-            "独立开发的学习原型",
-          )}
+          {t(language, "App.independentLearningPrototype")}
           <br />
-          {say(
-            language,
-            "Synthetic examples · Temporary sessions",
-            "虚构示例 · 临时会话",
-          )}
+          {t(language, "App.syntheticExamplesTemporarySessions")}
         </span>
       </footer>
     </div>

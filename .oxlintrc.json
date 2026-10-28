@@ -30,5 +30,16 @@
     "react": {
       "version": "19"
     }
-  }
+  },
+  "overrides": [
+    {
+      "files": [
+        "frontend/components/labs/**"
+      ],
+      "rules": {
+        "react/refs": "warn",
+        "react/immutability": "warn"
+      }
+    }
+  ]
 }

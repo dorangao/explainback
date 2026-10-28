@@ -5,13 +5,11 @@ test("authored edits survive navigation through the library, a gallery lesson an
   page,
 }) => {
   await page.goto("/#invite:BROWSER-TEST-CODE");
-  await page
-    .getByLabel("Import lesson JSON")
-    .setInputFiles({
-      name: "lesson.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(coolingLesson())),
-    });
+  await page.getByLabel("Import lesson JSON").setInputFiles({
+    name: "lesson.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(coolingLesson())),
+  });
   await page.getByText("Edit lesson text", { exact: true }).click();
   await page
     .getByLabel("Lesson title", { exact: true })
@@ -207,13 +205,11 @@ test("an authored animation pauses in the library and resumes only on request", 
   page,
 }) => {
   await page.goto("/#invite:BROWSER-TEST-CODE");
-  await page
-    .getByLabel("Import lesson JSON")
-    .setInputFiles({
-      name: "lesson.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(coolingLesson())),
-    });
+  await page.getByLabel("Import lesson JSON").setInputFiles({
+    name: "lesson.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(coolingLesson())),
+  });
   await page
     .getByLabel(
       "I reviewed the demo definition and its assumptions for this presentation.",
@@ -250,11 +246,34 @@ test("an authored animation pauses in the library and resumes only on request", 
   ).toBeEnabled();
 });
 
-test('expired access clears the private draft and returns to the public library',async({page})=>{
- await page.goto('/#invite:BROWSER-TEST-CODE');
- await page.getByLabel('Import lesson JSON').setInputFiles({name:'lesson.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(coolingLesson()))});
- await page.route('**/api/studio/compose',route=>route.fulfill({status:401,json:{error:'Tester access required.',code:'TESTER_REQUIRED'}}));
- await page.getByLabel('Ask Muse to revise this draft').fill('Simplify the wording.');await page.getByRole('button',{name:'Revise lesson & demo',exact:true}).click();
- await expect(page.getByRole('heading',{name:'Find a question. Try it for yourself.'})).toBeVisible();
- await expect(page.locator('.draft-review')).toHaveCount(0);await expect(page.getByRole('link',{name:'Physics',exact:true})).toHaveCount(0);
+test("expired access clears the private draft and returns to the public library", async ({
+  page,
+}) => {
+  await page.goto("/#invite:BROWSER-TEST-CODE");
+  await page.getByLabel("Import lesson JSON").setInputFiles({
+    name: "lesson.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(coolingLesson())),
+  });
+  await page.route("**/api/studio/compose", (route) =>
+    route.fulfill({
+      status: 401,
+      json: { error: "Tester access required.", code: "TESTER_REQUIRED" },
+    }),
+  );
+  await page
+    .getByLabel("Ask Muse to revise this draft")
+    .fill("Simplify the wording.");
+  await page
+    .getByRole("button", { name: "Revise lesson & demo", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Find a question. Try it for yourself.",
+    }),
+  ).toBeVisible();
+  await expect(page.locator(".draft-review")).toHaveCount(0);
+  await expect(
+    page.getByRole("link", { name: "Physics", exact: true }),
+  ).toHaveCount(0);
 });

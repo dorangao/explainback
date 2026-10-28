@@ -178,7 +178,9 @@ export function PhysicsLab(props: LabProps) {
               ref={dom.topic}
               value={s.topic}
               disabled={Boolean(s.session) || s.busy || active}
-              onChange={(e) => c.chooseTopic(e.target.value as (typeof topics)[number])}
+              onChange={(e) =>
+                c.chooseTopic(e.target.value as (typeof topics)[number])
+              }
             >
               {topics.map((id) => (
                 <option key={id} value={id}>

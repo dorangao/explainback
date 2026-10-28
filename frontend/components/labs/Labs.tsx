@@ -1,4 +1,5 @@
 import { say } from "../../lib/types";
+import { t } from "../../lib/messages";
 import { PhysicsLab } from "./PhysicsLab";
 import { QuantumLab } from "./QuantumLab";
 import type { LabProps } from "./types";
@@ -14,9 +15,7 @@ export function Labs({
     <section className="lab-workspace" hidden={!visible}>
       <div className="workspace-heading">
         <div>
-          <p className="eyebrow">
-            {say(language, "THE EXPERIMENT BENCH", "实验工作台")}
-          </p>
+          <p className="eyebrow">{t(language, "Labs.theExperimentBench")}</p>
           <h1>
             {say(
               language,
@@ -26,10 +25,14 @@ export function Labs({
           </h1>
         </div>
         <a className="back-link" href="#studio">
-          {say(language, "Explore lessons", "探索课程")} ↗
+          {t(language, "Labs.exploreLessons")} ↗
         </a>
       </div>
-      {kind === "physics" ? <PhysicsLab {...props} /> : <QuantumLab {...props} />}
+      {kind === "physics" ? (
+        <PhysicsLab {...props} />
+      ) : (
+        <QuantumLab {...props} />
+      )}
     </section>
   );
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { t } from "../lib/messages";
 import type { AuthInfo, Language } from "../lib/types";
 import { say } from "../lib/types";
 export function AccessPanel({
@@ -47,27 +48,13 @@ export function AccessPanel({
       <button
         className="text-button close-access"
         onClick={onClose}
-        aria-label={say(language, "Close sign-in", "关闭登录")}
+        aria-label={t(language, "AccessPanel.closeSignIn")}
       >
         ×
       </button>
-      <p className="eyebrow">
-        {say(language, "YOUR NEXT QUESTION", "你的下一个问题")}
-      </p>
-      <h2 id="access-title">
-        {say(
-          language,
-          "Make a lesson of your own.",
-          "把你的问题，变成一堂课。",
-        )}
-      </h2>
-      <p>
-        {say(
-          language,
-          "Creating with Muse needs preview access. The learning library is always open.",
-          "使用 Muse 创建课程需要预览权限，互动课程库始终开放。",
-        )}
-      </p>
+      <p className="eyebrow">{t(language, "AccessPanel.yourNextQuestion")}</p>
+      <h2 id="access-title">{t(language, "AccessPanel.makeALessonOfYour")}</h2>
+      <p>{t(language, "AccessPanel.creatingWithMuseNeedsPreview")}</p>
       {info.codes && (
         <form
           onSubmit={async (e) => {
@@ -76,7 +63,7 @@ export function AccessPanel({
           }}
         >
           <label htmlFor="reviewer-code">
-            {say(language, "Reviewer access code", "评审访问码")}
+            {t(language, "AccessPanel.reviewerAccessCode")}
           </label>
           <div className="code-row">
             <input
@@ -102,9 +89,7 @@ export function AccessPanel({
       )}
       {info.configured && (
         <details className="account-details" open={!info.codes}>
-          <summary>
-            {say(language, "Sign in with a tester account", "使用测试账号登录")}
-          </summary>
+          <summary>{t(language, "AccessPanel.signInWithATester")}</summary>
           <form
             onSubmit={async (e) => {
               e.preventDefault();
@@ -114,7 +99,7 @@ export function AccessPanel({
             }}
           >
             <label htmlFor="username">
-              {say(language, "Username", "用户名")}
+              {t(language, "AccessPanel.username")}
             </label>
             <input
               id="username"
@@ -126,7 +111,7 @@ export function AccessPanel({
               disabled={working}
             />
             <label htmlFor="password">
-              {say(language, "Password", "密码")}
+              {t(language, "AccessPanel.password")}
             </label>
             <input
               id="password"
@@ -150,11 +135,7 @@ export function AccessPanel({
       )}
       {!info.codes && !info.configured && (
         <p className="notice">
-          {say(
-            language,
-            "Creation access is not configured on this server. You can still explore every reviewed lesson.",
-            "此服务尚未配置创建权限，你仍可探索所有经审阅的课程。",
-          )}
+          {t(language, "AccessPanel.creationAccessIsNotConfigured")}
         </p>
       )}
       {error && (
@@ -163,11 +144,7 @@ export function AccessPanel({
         </p>
       )}
       <p className="fine">
-        {say(
-          language,
-          "Use synthetic examples. Keep personal and student information out.",
-          "请使用虚构示例，不输入真实个人或学生资料。",
-        )}
+        {t(language, "AccessPanel.useSyntheticExamplesKeepPersonal")}
       </p>
     </section>
   );

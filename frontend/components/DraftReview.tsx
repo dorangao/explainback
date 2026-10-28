@@ -1,4 +1,5 @@
 import { useState, useId } from "react";
+import { t } from "../lib/messages";
 import type { Lesson, Language, Demo } from "../lib/types";
 import { say } from "../lib/types";
 import {
@@ -25,9 +26,7 @@ function Definition({
 }) {
   return (
     <details className="definition" open>
-      <summary>
-        {say(language, "Review the generated demo", "审阅生成的演示")}
-      </summary>
+      <summary>{t(language, "DraftReview.reviewTheGeneratedDemo")}</summary>
       <p>{demo.assumptions[language]}</p>
       {demo.kind === "model" ? (
         <>
@@ -51,7 +50,7 @@ function Definition({
                 <dt>{i.label[language]}</dt>
                 <dd>
                   {i.min}–{i.max} {i.unit} ·{" "}
-                  {say(language, "starts at", "初值")} {i.value}
+                  {t(language, "DraftReview.startsAt")} {i.value}
                 </dd>
               </div>
             ))}
@@ -68,7 +67,7 @@ function Definition({
           </ol>
           <details>
             <summary>
-              {say(language, "Review the authored answer", "审阅创作的答案")}
+              {t(language, "DraftReview.reviewTheAuthoredAnswer")}
             </summary>
             <p>{demo.transfer.question[language]}</p>
             <p>{demo.transfer.choices[demo.transfer.answer][language]}</p>
@@ -78,14 +77,10 @@ function Definition({
       )}
       <details className="definition-editor">
         <summary>
-          {say(
-            language,
-            "Edit formulas, controls or steps (JSON)",
-            "编辑公式、控件或步骤（JSON）",
-          )}
+          {t(language, "DraftReview.editFormulasControlsOrSteps")}
         </summary>
         <label>
-          {say(language, "Bilingual demo definition", "双语演示定义")}
+          {t(language, "DraftReview.bilingualDemoDefinition")}
           <textarea
             value={value ?? JSON.stringify(demo, null, 2)}
             onChange={(e) => onEdit(e.target.value)}
@@ -102,7 +97,7 @@ function Definition({
             onClick={onApply}
             disabled={busy || value === undefined}
           >
-            {say(language, "Validate & apply definition", "验证并应用定义")}
+            {t(language, "DraftReview.validateApplyDefinition")}
           </button>
           <button
             type="button"
@@ -110,7 +105,7 @@ function Definition({
             onClick={onDiscard}
             disabled={busy || value === undefined}
           >
-            {say(language, "Discard definition edits", "放弃定义编辑")}
+            {t(language, "DraftReview.discardDefinitionEdits")}
           </button>
         </div>
       </details>
@@ -166,13 +161,7 @@ export function DraftReview({
       });
       setError("");
     } catch {
-      setError(
-        say(
-          language,
-          "Definition rejected. Check both languages, ranges and formulas. Your last valid definition is preserved.",
-          "定义未通过。请检查双语文字、范围和公式。上一次有效定义已保留。",
-        ),
-      );
+      setError(t(language, "DraftReview.definitionRejectedCheckBothLanguages"));
     }
   }
   const editChapter = (
@@ -187,30 +176,20 @@ export function DraftReview({
     <section className="draft-review" aria-labelledby={`${formId}-title`}>
       <div className="workspace-heading">
         <div>
-          <p className="eyebrow">
-            {say(language, "02 / REVIEW & REFINE", "02 / 审阅与修改")}
-          </p>
+          <p className="eyebrow">{t(language, "DraftReview.02ReviewRefine")}</p>
           <h2 id={`${formId}-title`}>{draft.title[language]}</h2>
         </div>
         <button className="text-button" disabled={busy} onClick={onClose}>
-          {say(language, "Close lesson", "关闭课程")}
+          {t(language, "DraftReview.closeLesson")}
         </button>
       </div>
       <p className="lead-small">{draft.intro[language]}</p>
       <p className="review-notice">
-        {say(
-          language,
-          "Check the teaching text, formulas and assumptions. Structure and arithmetic checks do not establish scientific accuracy.",
-          "请检查教学文字、公式与假设。结构与算术检查不代表科学正确。",
-        )}
+        {t(language, "DraftReview.checkTheTeachingTextFormulas")}
       </p>
       {warnings.length > 0 && (
         <p className="notice" role="status">
-          {say(
-            language,
-            "Check both translations: unexpected Cyrillic text in ",
-            "请检查两种译文，以下字段出现了西里尔文字：",
-          )}
+          {t(language, "DraftReview.checkBothTranslationsUnexpectedCyrillic")}
           {warnings.join(", ")}
         </p>
       )}
@@ -241,7 +220,7 @@ export function DraftReview({
                     })
                   }
                 >
-                  {say(language, "Move up", "上移")}
+                  {t(language, "DraftReview.moveUp")}
                 </button>
                 <button
                   className="text-button"
@@ -252,7 +231,7 @@ export function DraftReview({
                     })
                   }
                 >
-                  {say(language, "Remove", "移除")}
+                  {t(language, "DraftReview.remove")}
                 </button>
               </div>
             </div>
@@ -286,10 +265,10 @@ export function DraftReview({
         ))}
       </div>
       <details className="edit-text">
-        <summary>{say(language, "Edit lesson text", "编辑课程文字")}</summary>
+        <summary>{t(language, "DraftReview.editLessonText")}</summary>
         <div className="form-grid">
           <label>
-            {say(language, "Lesson title", "课程标题")}
+            {t(language, "DraftReview.lessonTitle")}
             <input
               value={draft.title[language]}
               onChange={(e) =>
@@ -302,7 +281,7 @@ export function DraftReview({
             />
           </label>
           <label>
-            {say(language, "Introduction", "简介")}
+            {t(language, "DraftReview.introduction")}
             <textarea
               value={draft.intro[language]}
               onChange={(e) =>
@@ -319,7 +298,7 @@ export function DraftReview({
         {draft.chapters.map((chapter, index) => (
           <fieldset key={index}>
             <legend>
-              {index + 1} · {say(language, "Chapter text", "章节文字")}
+              {index + 1} · {t(language, "DraftReview.chapterText")}
             </legend>
             {(["framing", "explanation"] as const).map((key) => (
               <label key={key}>
@@ -350,7 +329,7 @@ export function DraftReview({
       {canRequest && (
         <section className="revision-section">
           <label htmlFor={`${formId}-revision`}>
-            {say(language, "Ask Muse to revise this draft", "让 Muse 修改草稿")}
+            {t(language, "DraftReview.askMuseToReviseThis")}
           </label>
           <textarea
             id={`${formId}-revision`}
@@ -358,10 +337,9 @@ export function DraftReview({
             onChange={(e) => setRevision(e.target.value)}
             maxLength={600}
             rows={2}
-            placeholder={say(
+            placeholder={t(
               language,
-              "One change: simplify the explanation, add an output, correct an assumption…",
-              "一个修改：简化解释、添加输出、修正假设…",
+              "DraftReview.oneChangeSimplifyTheExplanation",
             )}
             disabled={busy}
           />
@@ -370,7 +348,7 @@ export function DraftReview({
             disabled={busy || hasPending || !revision.trim()}
             onClick={() => onRevise(revision)}
           >
-            {say(language, "Revise lesson & demo", "修改课程与演示")}
+            {t(language, "DraftReview.reviseLessonDemo")}
           </button>
         </section>
       )}
@@ -382,22 +360,12 @@ export function DraftReview({
             onChange={(e) => setReviewed(e.target.checked)}
             disabled={busy || hasPending}
           />
-          <span>
-            {say(
-              language,
-              "I reviewed the demo definition and its assumptions for this presentation.",
-              "我已审阅本次演示的定义与假设。",
-            )}
-          </span>
+          <span>{t(language, "DraftReview.iReviewedTheDemoDefinition")}</span>
         </label>
       )}
       {hasPending && (
         <p className="notice">
-          {say(
-            language,
-            "Apply or discard definition edits before presenting, revising or exporting.",
-            "演示、修改或导出前，请应用或放弃定义编辑。",
-          )}
+          {t(language, "DraftReview.applyOrDiscardDefinitionEdits")}
         </p>
       )}
       <div className="actions review-actions">
@@ -405,14 +373,14 @@ export function DraftReview({
           disabled={busy || hasPending || (generated && !reviewed)}
           onClick={onPresent}
         >
-          {say(language, "Present this lesson →", "开始演示 →")}
+          {t(language, "DraftReview.presentThisLesson")}
         </button>
         <button
           className="secondary"
           disabled={busy || hasPending}
           onClick={onExport}
         >
-          {say(language, "Export lesson JSON", "导出课程 JSON")}
+          {t(language, "DraftReview.exportLessonJson")}
         </button>
       </div>
     </section>

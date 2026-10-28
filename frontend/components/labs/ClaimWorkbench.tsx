@@ -135,7 +135,9 @@ export function EvidenceWorkbench({ view }: { view: View }) {
   const copy = t(lang),
     session = s.session,
     records =
-      session?.workflow === "claim-testing" ? (session.evidenceRecords ?? []) : [];
+      session?.workflow === "claim-testing"
+        ? (session.evidenceRecords ?? [])
+        : [];
   return (
     <details
       id="evidence-workbench"
@@ -182,7 +184,11 @@ export function TransferReport({ view }: { view: View }) {
           "Assisted transfer: additional coaching was used on this problem.",
       };
   return (
-    <section id="transfer-report" hidden={!shown} aria-labelledby="report-heading">
+    <section
+      id="transfer-report"
+      hidden={!shown}
+      aria-labelledby="report-heading"
+    >
       <h2 id="report-heading">{copy["report-heading"]}</h2>
       <p id="report-outcome">
         {report

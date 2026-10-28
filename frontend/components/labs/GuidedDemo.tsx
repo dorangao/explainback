@@ -24,8 +24,7 @@ export function GuidedDemo({
     stages: string[] = suction ? suctionGuideStages : guideStages,
     maxCalls = suction ? 5 : 4,
     guide = (suction ? suctionGuide : demoGuide)(s.autoStage, lang) as
-      | string[]
-      | null,
+      string[] | null,
     presentation = demoPresentation(s.autoStage, lang, suction),
     manual = s.experienceMode === "manual";
   const states: Record<string, string> = zh
@@ -120,7 +119,9 @@ export function GuidedDemo({
         </h2>
         <div className="journey-buttons">
           <label className="demo-language">
-            <span id="auto-demo-kind-label">{zh ? "演示主题" : "Demo topic"}</span>
+            <span id="auto-demo-kind-label">
+              {zh ? "演示主题" : "Demo topic"}
+            </span>
             <select
               id="auto-demo-kind"
               value={s.demoKind}
@@ -215,10 +216,15 @@ export function GuidedDemo({
               <button
                 type="button"
                 id="auto-demo-next"
-                disabled={finished ? s.busy : !s.autoWaiting || !active || s.busy}
+                disabled={
+                  finished ? s.busy : !s.autoWaiting || !active || s.busy
+                }
                 onClick={(event) => c.demoNext(event.detail)}
                 onKeyDown={(event) => {
-                  if (event.repeat && (event.key === "Enter" || event.key === " "))
+                  if (
+                    event.repeat &&
+                    (event.key === "Enter" || event.key === " ")
+                  )
                     event.preventDefault();
                 }}
               >
@@ -267,7 +273,9 @@ export function GuidedDemo({
           <div id="auto-demo-animation">{animation}</div>
           <details id="auto-demo-preview" hidden={!s.autoDemoPreview}>
             <summary id="auto-demo-preview-title">
-              {zh ? "本步预设与真实反馈" : "This step’s preset and live feedback"}
+              {zh
+                ? "本步预设与真实反馈"
+                : "This step’s preset and live feedback"}
             </summary>
             <blockquote id="auto-demo-prompt">{s.autoDemoPrompt}</blockquote>
           </details>

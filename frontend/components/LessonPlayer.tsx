@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useReducer, useRef, useState, useId } from "react";
+import { t } from "../lib/messages";
 import type { Feedback, Language, Player } from "../lib/types";
 import { say } from "../lib/types";
 import { formatDemoNumber } from "../lib/shared";
@@ -97,17 +98,17 @@ export function LessonPlayer({
     update();
   };
   const stages = {
-    predict: say(language, "Make a prediction", "先做一个预测"),
-    experiment: say(language, "Run the experiment", "亲手运行实验"),
-    explain: say(language, "Explain what changed", "解释观察到的变化"),
-    transfer: say(language, "Try a fresh case", "试一个新情境"),
-    complete: say(language, "A clearer explanation.", "理解，又清晰了一点。"),
+    predict: t(language, "LessonPlayer.makeAPrediction"),
+    experiment: t(language, "LessonPlayer.runTheExperiment"),
+    explain: t(language, "LessonPlayer.explainWhatChanged"),
+    transfer: t(language, "LessonPlayer.tryAFreshCase"),
+    complete: t(language, "LessonPlayer.aClearerExplanation"),
   };
   const labels = [
-    say(language, "Predict", "预测"),
-    say(language, "Experiment", "实验"),
-    say(language, "Explain", "解释"),
-    say(language, "Transfer", "迁移"),
+    t(language, "LessonPlayer.predict"),
+    t(language, "LessonPlayer.experiment"),
+    t(language, "LessonPlayer.explain"),
+    t(language, "LessonPlayer.transfer"),
   ];
   const index = [
     "predict",
@@ -123,26 +124,20 @@ export function LessonPlayer({
     (state.stage === "transfer" && state.transfer !== true);
   const nextLabel =
     state.stage === "complete"
-      ? say(language, "Restart lesson", "重新学习")
+      ? t(language, "LessonPlayer.restartLesson")
       : state.stage === "predict"
-        ? say(language, "Test this claim →", "检验这个观点 →")
+        ? t(language, "LessonPlayer.testThisClaim")
         : state.stage === "experiment"
-          ? say(language, "Explain the result →", "解释结果 →")
+          ? t(language, "LessonPlayer.explainTheResult")
           : state.stage === "explain"
-            ? say(language, "Try a fresh case →", "尝试新情境 →")
-            : say(language, "Next chapter →", "下一章 →");
+            ? t(language, "LessonPlayer.tryAFreshCase2")
+            : t(language, "LessonPlayer.nextChapter");
   function setInput(id: string, value: number) {
     try {
       act(() => player.input(id, value));
       return true;
     } catch {
-      setNotice(
-        say(
-          language,
-          "Use a value within the reviewed range and step.",
-          "请输入符合已审阅范围与步长的值。",
-        ),
-      );
+      setNotice(t(language, "LessonPlayer.useAValueWithinThe"));
     }
     return false;
   }
@@ -157,15 +152,15 @@ export function LessonPlayer({
       <div className="player-toolbar">
         <a className="back-link" href="#studio" onClick={onLibrary}>
           <span aria-hidden="true">← </span>
-          {say(language, "Back to library", "返回课程库")}
+          {t(language, "LessonPlayer.backToLibrary")}
         </a>
         <button className="text-button" onClick={onBack} disabled={busy}>
-          {say(language, "Lesson overview", "课程概览")}
+          {t(language, "LessonPlayer.lessonOverview")}
         </button>
       </div>
       <div className="player-heading">
         <p className="eyebrow">
-          {say(language, "CHAPTER", "章节")} {state.chapter + 1} /{" "}
+          {t(language, "LessonPlayer.chapter")} {state.chapter + 1} /{" "}
           {player.lesson.chapters.length} · {e.title}
         </p>
         <h2 id={`${formId}-title`}>{player.lesson.title[language]}</h2>
@@ -173,7 +168,7 @@ export function LessonPlayer({
       </div>
       <ol
         className="learning-steps"
-        aria-label={say(language, "Learning progress", "学习进度")}
+        aria-label={t(language, "LessonPlayer.learningProgress")}
       >
         {labels.map((label, i) => (
           <li
@@ -194,7 +189,7 @@ export function LessonPlayer({
           {state.stage !== "complete" && (
             <blockquote className="claim">
               <span className="eyebrow">
-                {say(language, "THE CLAIM", "待检验的观点")}
+                {t(language, "LessonPlayer.theClaim")}
               </span>
               {e.claim}
             </blockquote>
@@ -202,11 +197,7 @@ export function LessonPlayer({
           {state.stage === "predict" && (
             <>
               <p>
-                {say(
-                  language,
-                  "Choose before revealing the result. You can change your mind after testing.",
-                  "先选择，再查看结果。实验之后，你可以重新思考。",
-                )}
+                {t(language, "LessonPlayer.chooseBeforeRevealingTheResult")}
               </p>
               <div className="prediction-options">
                 {(["agree", "disagree", "unsure"] as const).map((value, i) => (
@@ -222,9 +213,9 @@ export function LessonPlayer({
                   >
                     {
                       [
-                        say(language, "Agree", "同意"),
-                        say(language, "Disagree", "不同意"),
-                        say(language, "Not sure", "不确定"),
+                        t(language, "LessonPlayer.agree"),
+                        t(language, "LessonPlayer.disagree"),
+                        t(language, "LessonPlayer.notSure"),
                       ][i]
                     }
                   </button>
@@ -243,7 +234,7 @@ export function LessonPlayer({
               />
               <p className="experiment-caption">{e.caption(state.progress)}</p>
               <label className="scrub-label">
-                {say(language, "Experiment progress", "实验进度")}
+                {t(language, "LessonPlayer.experimentProgress")}
                 <input
                   type="range"
                   min="0"
@@ -289,7 +280,7 @@ export function LessonPlayer({
                   disabled={busy || state.stage !== "experiment"}
                   onClick={() => act(() => player.scrub(1))}
                 >
-                  {say(language, "Show final state", "查看最终状态")}
+                  {t(language, "LessonPlayer.showFinalState")}
                 </button>
               </div>
               {state.progress === 1 && e.metrics.length > 0 && (
@@ -307,10 +298,9 @@ export function LessonPlayer({
               {e.quantumState !== undefined && (
                 <div className="quantum-measure">
                   <p className="fine">
-                    {say(
+                    {t(
                       language,
-                      "Curves show pre-measurement probabilities. Each fresh shot prepares the circuit again.",
-                      "曲线显示测量前的概率；每次独立测量都会重新制备电路。",
+                      "LessonPlayer.curvesShowPreMeasurementProbabilities",
                     )}
                   </p>
                   <div className="actions">
@@ -340,16 +330,12 @@ export function LessonPlayer({
                         setObservation(null);
                       }}
                     >
-                      {say(
-                        language,
-                        "256 fresh preparations",
-                        "独立制备并测量 256 次",
-                      )}
+                      {t(language, "LessonPlayer.256FreshPreparations")}
                     </button>
                   </div>
                   <p role="status">
                     {observation
-                      ? `${say(language, "Measured state", "测量状态")} |${e.basisLabels?.[observation.outcome]}⟩`
+                      ? `${t(language, "LessonPlayer.measuredState")} |${e.basisLabels?.[observation.outcome]}⟩`
                       : counts
                         ? counts
                             .map((n, i) => `|${e.basisLabels?.[i]}⟩ ${n}/256`)
@@ -363,15 +349,11 @@ export function LessonPlayer({
           {state.stage === "explain" && (
             <section className="evidence-summary">
               <p className="eyebrow">
-                {say(language, "CALCULATED EVIDENCE", "计算证据")}
+                {t(language, "LessonPlayer.calculatedEvidence")}
               </p>
               <p>{e.result}</p>
               <p className="eyebrow">
-                {say(
-                  language,
-                  "AUTHORED EXPLANATION · REVIEWABLE",
-                  "创作的解释 · 可审阅",
-                )}
+                {t(language, "LessonPlayer.authoredExplanationReviewable")}
               </p>
               <p>{chapter.explanation[language]}</p>
               {canAsk && (
@@ -448,8 +430,7 @@ export function LessonPlayer({
                   }}
                 >
                   <label>
-                    {say(language, "Your answer", "你的答案")} (
-                    {e.transfer.unit})
+                    {t(language, "LessonPlayer.yourAnswer")} ({e.transfer.unit})
                     <input
                       value={answer}
                       onChange={(event) => {
@@ -464,7 +445,7 @@ export function LessonPlayer({
                     />
                   </label>
                   <button className="secondary" disabled={busy}>
-                    {say(language, "Check answer locally", "本地核验答案")}
+                    {t(language, "LessonPlayer.checkAnswerLocally")}
                   </button>
                 </form>
               )}
@@ -477,22 +458,10 @@ export function LessonPlayer({
                 {result === null
                   ? ""
                   : result === "invalid"
-                    ? say(
-                        language,
-                        "Enter a finite number.",
-                        "请输入有限数值。",
-                      )
+                    ? t(language, "LessonPlayer.enterAFiniteNumber")
                     : result
-                      ? say(
-                          language,
-                          "That matches this model. Ready for the next step.",
-                          "与本模型的结果相符，可以继续下一步。",
-                        )
-                      : say(
-                          language,
-                          "That does not match yet. Revisit the inputs and try again.",
-                          "还不相符，请重新检查输入并再次尝试。",
-                        )}
+                      ? t(language, "LessonPlayer.thatMatchesThisModelReady")
+                      : t(language, "LessonPlayer.thatDoesNotMatchYet")}
               </p>
             </section>
           )}
@@ -502,18 +471,10 @@ export function LessonPlayer({
                 ✓
               </span>
               <p>
-                {say(
-                  language,
-                  "You predicted, tested, explained and tried a fresh case. Keep asking what changes when the assumptions change.",
-                  "你已预测、实验、解释，并尝试了新情境。继续思考：假设改变时，结果会怎样变化？",
-                )}
+                {t(language, "LessonPlayer.youPredictedTestedExplainedAnd")}
               </p>
               <p className="fine">
-                {say(
-                  language,
-                  "This walkthrough is a teaching example, not a certification of understanding.",
-                  "本演示是教学示例，并不代表已全面掌握知识。",
-                )}
+                {t(language, "LessonPlayer.thisWalkthroughIsATeaching")}
               </p>
             </div>
           )}
@@ -542,34 +503,30 @@ export function LessonPlayer({
                 disabled={busy}
                 onClick={() => act(() => player.replay())}
               >
-                {say(language, "Replay experiment", "重播实验")}
+                {t(language, "LessonPlayer.replayExperiment")}
               </button>
             )}
           </div>
         </div>
         <aside className="player-inspector">
           <p className="eyebrow">
-            {say(language, "YOUR EXPERIMENT", "你的实验")}
+            {t(language, "LessonPlayer.yourExperiment")}
           </p>
           {state.prediction && (
             <p className="fine">
-              {say(language, "Your prediction: ", "你的预测：")}
+              {t(language, "LessonPlayer.yourPrediction")}
               {
                 {
-                  agree: say(language, "Agree", "同意"),
-                  disagree: say(language, "Disagree", "不同意"),
-                  unsure: say(language, "Not sure", "不确定"),
+                  agree: t(language, "LessonPlayer.agree"),
+                  disagree: t(language, "LessonPlayer.disagree"),
+                  unsure: t(language, "LessonPlayer.notSure"),
                 }[state.prediction]
               }
             </p>
           )}
           {!e.generated && (
             <label>
-              {say(
-                language,
-                "Compare a preset (resets this chapter)",
-                "比较设置（重置本章）",
-              )}
+              {t(language, "LessonPlayer.compareAPresetResetsThis")}
               <select
                 value={state.variant}
                 onChange={(event) =>
@@ -609,13 +566,7 @@ export function LessonPlayer({
                       event.target.value = String(input.value);
                   } else {
                     event.target.value = String(input.value);
-                    setNotice(
-                      say(
-                        language,
-                        "Use a value within the reviewed range and step.",
-                        "请输入符合已审阅范围与步长的值。",
-                      ),
-                    );
+                    setNotice(t(language, "LessonPlayer.useAValueWithinThe"));
                   }
                 }}
               />
@@ -633,17 +584,13 @@ export function LessonPlayer({
               />
               <small>
                 {input.min} → {input.max} ·{" "}
-                {say(
-                  language,
-                  "changes reset your prediction",
-                  "修改将重置预测",
-                )}
+                {t(language, "LessonPlayer.changesResetYourPrediction")}
               </small>
             </div>
           ))}
           {(e.formulas?.length ?? 0) > 1 && (
             <label>
-              {say(language, "Graph output", "图表输出")}
+              {t(language, "LessonPlayer.graphOutput")}
               <select
                 value={state.metric}
                 disabled={busy}
@@ -661,9 +608,7 @@ export function LessonPlayer({
             </label>
           )}
           <details className="assumptions" open>
-            <summary>
-              {say(language, "Assumptions & limits", "假设与限制")}
-            </summary>
+            <summary>{t(language, "LessonPlayer.assumptionsLimits")}</summary>
             <p>{e.assumptions}</p>
             {e.generated && (
               <p className="fine">

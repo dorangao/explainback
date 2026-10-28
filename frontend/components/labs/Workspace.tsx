@@ -113,7 +113,11 @@ function ReasoningPanel({ view, dom }: { view: View; dom: Dom }) {
           void c.submit();
         }}
       >
-        <div id="demo-presets" className="demo-presets" hidden={presets.length === 0}>
+        <div
+          id="demo-presets"
+          className="demo-presets"
+          hidden={presets.length === 0}
+        >
           <label htmlFor="demo-preset" id="demo-preset-label">
             {zh ? "演示预设 · 当前步骤" : "Demo preset · current step"}
           </label>
@@ -229,7 +233,10 @@ function ReasoningPanel({ view, dom }: { view: View; dom: Dom }) {
             {copy["example-landing"]}
           </button>
         </div>
-        <fieldset id="transfer-values" hidden={!(claimMode && phase === "transfer")}>
+        <fieldset
+          id="transfer-values"
+          hidden={!(claimMode && phase === "transfer")}
+        >
           <legend id="values-legend">{copy["values-legend"]}</legend>
           <label>
             <span id="asymptote-label">
@@ -337,11 +344,12 @@ function VisualPanel({
     flight = c.flightMode(),
     suction = c.suctionMode(),
     scenario = graph?.scenario;
-  const range = flight && graph
-    ? { min: 0, max: scenario.airtime + scenario.stopTime, step: 0.0001 }
-    : motion && graph
-      ? { min: 0, max: scenario.T, step: scenario.T / 100 }
-      : { min: -8, max: 8, step: 0.1 };
+  const range =
+    flight && graph
+      ? { min: 0, max: scenario.airtime + scenario.stopTime, step: 0.0001 }
+      : motion && graph
+        ? { min: 0, max: scenario.T, step: scenario.T / 100 }
+        : { min: -8, max: 8, step: 0.1 };
   let heading: string = copy["graph-heading"],
     tag: string = copy["graph-tag"],
     scrubberLabel: string = copy["scrubber-label"],
@@ -351,7 +359,9 @@ function VisualPanel({
       ? `${graph.expression} · x → −∞: y → ${graph.leftLimit}; x → ∞: y → ${graph.rightLimit}${graph.isReference ? (zh ? "（上一题的参考图像）" : " (reference graph from the first problem)") : ""}`
       : copy.graphHidden;
   if (motion) {
-    heading = zh ? "同样的端点，不同的运动。" : "Same endpoints, different motion.";
+    heading = zh
+      ? "同样的端点，不同的运动。"
+      : "Same endpoints, different motion.";
     tag = zh ? "假想解析模型" : "HYPOTHETICAL MODEL";
     scrubberLabel = zh ? "探索时间 t（秒）" : "Explore time t (seconds)";
     marginNote = zh
@@ -449,7 +459,11 @@ function VisualPanel({
         ref={dom.flightScene}
         hidden
       />
-      <p id="motion-legend" className="fine" hidden={!((motion || flight) && graph)}>
+      <p
+        id="motion-legend"
+        className="fine"
+        hidden={!((motion || flight) && graph)}
+      >
         {legend}
       </p>
       <div id="graph" className="graph" ref={dom.graph} />
@@ -564,7 +578,11 @@ export function Workspace({
         <VisualPanel view={view} dom={dom} suctionLab={suctionLab} />
       </div>
       <EvidenceWorkbench view={view} />
-      <section id="comparison" className="comparison" hidden={phase !== "complete"}>
+      <section
+        id="comparison"
+        className="comparison"
+        hidden={phase !== "complete"}
+      >
         <p className="eyebrow" id="comparison-label">
           {copy["comparison-label"]}
         </p>

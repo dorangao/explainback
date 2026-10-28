@@ -50,7 +50,7 @@ for (const file of files) {
     const needsImport = !/from "\.\.\/lib\/messages"|from "\.\/lib\/messages"/.test(changed);
     if (needsImport) {
       const importPath = relative(join(file, ".."), join(root, "lib/messages")).replace(/\\/g, "/");
-      changed = changed.replace(/^(import[^\n]*\n)/, `$1import { t } from "${importPath.startsWith(".") ? importPath : "./" + importPath}";\n`);
+      changed = `import { t } from "${importPath.startsWith(".") ? importPath : "./" + importPath}";\n` + changed;
     }
     if (!/\bsay\(/.test(changed)) changed = changed.replace(/import \{ say \} from "([^"]+)";\n/, "").replace(/,\s*say\s*\}/, " }").replace(/\{\s*say\s*,\s*/, "{ ");
     edits.push([file, changed, count]);

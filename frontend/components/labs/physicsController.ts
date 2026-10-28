@@ -57,7 +57,8 @@ type AutoRun = {
   version: number;
   language: Language;
 };
-export type AutoState = "idle" | "running" | "complete" | "stopped" | "attention";
+export type AutoState =
+  "idle" | "running" | "complete" | "stopped" | "attention";
 export type Store = {
   session: Session | null;
   generation: number;
@@ -192,7 +193,7 @@ export function createPhysicsController(
     suction: SuctionHandle | null = null;
   const language = () => live.current.language;
   const zh = () => language() === "zh";
-  const send = <T,>(
+  const send = <T>(
     path: string,
     body: unknown,
     options?: { timeoutMs?: number },
@@ -230,9 +231,9 @@ export function createPhysicsController(
         (s.guidedDemo && !suctionDemoMode()) ||
         Boolean(
           s.session?.graph &&
-            s.journeyModel &&
-            s.session.phase !== "transfer" &&
-            (motionMode() || flightMode()),
+          s.journeyModel &&
+          s.session.phase !== "transfer" &&
+          (motionMode() || flightMode()),
         ),
       language: language(),
       busy: s.busy,
@@ -424,9 +425,8 @@ export function createPhysicsController(
         jerk: "m/s³",
       }[metric];
       const value = (profile: string) =>
-        (physicsAt(scenario, profile, time) as Record<string, number>)[
-          metric
-        ] / (metric === "force" ? 1000 : 1);
+        (physicsAt(scenario, profile, time) as Record<string, number>)[metric] /
+        (metric === "force" ? 1000 : 1);
       return `t = ${Number(time.toFixed(3))} s · A = ${value("uniform").toFixed(3)} ${unit} · B = ${value(scenario.profileB).toFixed(3)} ${unit}`;
     }
     const x = s.scrubber,
@@ -489,12 +489,7 @@ export function createPhysicsController(
     s.playbackLast = 0;
   }
   async function runDemo() {
-    if (
-      !s.ready ||
-      !live.current.status.traceEnabled ||
-      s.busy ||
-      autoActive()
-    )
+    if (!s.ready || !live.current.status.traceEnabled || s.busy || autoActive())
       return;
     const isSuctionDemo = suctionDemoMode();
     clear();
@@ -835,7 +830,10 @@ export function createPhysicsController(
       if (!explanation) return;
       let answer: Record<string, number> | undefined;
       const session = s.session;
-      if (session.workflow === "claim-testing" && session.phase === "transfer") {
+      if (
+        session.workflow === "claim-testing" &&
+        session.phase === "transfer"
+      ) {
         const a = s.transferA,
           b = s.transferB;
         if (Boolean(a) !== Boolean(b)) {

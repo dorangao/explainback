@@ -327,8 +327,7 @@ export function QuantumLab({
         s.counts = sampleQuantum(model.frames[s.step].state) as number[];
       render();
     }
-    const focusHeading = () =>
-      s.after.push(() => heading.current?.focus());
+    const focusHeading = () => s.after.push(() => heading.current?.focus());
     async function ask(question: "why" | "claim") {
       const picked = target();
       if (
@@ -634,7 +633,10 @@ export function QuantumLab({
             </button>
           </div>
           <div className="quantum-settings">
-            <label id="q-phase-wrap" hidden={s.config.lesson !== "interference"}>
+            <label
+              id="q-phase-wrap"
+              hidden={s.config.lesson !== "interference"}
+            >
               <span id="q-phase-label">{text.phase}</span>
               <select
                 id="q-phase"
@@ -647,7 +649,10 @@ export function QuantumLab({
                 <option value="3.141592653589793">π</option>
               </select>
             </label>
-            <label id="q-basis-wrap" hidden={s.config.lesson !== "entanglement"}>
+            <label
+              id="q-basis-wrap"
+              hidden={s.config.lesson !== "entanglement"}
+            >
               <span id="q-basis-label">{text.basis}</span>
               <select
                 id="q-basis"

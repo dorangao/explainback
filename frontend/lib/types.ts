@@ -92,11 +92,7 @@ export type GalleryItem = {
   lesson: Lesson;
 };
 export type Stage =
-  | "predict"
-  | "experiment"
-  | "explain"
-  | "transfer"
-  | "complete";
+  "predict" | "experiment" | "explain" | "transfer" | "complete";
 export type PlayerState = {
   chapter: number;
   stage: Stage;

@@ -237,13 +237,11 @@ test("import, invalid definition, export and revision retain the review gate", a
   const { coolingLesson } =
     await import("../test-support/generated-lessons.mjs");
   await page.goto("/#invite:BROWSER-TEST-CODE");
-  await page
-    .getByLabel("Import lesson JSON")
-    .setInputFiles({
-      name: "lesson.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(coolingLesson())),
-    });
+  await page.getByLabel("Import lesson JSON").setInputFiles({
+    name: "lesson.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(coolingLesson())),
+  });
   await expect(
     page.getByRole("heading", { name: "Cooling coffee", exact: true }),
   ).toBeVisible();

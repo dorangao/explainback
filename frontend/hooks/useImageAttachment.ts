@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { t } from "../lib/messages";
 import { prepareImage } from "../lib/image";
 import type { Language } from "../lib/types";
 import { say } from "../lib/types";
@@ -37,13 +38,7 @@ export function useImageAttachment(language: Language) {
         const prepared = await prepareImage(file);
         if (alive.current && token === epoch.current) {
           setImage(prepared);
-          setNotice(
-            say(
-              language,
-              "Image attached. It will be sent only when you create a lesson.",
-              "图片已附加，仅在创建课程时发送。",
-            ),
-          );
+          setNotice(t(language, "useImageAttachment.imageAttachedItWillBe"));
         }
       } catch (error) {
         if (alive.current && token === epoch.current) {

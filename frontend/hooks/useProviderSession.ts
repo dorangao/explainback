@@ -114,8 +114,7 @@ export function useProviderSession({
         }
       >,
     ): Promise<
-      | { ok: true; reply: T }
-      | { ok: false; error: unknown; stale: boolean }
+      { ok: true; reply: T } | { ok: false; error: unknown; stale: boolean }
     > => {
       const token = ++epoch.current,
         controller = new AbortController();
