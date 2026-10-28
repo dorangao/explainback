@@ -42,6 +42,7 @@ current index; dated entries and linked evidence retain the history.
 | REVIEW-001 | Claude | Assessment complete; no product code changed | Base `b7f82df` (`main` after PR #8), checkout on `codex/react-studio-branding`; read-only review of `frontend/`, `src/static.mjs`, build/CI config, tests; this ledger only | User chooses which findings to schedule; see the dated entry. |
 | CLEAN-001 | Claude | Merged as `92723db`; deployed to production | Base `b7f82df`, branch `feat/post-migration-cleanup`; claims `frontend/**`, `public/*.d.mts`, removed legacy shell files, `src/server.mjs` (asset map, reply metrics), `test/**`, lint/format/Vitest config, CI workflow, README, LICENSE, Studio docs | User reviews and merges the PR; deploy afterwards. Labs port left `react/refs` and `react/immutability` as warnings under `frontend/components/labs/**` (follow-up: idiomatic React state for the ported controllers). |
 | PROMPT-001 | Claude | Merged as `44434ef`; deployed to production | Base `4f861c0`, branch `feat/author-prompt-v2`; `src/lesson-author.mjs` (author-v2), `src/eval/studio.mjs` (samples, rejection reasons), `scripts/eval-studio.mjs`, `public/lesson-schema.mjs` and `demo-model.mjs` (field-naming validator messages), evaluation docs | User reviews the before/after in `docs/studio-evaluation.md` and merges; deploy afterwards. |
+| GALLERY-002 | Claude | Implemented, validated, PR open | Base `775b897`, branch `feat/sketch-gallery-and-restore`; `public/gallery-lessons.mjs`, `public/gallery/pendulum-sketch.png`, `src/static.mjs`, `scripts/build-vercel.mjs`, `frontend/components/{Gallery,Studio,RevisionSummary}.tsx`, types, styles, tests, README and Studio docs | User reviews and merges; deploy afterwards. |
 
 
 Before working, read the latest table and actual Git state, claim a bounded file
@@ -476,4 +477,25 @@ and fixed before the final run. Full table in
 [studio-evaluation.md](../studio-evaluation.md#author-prompt-v2-measured-against-the-baseline-october-28-2026).
 
 **State:** merged as `44434ef` and deployed; see [release record](../vercel-deployment.md#author-prompt-v2-release--october-28-2026-pacific).
+
+### 2026-10-28 Pacific — GALLERY-002 — Claude
+
+**Request (own pick after PROMPT-001):** show multimodal input without sign-in,
+and make the revision panel actionable.
+
+**Changes:** gallery lesson `sketch-pendulum`, drafted by `muse-spark-1.3` from
+the frozen pendulum sketch (image-suite run of Oct 28, `sketch-pendulum-en#2`)
+and lightly edited (duplicate chapter removed, labels capitalised, unit symbol);
+the card shows the sketch and a "Created from a sketch" chip, the player shows
+the sketch beside the provenance note, and the image is served and packaged with
+the brand assets. "Restore previous draft" on the revision panel reloads the
+pre-revision draft without a request. The build script's directory creation now
+handles the space in the checkout path (an earlier run had created an empty
+percent-encoded directory tree under `~/Library`, removed).
+
+**Verification:** Node tests 232/232 (new gallery/asset test); Vitest 12/12
+(restore covered); typecheck, lint, format clean; build emits
+`dist/gallery/pendulum-sketch.png`; Playwright 18/18.
+
+**State:** committed and pushed; PR open; not merged or deployed.
 

@@ -4,6 +4,20 @@ The user asked to move lesson creation into ExplainBack so a topic can become a 
 
 ## What Muse changed (October 28)
 
+**Restore previous draft** sits beside Dismiss on the panel. It discards the
+revision, reloads the draft as it was before the request (review approval is
+cleared again), and makes no model call.
+
+## Sketch lesson in the gallery (October 28)
+
+The gallery includes **Pendulum sketch: length and swing**, drafted by
+`muse-spark-1.3` from the frozen pendulum sketch during the image evaluation
+and lightly edited (a duplicated chapter removed, labels capitalised, the unit
+symbol). The card shows the sketch itself, the card and the player name the
+sketch as the source, and the image is served with the brand assets
+(`/gallery/pendulum-sketch.png`, allowlisted in `src/static.mjs` and copied by
+the build). It plays without sign-in like the other gallery lessons.
+
 After an explicit **Revise lesson & demo** request, Studio keeps the previous
 draft and shows a **What Muse changed** panel above the review: a field-by-field
 comparison in the current language (title, intro, framing, explanation, demo

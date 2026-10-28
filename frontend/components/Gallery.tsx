@@ -140,7 +140,18 @@ export function Gallery({ language }: { language: Language }) {
               tabIndex={-1}
               aria-hidden="true"
             >
-              <LessonArt id={item.id} />
+              {item.image ? (
+                <img
+                  className="lesson-art lesson-art-image"
+                  src={item.image}
+                  alt=""
+                  width={360}
+                  height={158}
+                  loading="lazy"
+                />
+              ) : (
+                <LessonArt id={item.id} />
+              )}
             </a>
             <div className="lesson-card-body">
               <span className="lesson-kind">
@@ -160,6 +171,11 @@ export function Gallery({ language }: { language: Language }) {
                 )}
               </span>
               <h3>{item.lesson.title[language]}</h3>
+              {item.source === "muse-image" && (
+                <span className="lesson-origin">
+                  {t(language, "Gallery.createdFromASketch")}
+                </span>
+              )}
               <p>{item.summary[language]}</p>
               <a
                 className="lesson-link"

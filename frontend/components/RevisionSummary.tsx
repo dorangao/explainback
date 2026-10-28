@@ -40,12 +40,14 @@ export function RevisionSummary({
   language,
   metrics,
   onDismiss,
+  onRestore,
 }: {
   before: Lesson;
   after: Lesson;
   language: Language;
   metrics: RequestMetrics | null;
   onDismiss: () => void;
+  onRestore: () => void;
 }) {
   const [showAll, setShowAll] = useState(false);
   const changes = useMemo(
@@ -70,9 +72,14 @@ export function RevisionSummary({
           </h2>
           <RequestSummary metrics={metrics} language={language} />
         </div>
-        <button type="button" className="text-button" onClick={onDismiss}>
-          {t(language, "RevisionSummary.dismiss")}
-        </button>
+        <div className="revision-actions">
+          <button type="button" className="secondary" onClick={onRestore}>
+            {t(language, "RevisionSummary.restorePreviousDraft")}
+          </button>
+          <button type="button" className="text-button" onClick={onDismiss}>
+            {t(language, "RevisionSummary.dismiss")}
+          </button>
+        </div>
       </div>
       {changes.length > 0 && (
         <ul className="revision-changes">

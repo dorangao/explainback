@@ -79,7 +79,8 @@ export function Studio({
     [message, setMessage] = useState(""),
     [feedback, setFeedback] = useState<Feedback | null>(null),
     [revision, setRevision] = useState<Revision | null>(null),
-    [source, setSource] = useState<string | null>(null);
+    [source, setSource] = useState<string | null>(null),
+    [sourceImage, setSourceImage] = useState<string | null>(null);
   const clearFeedback = useCallback(() => setFeedback(null), []);
   const provider = useProviderSession({
     post,
@@ -150,6 +151,7 @@ export function Studio({
     setPlayer(createLessonPlayer(lesson));
     setPresenting(true);
     setSource(item.source);
+    setSourceImage(item.image ?? null);
   }, [lessonId, invalidate, loadLesson]);
   // An invite or the Create link seeds the editable starter topic.
   const seenStarter = useRef(0);
@@ -582,6 +584,12 @@ export function Studio({
                 language={language}
                 metrics={metrics?.mode === "revise" ? metrics : null}
                 onDismiss={() => setRevision(null)}
+                onRestore={() => {
+                  const previous = revision.before;
+                  loadLesson(previous);
+                  setRevision(null);
+                  setMessage(t(language, "Studio.restoredThePreviousDraftThe"));
+                }}
               />
             ) : (
               metrics?.mode === "compose" && (
@@ -625,9 +633,18 @@ export function Studio({
               <RequestSummary metrics={metrics} language={language} />
             )}
             {source && (
-              <p className="lesson-provenance">
-                {gallerySourceNote(source, language)}
-              </p>
+              <div className="lesson-provenance">
+                {sourceImage && (
+                  <img
+                    src={sourceImage}
+                    alt={t(language, "Studio.theSketchThisLessonWas")}
+                    width={160}
+                    height={120}
+                    loading="lazy"
+                  />
+                )}
+                <p>{gallerySourceNote(source, language)}</p>
+              </div>
             )}
           </>
         )}
