@@ -2,6 +2,26 @@
 
 The user asked to move lesson creation into ExplainBack so a topic can become a lesson that the app presents and operates. Carry forward the preference for direct implementation and the bilingual, claim-testing learning loop.
 
+## What Muse changed (October 28)
+
+After an explicit **Revise lesson & demo** request, Studio keeps the previous
+draft and shows a **What Muse changed** panel above the review: a field-by-field
+comparison in the current language (title, intro, framing, explanation, demo
+title, claim, assumptions, each input's label and range, each output's label,
+unit and formula, axis, transfer question and values; for processes, each stage
+and the choices). Removed text is struck through, new text is highlighted.
+Switching language compares the other translation. The panel is a pure
+comparison (`frontend/lib/lesson-diff.ts`); it does not judge whether a change
+is correct, and the review gate still applies.
+
+Every accepted create, revise or explain reply also shows a one-line request
+summary: the model that answered, the server-measured elapsed time, and token
+usage when the provider reports it. The server adds `model`, `elapsedMs` and
+`usage` to those replies. The developer console remains the place for full
+request and response bodies.
+
+![What Muse changed panel](screenshots/revision-summary.jpg)
+
 ## Image input and model choice (October 28)
 
 **Add a photo, sketch or diagram** sits above the Create button. The browser
