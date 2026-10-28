@@ -196,7 +196,9 @@ export function mountLessonStudio(root,{post,onBusy=()=>{},onTarget=()=>{}}){
  q('export').addEventListener('click',()=>{if(!draft||busy||pendingDefinitions.size)return;try{const lesson=validateLesson(draft),blob=new Blob([JSON.stringify(lesson,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=el('a');link.href=url;link.download='explainback-lesson.json';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch{status=say('Complete the lesson text before exporting.','请补全课程文字后导出。');render();}});
  q('import').addEventListener('change',async()=>{const file=q('import').files?.[0];if(!file||busy)return;const token=epoch;try{if(file.size>40000)throw new Error();const input=await file.text();if(token!==epoch||!props.authenticated||busy)return;loadLesson(JSON.parse(input));status=say('Imported draft. Review the text before presenting. No model call was made.','已导入草稿。演示前请审阅文字。未调用模型。');}catch{status=say('This file is not a valid version 1 or 2 lesson (file limit 40 KB).','文件不是有效的版本 1 或 2 课程（文件上限 40 KB）。');}q('import').value='';render();});
  render();
- return {loadLesson,openGallery,stop,set(next){
+ // Invite links land a signed-in reviewer on an editable starter topic; no request is sent.
+ function loadStarter(){if(busy||!props.authenticated)return false;q('topic').value=studioWalkthrough(lang()).topic;q('creation').value='generated';status=say('Starter topic loaded. Click Create a lesson to make one real Muse request.','已载入起始主题。点击“创建课程”将真正调用一次 Muse。');render();q('topic').focus();return true;}
+ return {loadLesson,openGallery,loadStarter,stop,set(next){
   const lost=props.authenticated&&!next.authenticated;if(lost){
    stop();invalidate(false);draft=null;player=null;presenting=false;reviewed=false;galleryId=null;pendingDefinitions.clear();status='';feedback=null;observation=null;counts=null;transferResult=null;
    for(const id of ['topic','answer','title-edit','intro-edit','import','revision'])q(id).value='';

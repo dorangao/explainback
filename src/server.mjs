@@ -3,6 +3,7 @@ import {lessonAuthorRequest,readLessonAuthor} from './lesson-author.mjs';
 import {suctionScenario,suctionTitle} from '../public/suction.mjs';
 import {flightScenario,flightTitle} from '../public/flight.mjs';
 import {createTesterAuth,expiredTesterCookie} from './tester-auth.mjs';
+import {parseAccessCodes,budgetFor,publicAudience} from './access-codes.mjs';
 import {createTrace} from './trace.mjs';
 import {createMemoryState} from './state.mjs';
 import { createServer } from 'node:http';
@@ -72,9 +73,13 @@ function localOrigin(req){
 export function createHandler({
   configured, modelCall, router = createProviderRouter(),
   traceEnabled = process.env.EXPLAINBACK_TRACE === '1',
-  testerCredentials = {},
-  state=createMemoryState(),auth=createTesterAuth({...testerCredentials,onRevoke:owner=>state.revokeOwner(owner)}),getOrigin=localOrigin,
+  testerCredentials = {},accessCodes=parseAccessCodes(process.env.EXPLAINBACK_ACCESS_CODES),
+  state=createMemoryState(),auth=createTesterAuth({...testerCredentials,accessCodes:accessCodes.codes??accessCodes,onRevoke:owner=>state.revokeOwner(owner)}),getOrigin=localOrigin,
 } = {}) {
+  const codes=accessCodes.codes??accessCodes;
+  // Configuration problems are reported by position only; code values never reach logs.
+  for(const warning of accessCodes.warnings??[])console.warn('EXPLAINBACK_ACCESS_CODES '+warning);
+  const redacted=[process.env.MODEL_API_KEY?.trim(),testerCredentials.password??process.env.EXPLAINBACK_TESTER_PASSWORD,...codes.map(c=>c.code)];
   const targets=router.list().map(t=>({...t,...(configured!==undefined&&t.id===router.defaultId?{configured}:{})}));
   const selected=id=>{const t=targets.find(t=>t.id===(id??router.defaultId));if(!t)throw new RequestError(400,'Choose an allowed provider/model.');return {...t};};
   const defaultTarget=selected();
@@ -93,7 +98,7 @@ export function createHandler({
         res.writeHead(200, { ...safeHeaders, 'Content-Type': type }); res.end(data); return;
       }
       const tester=await auth.authenticate(req.headers.cookie);
-      if(req.method==='GET'&&path==='/api/auth'){json(200,{configured:auth.configured,authenticated:Boolean(tester)});return;}
+      if(req.method==='GET'&&path==='/api/auth'){json(200,{configured:auth.configured,codes:auth.codesConfigured===true,authenticated:Boolean(tester)});return;}
       if(req.method==='POST'&&['/api/login','/api/logout'].includes(path)){
         if(req.headers.origin!==origin)throw new RequestError(403,'This action must come from this app.');
         const body=await readJSON(req);
@@ -102,8 +107,11 @@ export function createHandler({
         catch(error){if(!error.status)throw error;json(error.status,{error:error.message,code:error.code});}return;
       }
       if(path.startsWith('/api/')&&!tester){json(401,{error:'Sign in to tester access.',code:'TESTER_REQUIRED'});return;}
+      const [bucket,limit]=budgetFor(tester?.audience);
+      const quotaExceeded=()=>new RequestError(429,tester?.audience?'This access code’s hourly request budget is used up. Reviewed lessons still open without live requests.':'API request limit reached. No request was sent.');
       if (req.method === 'GET' && path === '/api/status') {
-        json(200, { configured:defaultTarget.configured, mode: 'live', model:defaultTarget.model, models:targets,defaultModel:defaultTarget.id, traceEnabled, audience: 'tester-poc', problems: [...Object.values(problems).map(p => ({ id: p.id, title: p.title })),{id:'acceleration',title:motionTitle},{id:'flight',title:flightTitle},{id:'suction',title:suctionTitle}] }); return;
+        const access=tester.audience?{...publicAudience(tester.audience),remaining:await state.remainingTurns(bucket,limit)}:null;
+        json(200, { configured:defaultTarget.configured, mode: 'live', access, model:defaultTarget.model, models:targets,defaultModel:defaultTarget.id, traceEnabled, audience: 'tester-poc', problems: [...Object.values(problems).map(p => ({ id: p.id, title: p.title })),{id:'acceleration',title:motionTitle},{id:'flight',title:flightTitle},{id:'suction',title:suctionTitle}] }); return;
       }
       if (req.method !== 'POST' || !['/api/studio/session','/api/studio/compose','/api/studio/guide','/api/quantum/session','/api/quantum/explain','/api/session', '/api/turn', '/api/reset', '/api/claim', '/api/replay',...(traceEnabled?['/api/trace']:[])].includes(path)) { json(404, { error: 'Not found.' }); return; }
       if (req.headers.origin !== origin) throw new RequestError(403, 'This action must come from this app.');
@@ -113,7 +121,7 @@ export function createHandler({
         if(body.synthetic!==true||!['en','zh'].includes(body.language))throw new RequestError(400,'Choose a language and synthetic quantum demo.');
         const target=selected(body.llm);if(!target.configured)throw new RequestError(503,'Selected provider is not configured.');
         const sessionId=randomBytes(24).toString('hex');
-        const s={workflow:path==='/api/studio/session'?'lesson-studio':'quantum-showcase',language:body.language,llm:target,owner:tester.id,createdAt:Date.now(),attempts:0};
+        const s={workflow:path==='/api/studio/session'?'lesson-studio':'quantum-showcase',language:body.language,llm:target,owner:tester.id,audience:tester.audience?.label??null,createdAt:Date.now(),attempts:0};
         if(!await state.create(sessionId,s))throw new RequestError(429,'Session limit reached.');
         json(200,{sessionId,llm:target,attemptsRemaining:8});return;
       }
@@ -129,7 +137,7 @@ export function createHandler({
         if(!target.configured)throw new RequestError(503,'Selected provider is not configured. Check the server environment.');
         const s = createSession(body.problemId, body.language, workflow,body.problemId==='suction'?(body.suction??{}):body.problemId==='flight'?(body.flight??{}):body.problemId==='acceleration'?(body.motion??{}):{});
         const sessionId = randomBytes(24).toString('hex');
-        s.llm=target;s.owner=tester.id;
+        s.llm=target;s.owner=tester.id;s.audience=tester.audience?.label??null;
         s.demoUsed=traceEnabled;
         if(!await state.create(sessionId,s))throw new RequestError(429,'Session limit reached. Reset an existing session.');
         json(200, { sessionId, ...sessionView(s) }); return;
@@ -153,9 +161,9 @@ export function createHandler({
         const mode=path==='/api/studio/compose'?'compose':path==='/api/studio/guide'?'guide':null;
         if(!mode)throw new RequestError(400,'Use this session for Lesson Studio only.');
         let args;try{args=lessonAuthorRequest(body,mode);}catch{throw new RequestError(400,'Use a short topic or a valid lesson and experiment.');}
-        if(s.attempts>=8||!await state.consumeTurn()){const failure=new RequestError(429,'API request limit reached. No request was sent.');failure.attemptsRemaining=8-s.attempts;throw failure;}
+        if(s.attempts>=8||!await state.consumeTurn(bucket,limit)){const failure=quotaExceeded();failure.attemptsRemaining=8-s.attempts;throw failure;}
         s.attempts++;await save();
-        const trace=traceEnabled?createTrace([process.env.MODEL_API_KEY?.trim(),testerCredentials.password??process.env.EXPLAINBACK_TESTER_PASSWORD],{initial:await state.readTrace(body.sessionId),onChange:rows=>state.writeTrace(body.sessionId,rows,lock)}):null;
+        const trace=traceEnabled?createTrace(redacted,{initial:await state.readTrace(body.sessionId),onChange:rows=>state.writeTrace(body.sessionId,rows,lock)}):null;
         const call=trace?.start({provider:s.llm.provider,model:s.llm.model,input:args.input,instructions:args.instructions});
         try{
           await trace?.flush();const options={...args,...(call?{onTrace:call.event}:{})};
@@ -175,9 +183,9 @@ export function createHandler({
       if(s.workflow==='quantum-showcase'){
         if(path!=='/api/quantum/explain')throw new RequestError(400,'Use this session for the quantum showcase only.');
         let args;try{args=quantumCoachRequest(body,s.language);}catch{throw new RequestError(400,'Choose an allowed circuit and preset question.');}
-        if(s.attempts>=8||!await state.consumeTurn())throw new RequestError(429,'API request limit reached. No request was sent.');
+        if(s.attempts>=8||!await state.consumeTurn(bucket,limit))throw quotaExceeded();
         s.attempts++;await save();
-        const trace=traceEnabled?createTrace([process.env.MODEL_API_KEY?.trim(),testerCredentials.password??process.env.EXPLAINBACK_TESTER_PASSWORD],{initial:await state.readTrace(body.sessionId),onChange:rows=>state.writeTrace(body.sessionId,rows,lock)}):null;
+        const trace=traceEnabled?createTrace(redacted,{initial:await state.readTrace(body.sessionId),onChange:rows=>state.writeTrace(body.sessionId,rows,lock)}):null;
         const call=trace?.start({provider:s.llm.provider,model:s.llm.model,input:args.input,instructions:args.instructions});
         try{
           await trace?.flush();const options={...args,...(call?{onTrace:call.event}:{})};
@@ -214,11 +222,11 @@ export function createHandler({
       if (!s.llm.configured) throw new RequestError(503, 'Selected provider is not configured.');
       if (s.phase === 'complete') throw new RequestError(400, 'This session is complete. Start another example.');
       if (typeof body.explanation !== 'string' || !body.explanation.trim() || body.explanation.length > 1200) throw new RequestError(400, 'Enter 1–1200 characters of synthetic reasoning.');
-      if (s.attempts >= 12 || !await state.consumeTurn()) throw new RequestError(429, 'API request limit reached. No request was sent.');
+      if (s.attempts >= 12 || !await state.consumeTurn(bucket,limit)) throw quotaExceeded();
       s.attempts++;
       if(body.demoPreset)s.demoUsed=true;
       await save(); // Count attempts before sending, including rejected upstream output.
-      s.trace=traceEnabled?createTrace([process.env.MODEL_API_KEY?.trim(),testerCredentials.password??process.env.EXPLAINBACK_TESTER_PASSWORD],{initial:await state.readTrace(body.sessionId),onChange:rows=>state.writeTrace(body.sessionId,rows,lock)}):null;
+      s.trace=traceEnabled?createTrace(redacted,{initial:await state.readTrace(body.sessionId),onChange:rows=>state.writeTrace(body.sessionId,rows,lock)}):null;
       let traceCall;
       try {
         const result = await assess(s, body.explanation.trim(), async args=>{

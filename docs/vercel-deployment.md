@@ -45,6 +45,7 @@ server variables privately using the Vercel dashboard or stdin to `vercel env ad
 - `MODEL_API_KEY`
 - `EXPLAINBACK_TESTER_USERNAME`
 - `EXPLAINBACK_TESTER_PASSWORD` (12–512 characters)
+- `EXPLAINBACK_ACCESS_CODES` (optional reviewer codes, `label:CODE:YYYY-MM-DD:quota`, comma-separated; each has its own hourly provider budget and expiry, see `.env.example`)
 - `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` (the integration's
   `KV_REST_API_URL` / `KV_REST_API_TOKEN` names are also supported)
 - `EXPLAINBACK_TRACE=1` for the guided demo and provider console
@@ -248,3 +249,25 @@ release, as recorded in [the demo verification](studio-demo.md). It was not
 re-run against the provider during this deployment smoke check. Narrow-screen
 release verification and independent human content review remain open.
 Screenshot: `output/studio-demo-eval/production-studio-zh.png` (local, ignored).
+
+## Gallery and reviewer-code production release · October 28, 2026
+
+Deployed source `318746b6f29e08739539555260281040f39196d3` (branch
+`feat/suction-design-lab`) with `vercel deploy --prod -y`; deployment
+`explainback-nft5obgoe-doran-gaos-projects.vercel.app`, status Ready, serving
+[explainback.app](https://explainback.app/). `EXPLAINBACK_ACCESS_CODES` was added
+to Production as a sensitive variable with one `judges` code (quota 40 requests
+per hour, expiry 2026-11-20). The code value is recorded only in the Vercel
+environment and the submission copy, not in this repository.
+
+Hosted checks after the release:
+
+- `/api/auth` reports `configured: true, codes: true` signed out; the gallery
+  module is served without a cookie.
+- A fresh load of `/#invite:<code>` signed in through the Redis adapter, removed
+  the code from the address bar, opened Lesson Studio with the starter topic, and
+  showed `judges preview · 40/40 live requests left this hour · until Nov 20`.
+- One live Meta creation ("Why coffee cooling slows down") was accepted and the
+  badge refreshed to 39/40, confirming the per-code Redis budget. Sign-out then
+  hid the badge and restored the sign-in card.
+

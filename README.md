@@ -26,8 +26,11 @@ the experiment; the learner predicts, operates, explains and transfers.
    hand-authored text over the existing checked experiments. Gallery playback
    makes no model call.
 
-Creating and revising **new** lessons with Muse requires a tester sign-in
-(credentials are supplied to judges separately, never published here).
+Creating and revising **new** lessons with Muse needs an access code. Reviewers
+get a one-click invite link of the form `explainback.app/#invite:CODE` (the code
+stays in the URL fragment, never in server logs) or can type it on the sign-in
+card. Each code has its own hourly request budget, shown in the top bar, and an
+expiry date; the tester password is never published.
 
 ## What Meta's model does here
 
