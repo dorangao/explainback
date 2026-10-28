@@ -18,8 +18,9 @@ current index; dated entries and linked evidence retain the history.
   release record from documentation commit `59a725a`. Restored into
   [the deployment notes](../vercel-deployment.md#wonder-image-input-and-comparison-eval-release--october-28-2026).
   This is previous hosted verification, not a fresh production check by Codex.
-- **Current checkout:** `codex/react-studio-branding`, HEAD still `ba4da7a`; React
-  migration and branding are local, uncommitted changes.
+- **Release branch:** `codex/react-studio-branding`; migration and branding
+  implementation committed/pushed as `8bdc8ff` in [PR #8](https://github.com/dorangao/explainback/pull/8).
+  The PR release-verification section records the final merged/deployed state.
 - **Fresh local checks:** Node **22.23.1**, **245/245 tests**, TypeScript and build
   pass; **18/18 Chromium workflows passed** after independent review fixes. See [migration verification](../react-ui-verification.md).
 - **Pre-existing untracked work:** `.agents/`, `.claude/`, `skills-lock.json`.
@@ -35,8 +36,8 @@ current index; dated entries and linked evidence retain the history.
 | ID | Owner | State | Scope / files | Next action |
 |---|---|---|---|---|
 | GROUND-001 | Codex | Complete locally; uncommitted | `AGENTS.md`, `CLAUDE.md`, this ledger, README and readiness/deployment notes | Both agents use this handoff on their next task. |
-| UI-001 | Codex | Complete locally; uncommitted; claim released | Base `ba4da7a`, branch `codex/react-studio-branding`; claim: `frontend/`, `e2e/`, package/build configs, static serving, physics adapter, brand assets, relevant tests and docs. | Ready for user review; commit/push/deployment remain separate next actions. |
-| REL-001 | Codex | Active: release configuration, PR and production validation | Base `ba4da7a`, `codex/react-studio-branding`; claims `vercel.json`, `.vercelignore`, `.github/workflows/`, suction fallback regression, release evidence and this ledger; committing the validated UI-001 files. | Verify build/checks, commit/push, create and merge PR, confirm production commit and live behavior. |
+| UI-001 | Codex | Committed and pushed in `8bdc8ff`; release tracked by REL-001 | Base `ba4da7a`, branch `codex/react-studio-branding`; claim: `frontend/`, `e2e/`, package/build configs, static serving, physics adapter, brand assets, relevant tests and docs. | Ready for user review; commit/push/deployment remain separate next actions. |
+| REL-001 | Codex | Release evidence in PR #8; file claim released | Base `ba4da7a`, `codex/react-studio-branding`; claims `vercel.json`, `.vercelignore`, `.github/workflows/`, suction fallback regression, release evidence and this ledger; committing the validated UI-001 files. | [PR #8](https://github.com/dorangao/explainback/pull/8) carries the final merge SHA, production deployment and live validation evidence; read its release verification section. |
 
 
 Before working, read the latest table and actual Git state, claim a bounded file
@@ -294,6 +295,32 @@ background tab. A fixed clock reproduced the cancelled test; the fallback now
 advances directly to the final state. Focused regression passes. Full final
 validation follows before staging. This is a release-blocking correction within
 the animation/lifecycle scope, not a new feature.
+
+### 2026-10-28 Pacific — REL-001 committed, pushed and preview ready — Codex
+
+**Implementation commit:** `8bdc8ff510d9e72ef2a04cddd765545217168cd3`, pushed to
+`origin/codex/react-studio-branding`. **Pull request:**
+[#8](https://github.com/dorangao/explainback/pull/8).
+
+**Fresh checks:** Node 22.23.1, 245/245 Node tests, 18/18 browser tests,
+typecheck and production build passed after the suction fallback correction.
+A bounded value scan of all 59 staged files and 10 build files found no configured
+secret values. The broad project scan was stopped while waiting on an older
+ignored screenshot; no claim is made that it completed. Unrelated agent folders
+and `skills-lock.json` remain outside the commit.
+
+**Observed preview:** `dpl_6k23sF64S3LHujyJonF8hTr5F8sv`, READY, commit `8bdc8ff`,
+[preview URL](https://explainback-r0xwtjxxy-doran-gaos-projects.vercel.app).
+GitHub's Vercel status succeeded; the Node 22 CI job was running at this
+checkpoint. Merge and production deployment are separate from this preview.
+
+**Release evidence handoff:** the PR description's **Release verification**
+section is the durable post-merge record for this task. It is updated only after
+the merge SHA, production deployment/alias and live checks are observed. Read it
+for the final state; this entry intentionally records only this pre-merge
+checkpoint. This keeps the shared ledger linked to actual release evidence
+without a documentation-only release loop. File claim released after committing
+this evidence pointer; no other agent's files were changed.
 
 ### Entry template
 

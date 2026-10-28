@@ -294,3 +294,17 @@ Hosted checks after the release:
   under the bob was unclear so it did not rely on it. The judge badge
   refreshed from 40/40 to 39/40. Sign-out then restored the sign-in card.
 
+
+## React studio release — October 28, 2026 Pacific
+
+The React/TypeScript/Vite migration is released through
+[PR #8](https://github.com/dorangao/explainback/pull/8). Its **Release verification**
+section records the observed merge SHA, production deployment/alias and live
+checks after merge. Implementation commit: `8bdc8ff`. Existing release entries
+above remain historical records.
+
+Vercel uses the Vite preset, `npm ci --ignore-scripts`, and
+`npm run typecheck && npm run build`; output remains `dist`. `.vercelignore`
+includes the new frontend and TypeScript/Vite entry/config files. The `/api/*`
+rewrite, Node 22 engine, security/noindex headers and hosted Redis/auth boundary
+remain intact. Node 22 CI runs tests, build and synthetic Chromium workflows.

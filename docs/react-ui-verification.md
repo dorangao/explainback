@@ -1,8 +1,10 @@
 # React UI and branding verification
 
 October 28, 2026 Pacific. Local implementation on `codex/react-studio-branding`,
-based on `ba4da7a5182df30b399baad37a03494e4565ccf9`. No commit, push, merge or
-deployment is implied. The [shared ledger](implementation/progress-ledger.md)
+based on `ba4da7a5182df30b399baad37a03494e4565ccf9`. Implementation was committed
+and pushed as `8bdc8ff`; [PR #8](https://github.com/dorangao/explainback/pull/8)
+records the subsequent merge, deployment and live verification. The sections
+below retain the local implementation evidence. The [shared ledger](implementation/progress-ledger.md)
 is the Codex/Claude handoff.
 
 ## What changed
@@ -112,3 +114,9 @@ checkout on a feature branch, with HEAD checked before/after; retain the Node AP
 and pure scientific engines instead of rewriting working contracts. These choices
 minimize migration scope, while requiring continued shared-checkout coordination
 and keeping the scoped legacy adapters as a deliberate migration boundary.
+
+Release preparation also corrected a floating-point suction fallback edge case,
+confirmed with a fixed-clock regression. Final release-preparation checks remained
+245 Node tests and 18 browser tests. Vercel now uses the Vite preset, lockfile
+install and a typechecked build; its upload allowlist includes frontend/config
+files. GitHub Actions runs the same checks under Node 22 on Linux.
