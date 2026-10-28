@@ -41,7 +41,7 @@ current index; dated entries and linked evidence retain the history.
 | REL-001 | Codex | Release evidence in PR #8; file claim released | Base `ba4da7a`, `codex/react-studio-branding`; claims `vercel.json`, `.vercelignore`, `.github/workflows/`, suction fallback regression, release evidence and this ledger; committing the validated UI-001 files. | [PR #8](https://github.com/dorangao/explainback/pull/8) carries the final merge SHA, production deployment and live validation evidence; read its release verification section. |
 | REVIEW-001 | Claude | Assessment complete; no product code changed | Base `b7f82df` (`main` after PR #8), checkout on `codex/react-studio-branding`; read-only review of `frontend/`, `src/static.mjs`, build/CI config, tests; this ledger only | User chooses which findings to schedule; see the dated entry. |
 | CLEAN-001 | Claude | Merged as `92723db`; deployed to production | Base `b7f82df`, branch `feat/post-migration-cleanup`; claims `frontend/**`, `public/*.d.mts`, removed legacy shell files, `src/server.mjs` (asset map, reply metrics), `test/**`, lint/format/Vitest config, CI workflow, README, LICENSE, Studio docs | User reviews and merges the PR; deploy afterwards. Labs port left `react/refs` and `react/immutability` as warnings under `frontend/components/labs/**` (follow-up: idiomatic React state for the ported controllers). |
-| PROMPT-001 | Claude | Implemented, measured, PR open | Base `4f861c0`, branch `feat/author-prompt-v2`; `src/lesson-author.mjs` (author-v2), `src/eval/studio.mjs` (samples, rejection reasons), `scripts/eval-studio.mjs`, `public/lesson-schema.mjs` and `demo-model.mjs` (field-naming validator messages), evaluation docs | User reviews the before/after in `docs/studio-evaluation.md` and merges; deploy afterwards. |
+| PROMPT-001 | Claude | Merged as `44434ef`; deployed to production | Base `4f861c0`, branch `feat/author-prompt-v2`; `src/lesson-author.mjs` (author-v2), `src/eval/studio.mjs` (samples, rejection reasons), `scripts/eval-studio.mjs`, `public/lesson-schema.mjs` and `demo-model.mjs` (field-naming validator messages), evaluation docs | User reviews the before/after in `docs/studio-evaluation.md` and merges; deploy afterwards. |
 
 
 Before working, read the latest table and actual Git state, claim a bounded file
@@ -475,6 +475,5 @@ over the explanation limit) were caught by the probes and the contract checks
 and fixed before the final run. Full table in
 [studio-evaluation.md](../studio-evaluation.md#author-prompt-v2-measured-against-the-baseline-october-28-2026).
 
-**State:** committed and pushed on `feat/author-prompt-v2`; PR open; not merged
-or deployed. Production still runs the baseline prompt.
+**State:** merged as `44434ef` and deployed; see [release record](../vercel-deployment.md#author-prompt-v2-release--october-28-2026-pacific).
 

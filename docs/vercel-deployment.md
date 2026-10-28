@@ -325,3 +325,15 @@ create (11.8 s) and one revision (9.4 s) on Spark produced the "What Muse
 changed" panel with 12 listed fields; the quota badge moved 40 → 38; sign-out
 restored the public library.
 
+## Author prompt v2 release · October 28, 2026 (Pacific)
+
+Merged [PR #10](https://github.com/dorangao/explainback/pull/10) as `44434ef` and
+deployed `main` with `vercel deploy --prod -y`; deployment
+`explainback-i34tq9m6e-doran-gaos-projects.vercel.app`, status Ready, serving
+[explainback.app](https://explainback.app/). No environment changes.
+
+Hosted check: one live Spark creation through the judge invite (9.9 s) produced
+a draft whose transfer question follows the revised contract ("What is the
+coffee temperature in °C at the marked time?") and whose framing poses the
+question without stating the outcome. Sign-out restored the public library.
+
