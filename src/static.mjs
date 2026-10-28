@@ -5,6 +5,7 @@ export const brandFiles = new Map([
   ["/apple-touch-icon.png", "image/png"],
   ["/brand/mark.svg", "image/svg+xml"],
   ["/brand/share.png", "image/png"],
+  ["/gallery/pendulum-sketch.png", "image/png"],
 ]);
 const headers = {
   "Cache-Control": "no-store",

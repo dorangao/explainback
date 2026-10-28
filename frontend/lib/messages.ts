@@ -24,11 +24,11 @@ export const messages = {
     en: "Sign in with a tester account",
     zh: "使用测试账号登录",
   },
-  "AccessPanel.username": { en: "Username", zh: "用户名" },
   "AccessPanel.useSyntheticExamplesKeepPersonal": {
     en: "Use synthetic examples. Keep personal and student information out.",
     zh: "请使用虚构示例，不输入真实个人或学生资料。",
   },
+  "AccessPanel.username": { en: "Username", zh: "用户名" },
   "AccessPanel.yourNextQuestion": {
     en: "YOUR NEXT QUESTION",
     zh: "你的下一个问题",
@@ -58,6 +58,10 @@ export const messages = {
     zh: "本地开发 · 开放访问",
   },
   "App.mainNavigation": { en: "Main navigation", zh: "主导航" },
+  "App.openTheExperimentBench": {
+    en: "Open the experiment bench",
+    zh: "打开实验工作台",
+  },
   "App.openingTheExperimentBench": {
     en: "Opening the experiment bench…",
     zh: "正在打开实验工作台…",
@@ -65,10 +69,6 @@ export const messages = {
   "App.openingYourLearningStudio": {
     en: "Opening your learning studio…",
     zh: "正在打开学习工作室…",
-  },
-  "App.openTheExperimentBench": {
-    en: "Open the experiment bench",
-    zh: "打开实验工作台",
   },
   "App.physics": { en: "Physics", zh: "物理" },
   "App.previewAccess": { en: "Preview access", zh: "预览权限" },
@@ -127,11 +127,11 @@ export const messages = {
     en: "Export lesson JSON",
     zh: "导出课程 JSON",
   },
-  "DraftReview.introduction": { en: "Introduction", zh: "简介" },
   "DraftReview.iReviewedTheDemoDefinition": {
     en: "I reviewed the demo definition and its assumptions for this presentation.",
     zh: "我已审阅本次演示的定义与假设。",
   },
+  "DraftReview.introduction": { en: "Introduction", zh: "简介" },
   "DraftReview.lessonTitle": { en: "Lesson title", zh: "课程标题" },
   "DraftReview.moveUp": { en: "Move up", zh: "上移" },
   "DraftReview.oneChangeSimplifyTheExplanation": {
@@ -173,6 +173,10 @@ export const messages = {
     zh: "离起点距离",
   },
   "Gallery.aboutThisLesson": { en: "About this lesson", zh: "课程来源" },
+  "Gallery.createdFromASketch": {
+    en: "Created from a sketch",
+    zh: "由草图生成",
+  },
   "Gallery.findAQuestionTryIt": {
     en: "Find a question. Try it for yourself.",
     zh: "找一个问题，亲手试一试。",
@@ -325,6 +329,10 @@ export const messages = {
   },
   "RevisionSummary.out": { en: "out", zh: "输出" },
   "RevisionSummary.request": { en: "request", zh: "次请求" },
+  "RevisionSummary.restorePreviousDraft": {
+    en: "Restore previous draft",
+    zh: "恢复上一版草稿",
+  },
   "RevisionSummary.revisedThisLesson": {
     en: "revised this lesson",
     zh: "修改了这堂课",
@@ -342,10 +350,6 @@ export const messages = {
     en: "01 / ASK A QUESTION",
     zh: "01 / 提出一个问题",
   },
-  "Studio.addAPhotoSketchOr": {
-    en: "Add a photo, sketch or diagram",
-    zh: "添加照片、草图或示意图",
-  },
   "Studio.aQuestionAnExperiment": {
     en: "A question. An experiment.",
     zh: "一个问题，一次实验。",
@@ -353,6 +357,10 @@ export const messages = {
   "Studio.aQuestionOrASketch": {
     en: "A question or a sketch becomes a lesson you can review and operate.",
     zh: "一个问题或一张草图，变成可审阅、可操作的课程。",
+  },
+  "Studio.addAPhotoSketchOr": {
+    en: "Add a photo, sketch or diagram",
+    zh: "添加照片、草图或示意图",
   },
   "Studio.attachedImagePreview": {
     en: "Attached image preview",
@@ -416,11 +424,11 @@ export const messages = {
     en: "How does a quantum computer use interference?",
     zh: "量子计算机如何利用干涉？",
   },
+  "Studio.importLessonJson": { en: "Import lesson JSON", zh: "导入课程 JSON" },
   "Studio.importedDraftReviewItBefore": {
     en: "Imported draft. Review it before presenting. No model call was made.",
     zh: "已导入草稿，演示前请审阅。未调用模型。",
   },
-  "Studio.importLessonJson": { en: "Import lesson JSON", zh: "导入课程 JSON" },
   "Studio.languageChangedThePendingResult": {
     en: "Language changed. The pending result will not be applied; retry explicitly.",
     zh: "语言已切换，当前请求结果不再应用，请手动重试。",
@@ -461,13 +469,17 @@ export const messages = {
     zh: "正在本地处理图片…",
   },
   "Studio.removeImage": { en: "Remove image", zh: "移除图片" },
+  "Studio.requestStoppedHereYourCurrent": {
+    en: "Request stopped here. Your current draft is preserved.",
+    zh: "已停止应用请求结果，当前草稿已保留。",
+  },
   "Studio.requestsLeftInThisProvider": {
     en: "requests left in this provider session",
     zh: "次请求剩余 / 当前模型会话",
   },
-  "Studio.requestStoppedHereYourCurrent": {
-    en: "Request stopped here. Your current draft is preserved.",
-    zh: "已停止应用请求结果，当前草稿已保留。",
+  "Studio.restoredThePreviousDraftThe": {
+    en: "Restored the previous draft. The revision was discarded; no request was made.",
+    zh: "已恢复上一版草稿，修改已丢弃，未发送请求。",
   },
   "Studio.reviewRefine": { en: "Review & refine", zh: "审阅与修改" },
   "Studio.startANewProviderSession": {
@@ -481,6 +493,10 @@ export const messages = {
   "Studio.theRequestCouldNotBe": {
     en: "The request could not be completed or validated. Your draft is preserved. Please retry explicitly.",
     zh: "请求未完成或未通过验证，草稿已保留，请手动重试。",
+  },
+  "Studio.theSketchThisLessonWas": {
+    en: "The sketch this lesson was drafted from",
+    zh: "这堂课所依据的草图",
   },
   "Studio.thisProviderSessionHasUsed": {
     en: "This provider session has used its request budget. Your lesson still works locally.",

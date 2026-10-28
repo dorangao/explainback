@@ -1891,3 +1891,49 @@ body {
     flex-direction: column;
   }
 }
+
+/* Sketch-sourced gallery lesson */
+.lesson-art-image {
+  object-fit: contain;
+  background: #fff;
+  padding: 0.4rem 0.6rem;
+}
+.lesson-origin {
+  display: inline-block;
+  margin: 0.1rem 0 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #6b4a1c;
+  background: #f6ead6;
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+}
+.lesson-provenance {
+  display: flex;
+  gap: 0.9rem;
+  align-items: flex-start;
+}
+.lesson-provenance img {
+  width: 160px;
+  height: auto;
+  border: 1px solid #dfe5db;
+  border-radius: 8px;
+  background: #fff;
+  flex-shrink: 0;
+}
+.lesson-provenance p {
+  margin: 0;
+}
+.revision-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+@media (max-width: 600px) {
+  .lesson-provenance {
+    flex-direction: column;
+  }
+}

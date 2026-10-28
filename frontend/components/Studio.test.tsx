@@ -183,7 +183,14 @@ describe("Studio authoring", () => {
     expect(panel.textContent).toMatch(
       /test revised this lesson · 0\.9 s · 1 request/,
     );
-    fireEvent.click(within(panel).getByRole("button", { name: /Dismiss/ }));
+    fireEvent.click(
+      within(panel).getByRole("button", { name: /Restore previous draft/ }),
+    );
+    expect(screen.getByText(/Restored the previous draft/)).toBeTruthy();
+    expect(
+      (screen.getByLabelText(/Lesson title/) as HTMLInputElement).value,
+    ).toBe("Cooling coffee");
+    expect(n).toBe(2);
     expect(
       screen.queryByRole("heading", { name: /fields changed/ }),
     ).toBeNull();

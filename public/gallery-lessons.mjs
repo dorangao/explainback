@@ -57,7 +57,21 @@ export const galleryLessons=Object.freeze([
   lesson:{version:1,title:bi('Why interference matters to a quantum computer','干涉为何对量子计算机重要'),intro:bi('Three simulated circuits show how amplitudes, not just probabilities, decide what a measurement returns.','三个模拟电路展示决定测量结果的是振幅，而不只是概率。'),chapters:[
    {experiment:'interference',framing:bi('Two paths can reach the same outcome. Decide whether their chances simply add before running the circuit.','两条路径可以到达同一结果。运行电路前，先判断它们的概率是否只是简单相加。'),explanation:bi('Amplitudes with opposite phase cancel, so a second path can make an outcome less likely, not more.','相位相反的振幅会相互抵消，因此第二条路径可能让结果更不可能，而不是更可能。')},
    {experiment:'entanglement',framing:bi('Two qubits are prepared together and then measured separately. Decide whether their results can be independent.','两个量子比特一起制备，然后分别测量。先判断它们的结果是否可以彼此独立。'),explanation:bi('The simulated correlations exceed what a classical mixture of 00 and 11 in the same basis can produce.','模拟得到的关联超过了同一测量基中 00 与 11 经典混合所能产生的程度。')},
-   {experiment:'search',framing:bi('One of four items is marked. Decide how many queries an ideal search needs before running it.','四个项目中有一个被标记。运行前先判断理想搜索需要查询几次。'),explanation:bi('Amplitude amplification finds the marked item of four in a single query in this ideal simulation; no hardware or speed advantage is claimed.','在这个理想模拟中，振幅放大只需一次查询就能找到四项中的标记项；不涉及硬件，也不声称速度优势。')}]}}
+   {experiment:'search',framing:bi('One of four items is marked. Decide how many queries an ideal search needs before running it.','四个项目中有一个被标记。运行前先判断理想搜索需要查询几次。'),explanation:bi('Amplitude amplification finds the marked item of four in a single query in this ideal simulation; no hardware or speed advantage is claimed.','在这个理想模拟中，振幅放大只需一次查询就能找到四项中的标记项；不涉及硬件，也不声称速度优势。')}]}},
+ // Drafted by Muse from the hand-drawn sketch at /gallery/pendulum-sketch.png (frozen image suite,
+ // run of October 28, 2026). Author edits: a duplicated chapter removed, labels capitalised, unit symbol.
+ {id:'sketch-pendulum',kind:'model',source:'muse-image',image:'/gallery/pendulum-sketch.png',
+  summary:bi('Muse read this hand-drawn pendulum sketch and built a lesson from it. Change gravity and test how the period depends on length.','Muse 读取这张手绘单摆草图并据此生成课程。调整重力加速度，检验周期如何随摆长变化。'),
+  lesson:{version:2,title:bi('Pendulum sketch: length and swing','单摆草图：摆长与摆动'),intro:bi('A simple pendulum from a sketch: a support, a string of length L, and a round bob on a curved path.','来自草图的单摆：支架、长度为 L 的摆线，以及沿弧线运动的圆形摆锤。'),chapters:[{experiment:'generated',
+   framing:bi('The sketch shows a pendulum of length L swinging on an arc. How does the swing period change when L is made longer or shorter?','草图显示一个摆长为 L 的单摆沿圆弧摆动。当 L 变长或变短时，摆动周期如何变化？'),
+   explanation:bi('The curve rises ever more slowly because the period is proportional to the square root of L. A longer string means a longer period under small-angle motion.','曲线上升越来越平缓，因为周期与摆长的平方根成正比。在小角度运动中，摆线越长，周期越长。'),
+   demo:{kind:'model',title:bi('Pendulum length and period','单摆摆长与周期'),
+    claim:bi('For small swings, the period grows with the square root of the length L.','在小角度摆动下，周期随摆长 L 的平方根增大。'),
+    assumptions:bi('Point-mass bob, massless inextensible string, small swing angle, no air resistance, uniform gravitational acceleration. L is pivot to bob centre in metres; time in seconds.','质点摆锤、轻质不可伸长摆线、小角度摆动、无空气阻力、重力加速度均匀。L 为悬点到摆锤中心的距离，单位米；时间单位秒。'),
+    inputs:[{id:'g',label:bi('Gravitational acceleration','重力加速度'),unit:'m/s²',min:1,max:20,step:.1,value:9.8}],
+    axis:{label:bi('Length','摆长'),unit:'m',min:.1,max:2},
+    outputs:[{id:'period',label:bi('Period','周期'),unit:'s',expression:'2*pi*sqrt(x/g)'}],
+    transfer:{question:bi('What is the period in s at the marked length?','在标记摆长处的周期是多少秒？'),values:[{id:'g',value:10}],at:1,output:'period'}}}]}}
 ]);
 export const galleryIds=Object.freeze(galleryLessons.map(l=>l.id));
 export function galleryLesson(id){return galleryLessons.find(l=>l.id===id)??null;}
@@ -65,5 +79,6 @@ export function galleryLesson(id){return galleryLessons.find(l=>l.id===id)??null
 export function galleryIdFromHash(hash){const m=/^#lesson:([a-z-]+)$/.exec(hash??'');return m&&galleryIds.includes(m[1])?m[1]:null;}
 export function gallerySourceNote(source,language='en'){
  const zh=language==='zh';
+ if(source==='muse-image')return zh?'由 Meta muse-spark-1.3 根据这张手绘草图起草（2026 年 10 月 28 日，冻结的图片评估），作者审阅并做了小幅编辑后收录。':'Drafted by Meta muse-spark-1.3 from this hand-drawn sketch on October 28, 2026 (frozen image evaluation), then reviewed and lightly edited by the author.';
  return source==='muse'?(zh?'由 Meta muse-spark-1.3 起草（2026 年 10 月 27 日），作者审阅并编辑后收录。':'Drafted by Meta muse-spark-1.3 on October 27, 2026, then reviewed and edited by the author.'):(zh?'作者手写的文字，实验为原有的核验计算。':'Hand-authored text over the existing checked experiments.');
 }

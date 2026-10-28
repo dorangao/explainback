@@ -21,11 +21,13 @@ separately in the [deployment notes](docs/vercel-deployment.md).
    [Pendulum timing](https://explainback.app/#lesson:pendulum) ·
    [HTTP caching](https://explainback.app/#lesson:web-cache) ·
    [Acceleration, roll & landing](https://explainback.app/#lesson:vehicle) ·
-   [Quantum interference](https://explainback.app/#lesson:quantum)
+   [Quantum interference](https://explainback.app/#lesson:quantum) ·
+   [Pendulum from a sketch](https://explainback.app/#lesson:sketch-pendulum)
 2. Predict whether the claim holds, run the experiment, change an input, then
    answer a fresh case. Switch **English / 中文** at any point; your settings survive.
 3. Each card says where its content came from. Muse-drafted lessons were edited
-   after the [frozen evaluation](docs/studio-evaluation.md); the others are
+   after the [frozen evaluation](docs/studio-evaluation.md); one was drafted by
+   Muse from a hand-drawn pendulum sketch, shown on its card; the others are
    hand-authored text over the existing checked experiments. Gallery playback
    makes no model call.
 

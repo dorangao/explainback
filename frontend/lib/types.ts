@@ -88,6 +88,7 @@ export type GalleryItem = {
   id: string;
   kind: "model" | "process" | "catalog";
   source: string;
+  image?: string;
   summary: Bilingual;
   lesson: Lesson;
 };
