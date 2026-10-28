@@ -104,3 +104,20 @@ test('guide assesses a learner explanation when one is sent and requires the gra
  reply=()=>({verdict:'certain',explanation:'ok',followUp:'q',nextAction:'replay'});
  assert.equal((await post('/api/studio/guide',{...guide,explanation:'Because it goes faster.'})).status,502);
 });
+test('status reports creator and tester roles and the tryout runs on the tester model with checked answers',async t=>{
+ const seen=[];const {post,origin}=await setup(t,async(args,id)=>{
+  seen.push(id);const name=args.tools[0].name;
+  if(name==='compose_lesson')return {toolCall:{name,arguments:JSON.stringify({status:'ready',message:bi('Ready'),lesson:lesson()})}};
+  return {toolCall:{name,arguments:JSON.stringify({chapters:[{prediction:'disagree',reason:'Both start together.',explanation:'The faster car covers more distance.',transferAnswer:'18',confusions:['The graph axis has no unit.'],suggestions:['Label the axis.']}],overall:'Short and clear.',rating:4})}};
+ },false);
+ const cookie=(await import('../test-support/tester.mjs')).testerCookie;
+ const status=await(await fetch(origin+'/api/status',{headers:{Cookie:await cookie(origin)}})).json();
+ assert.equal(typeof status.roles.creator,'string');assert.equal(typeof status.roles.tester,'string');assert.ok(status.models.some(m=>m.id===status.roles.tester));
+ const s=await(await post('/api/studio/session',{synthetic:true,language:'en'})).json();
+ const result=await(await post('/api/studio/compose',{sessionId:s.sessionId,topic:'Car acceleration'})).json();
+ assert.equal((await post('/api/studio/tryout',{sessionId:s.sessionId,lesson:{version:9},language:'en'})).status,400);
+ const report=await(await post('/api/studio/tryout',{sessionId:s.sessionId,lesson:result.lesson,language:'en'})).json();
+ assert.equal(seen[1],status.roles.tester);assert.equal(report.llm.id,status.roles.tester);
+ assert.equal(report.chapters[0].transfer.correct,true);assert.equal(report.chapters[0].transfer.unit,'m');assert.equal(report.rating,4);
+ assert.deepEqual(report.chapters[0].suggestions,['Label the axis.']);assert.equal(report.attemptsRemaining,6);assert.equal(typeof report.elapsedMs,'number');
+});

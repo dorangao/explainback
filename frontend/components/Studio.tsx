@@ -17,6 +17,7 @@ import type {
   Player,
   Post,
   Status,
+  TryoutReply,
 } from "../lib/types";
 import { say } from "../lib/types";
 import {
@@ -30,7 +31,7 @@ import { useProviderSession } from "../hooks/useProviderSession";
 import { useImageAttachment } from "../hooks/useImageAttachment";
 import { Gallery } from "./Gallery";
 import { LessonPlayer } from "./LessonPlayer";
-import { RequestSummary } from "./RevisionSummary";
+import { RequestSummary } from "./RequestSummary";
 // Authoring, review and diagnostics load only when someone creates or revises.
 const DraftReview = lazy(() =>
   import("./DraftReview").then((m) => ({ default: m.DraftReview })),
@@ -79,6 +80,7 @@ export function Studio({
     [message, setMessage] = useState(""),
     [feedback, setFeedback] = useState<Feedback | null>(null),
     [revision, setRevision] = useState<Revision | null>(null),
+    [tryout, setTryout] = useState<TryoutReply | null>(null),
     [source, setSource] = useState<string | null>(null),
     [sourceImage, setSourceImage] = useState<string | null>(null);
   const clearFeedback = useCallback(() => setFeedback(null), []);
@@ -104,10 +106,16 @@ export function Studio({
     () => providerStatus?.models ?? [],
     [providerStatus?.models],
   );
+  // The creator role (Wonder when configured) is the initial choice; the tester role is fixed.
   const target =
     targets.find((t) => t.id === modelId) ??
+    targets.find(
+      (m) => m.id === providerStatus?.roles?.creator && m.configured,
+    ) ??
     targets.find((t) => t.id === providerStatus?.defaultModel) ??
     targets[0];
+  const tester =
+    targets.find((m) => m.id === providerStatus?.roles?.tester) ?? null;
   const { invalidate } = provider;
   const stopHidden = (!visible || (!lessonId && view === "studio")) && busy;
   useEffect(() => {
@@ -123,6 +131,7 @@ export function Studio({
     setReviewed(false);
     setSource(null);
     setFeedback(null);
+    setTryout(null);
     setRevisionKey((k) => k + 1);
     setMessage("");
     return valid;
@@ -136,6 +145,7 @@ export function Studio({
     setSource(null);
     setFeedback(null);
     setRevision(null);
+    setTryout(null);
     setMessage("");
   }, [invalidate]);
   // A gallery lesson is reviewed content: open it straight into the player.
@@ -253,6 +263,42 @@ export function Studio({
       } else setMessage(composed.message[language]);
     } else setFeedback(result.reply as Feedback);
   }
+  // The test learner (tester role) tries the validated draft; its answers are checked by code.
+  async function tryLesson() {
+    if (
+      busyRef.current ||
+      !authenticated ||
+      !target?.configured ||
+      remaining === 0 ||
+      !draft
+    )
+      return;
+    let lesson: Lesson;
+    try {
+      lesson = validateLesson(draft);
+    } catch {
+      setMessage(t(language, "Studio.completeBothLanguagesAndValidate"));
+      return;
+    }
+    setMessage("");
+    setTryout(null);
+    const result = await run<TryoutReply>(
+      tester ?? target,
+      "tryout",
+      (id, options) =>
+        post<TryoutReply>(
+          "/api/studio/tryout",
+          { sessionId: id, lesson, language },
+          options,
+        ),
+    );
+    if (!result.ok) {
+      if (!result.stale) setMessage(t(language, "Studio.theRequestCouldNotBe"));
+      return;
+    }
+    setTryout(result.reply);
+    setMessage(t(language, "Studio.theTestLearnerTriedThis"));
+  }
   async function importLesson(file: File | undefined) {
     if (!file || busyRef.current || !authenticated) return;
     const token = epoch.current;
@@ -307,7 +353,7 @@ export function Studio({
       {draft && authenticated && showLesson && (
         <div className="draft-provider-bar">
           <label>
-            {t(language, "Studio.modelForYourNextRequest")}
+            {t(language, "Studio.creatorModel")}
             <select
               value={target?.id ?? ""}
               disabled={busy}
@@ -323,6 +369,11 @@ export function Studio({
               ))}
             </select>
           </label>
+          {tester && (
+            <p className="fine">
+              {t(language, "Studio.testLearner")}: {tester.label}
+            </p>
+          )}
           <p className="fine">
             {remaining} {t(language, "Studio.requestsLeftInThisProvider")}
           </p>
@@ -472,7 +523,7 @@ export function Studio({
                     </select>
                   </label>
                   <label>
-                    {t(language, "Studio.model")}
+                    {t(language, "Studio.creatorModel")}
                     <select
                       value={target?.id ?? ""}
                       onChange={(event) => {
@@ -616,6 +667,10 @@ export function Studio({
               onClose={closeLesson}
               onRevise={(text) => void request("compose", text)}
               canRequest={canRequest}
+              tryout={tryout}
+              onTryout={() => void tryLesson()}
+              testerLabel={tester?.label ?? null}
+              metrics={metrics}
             />
           </Suspense>
         )}

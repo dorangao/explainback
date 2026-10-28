@@ -56,6 +56,13 @@ API with structured output. The model never writes code that runs in the browser
   one most important gap, asks a follow-up question that does not give the
   answer away, and suggests exactly one bounded next action: replay, compare or
   transfer. Learners can also ask Muse to explain the result itself.
+- **Two models, two roles.** The stronger `muse-wonder-1.0` is the creator: it
+  drafts and revises. `muse-spark-1.3` is the test learner: one click sends a
+  draft to it as a first-time learner, who predicts, reads the observations,
+  explains back, answers the transfer question and reports what confused it.
+  The code checks its answers; its suggestions can be dropped straight into a
+  revision request for the creator. Either role falls back to the default model
+  when its model is not configured, and the creator can be switched by hand.
 - **Read a photo or sketch.** Attach an image of a diagram, hand-drawn sketch or
   textbook figure in Lesson Studio; Muse reads its labels, arrows and numbers and
   builds the lesson around them. Images are downscaled in the browser, sent once

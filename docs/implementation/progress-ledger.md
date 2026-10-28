@@ -45,6 +45,7 @@ current index; dated entries and linked evidence retain the history.
 | PROMPT-001 | Claude | Merged as `44434ef`; deployed to production | Base `4f861c0`, branch `feat/author-prompt-v2`; `src/lesson-author.mjs` (author-v2), `src/eval/studio.mjs` (samples, rejection reasons), `scripts/eval-studio.mjs`, `public/lesson-schema.mjs` and `demo-model.mjs` (field-naming validator messages), evaluation docs | User reviews the before/after in `docs/studio-evaluation.md` and merges; deploy afterwards. |
 | GALLERY-002 | Claude | Merged as `118cd69`; deployed to production | Base `775b897`, branch `feat/sketch-gallery-and-restore`; `public/gallery-lessons.mjs`, `public/gallery/pendulum-sketch.png`, `src/static.mjs`, `scripts/build-vercel.mjs`, `frontend/components/{Gallery,Studio,RevisionSummary}.tsx`, types, styles, tests, README and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
 | EXPLAIN-001 | Claude | Merged as `88d082c`; deployed to production | Base `118cd69`, branch `feat/explain-back`; `src/lesson-author.mjs` (graded guide contract), `src/server.mjs`, `frontend/components/{LessonPlayer,Studio}.tsx`, `frontend/lib/{types,messages}.ts`, styles, tests, README and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
+| ROLES-001 | Claude | Implemented, validated, PR open | Base `00dc995`, branch `feat/creator-tester-roles`; `src/lesson-tester.mjs` (new), `src/server.mjs` (roles, `/api/studio/tryout`), `frontend/components/{Studio,DraftReview,RequestSummary,RevisionSummary}.tsx`, types, messages, styles, tests, README and Studio docs | User reviews and merges; deploy afterwards. |
 
 
 Before working, read the latest table and actual Git state, claim a bounded file
@@ -530,3 +531,42 @@ returned verdict "partly", feedback naming the missing freshness/revalidation
 path, and a follow-up question that did not reveal the answer, in 4.9 s.
 
 **State:** merged as `88d082c` (PR #12) and deployed; hosted check through the judge invite returned a supported verdict with follow-up in 4.7 s. Release recorded in `docs/vercel-deployment.md`.
+
+### 2026-10-28 Pacific — ROLES-001 — Claude
+
+**Request (user):** use the stronger Wonder model as the creator and Spark as a
+test learner who tries a draft and gives feedback.
+
+**Changes:** `/api/status` reports `roles` (creator = configured
+`muse-wonder-1.0`, tester = configured `muse-spark-1.3`, each falling back to the
+default target); the Studio starts on the creator and labels the selector
+"Creator model" with the test learner shown beside it. New
+`src/lesson-tester.mjs`: `learnerView` (what a learner sees before the
+explanation; never answer, hint or explanation), `learnerTryoutRequest`
+(structured `try_lesson` tool: per-chapter prediction+reason, explanation,
+transfer answer, ≤3 confusions, ≤3 suggestions; overall note; 1–5 rating) and
+`readLearnerTryout` (shape/length checks; transfer answers checked by code,
+numeric within tolerance, choices by index). `/api/studio/tryout` always runs on
+the tester role within the Lesson Studio session and counts against the same
+budgets. Draft review gains "Let the test learner try this lesson", the report
+(checked answers, confusions, suggestions, rating, request summary) and "Use
+these suggestions in a revision", which fills the revision box. `RequestSummary`
+moved to its own module so the lazy `RevisionSummary` import is effective (the
+Vite INEFFECTIVE_DYNAMIC_IMPORT warning is gone).
+
+**Verification:** Node tests (new `test/lesson-tester.test.mjs`: learner view
+hides answers, numeric/choice checking, malformed reports rejected; HTTP test:
+roles in status, tryout runs on the tester id, 400 on an invalid lesson,
+checked answer and budget in the reply); Vitest (creator default from roles;
+tryout flow with request body, report contents and suggestion hand-off);
+typecheck, lint (warnings only, pre-existing kinds), format, build (no dynamic
+import warning), Playwright 18/18; Node 237/237, Vitest 16/16. Live local check
+(open-access dev server): Wonder drafted "Why faster bicycles need more room to
+stop" (16.0 s; a first attempt was rejected and retried, consistent with the
+measured 5/6 Wonder text pass rate), Spark tried it in 5.7 s with the transfer
+answer 30 m checked correct, two confusions, two suggestions and a 3/5 rating,
+and "Use these suggestions" filled the revision box. One confusion came from the
+learner view listing only the first output unlabelled; the view now names every
+output with its unit at three axis points.
+
+**State:** committed and pushed; PR open; not merged or deployed.

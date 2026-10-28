@@ -25,6 +25,8 @@ export type Status = {
   configured: boolean;
   models: Target[];
   defaultModel: string;
+  // Creator drafts and revises (Wonder when configured); tester tries a draft (Spark).
+  roles?: { creator: string; tester: string };
   traceEnabled: boolean;
   access: Access | null;
   problems: { id: string; title: Bilingual }[];
@@ -169,6 +171,27 @@ export type Feedback = ReplyMetrics & {
   // Present when the learner's own explanation was assessed.
   verdict?: Verdict;
   followUp?: string;
+};
+export type TryoutChapter = {
+  prediction: "agree" | "disagree" | "unsure";
+  reason: string;
+  explanation: string;
+  transfer: {
+    given: string;
+    correct: boolean;
+    type: "number" | "choice";
+    unit?: string;
+    choice?: string | null;
+  };
+  confusions: string[];
+  suggestions: string[];
+};
+export type TryoutReply = ReplyMetrics & {
+  chapters: TryoutChapter[];
+  overall: string;
+  rating: number;
+  llm: Target;
+  attemptsRemaining: number;
 };
 export type ComposeReply = ReplyMetrics & {
   status: "ready" | "unsupported";

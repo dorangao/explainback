@@ -138,6 +138,32 @@ export const messages = {
     en: "One change: simplify the explanation, add an output, correct an assumption…",
     zh: "一个修改：简化解释、添加输出、修正假设…",
   },
+  "DraftReview.letTheTestLearnerTry": {
+    en: "Let the test learner try this lesson",
+    zh: "让测试学习者试学本课",
+  },
+  "DraftReview.testLearnerReport": {
+    en: "TEST LEARNER REPORT",
+    zh: "测试学习者报告",
+  },
+  "DraftReview.testLearnerIntro": {
+    en: "A second model plays a first-time learner: it predicts, reads the observations, explains back and answers the transfer question. Its answers are checked by code; its confusions and suggestions are its opinion.",
+    zh: "另一个模型扮演首次学习者：先预测，再读观察结果，用自己的话解释，并回答迁移题。答案由代码核验；困惑与建议仅代表它的看法。",
+  },
+  "DraftReview.predicted": { en: "Predicted", zh: "预测" },
+  "DraftReview.explainedBack": { en: "Explained back", zh: "解释回述" },
+  "DraftReview.transferAnswer": { en: "Transfer answer", zh: "迁移题作答" },
+  "DraftReview.correct": { en: "correct", zh: "正确" },
+  "DraftReview.incorrect": { en: "incorrect", zh: "错误" },
+  "DraftReview.confusions": { en: "Confusions", zh: "困惑之处" },
+  "DraftReview.suggestions": { en: "Suggestions", zh: "建议" },
+  "DraftReview.noneReported": { en: "none reported", zh: "无" },
+  "DraftReview.overall": { en: "Overall", zh: "总体" },
+  "DraftReview.clarityRating": { en: "clarity", zh: "清晰度" },
+  "DraftReview.useTheseSuggestionsIn": {
+    en: "Use these suggestions in a revision",
+    zh: "将这些建议用于修改",
+  },
   "DraftReview.presentThisLesson": {
     en: "Present this lesson →",
     zh: "开始演示 →",
@@ -367,6 +393,10 @@ export const messages = {
     en: "Show all changes",
     zh: "显示全部修改",
   },
+  "RevisionSummary.triedThisLessonAs": {
+    en: "tried this lesson as a test learner",
+    zh: "以测试学习者身份试学了本课",
+  },
   "RevisionSummary.tokensIn": { en: "tokens in", zh: "输入 token" },
   "RevisionSummary.whatMuseChanged": {
     en: "WHAT MUSE CHANGED",
@@ -469,6 +499,12 @@ export const messages = {
   },
   "Studio.loading": { en: "Loading…", zh: "正在加载…" },
   "Studio.model": { en: "Model", zh: "模型" },
+  "Studio.creatorModel": { en: "Creator model", zh: "创作模型" },
+  "Studio.testLearner": { en: "Test learner", zh: "测试学习者" },
+  "Studio.theTestLearnerTriedThis": {
+    en: "The test learner tried this draft. Read its report below the definition.",
+    zh: "测试学习者已试学此草稿，报告见定义下方。",
+  },
   "Studio.modelForYourNextRequest": {
     en: "Model for your next request",
     zh: "下一次请求使用的模型",
