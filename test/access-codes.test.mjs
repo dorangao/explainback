@@ -65,7 +65,7 @@ async function running(t,options={}){
 }
 test('HTTP: a code signs in, reports its budget, is tagged on sessions, and is capped independently of the tester',async t=>{
  const {origin,post,login,status}=await running(t);
- assert.deepEqual(await(await fetch(origin+'/api/auth')).json(),{configured:true,codes:true,authenticated:false});
+ assert.deepEqual(await(await fetch(origin+'/api/auth')).json(),{configured:true,codes:true,open:false,authenticated:false});
  assert.equal((await post('/api/login',{code:'NOPE-NOPE-NOPE'})).status,401);assert.equal((await(await post('/api/login',{code:'NOPE-NOPE-NOPE'})).json()).code,'ACCESS_CODE');
  const judge=await login({code:'7kq4-muse-2026'}),tester=await login(testerCredentials);
  const before=await status(judge);assert.equal(before.access.label,'judges');assert.equal(before.access.remaining,3);assert.equal(before.access.quota,3);assert.equal(typeof before.access.expiresAt,'number');
@@ -84,7 +84,7 @@ test('HTTP: codes work when no tester password is configured and misconfiguratio
  const warnings=[];const warn=console.warn;console.warn=m=>warnings.push(m);
  try{
   const {origin,login,status}=await running(t,{testerCredentials:{username:'',password:''},accessCodes:parseAccessCodes(`judges:7KQ4-MUSE-2026:${future(3)}:5, broken:SECRET-VALUE-X:nope:5`)});
-  assert.deepEqual(await(await fetch(origin+'/api/auth')).json(),{configured:false,codes:true,authenticated:false});
+  assert.deepEqual(await(await fetch(origin+'/api/auth')).json(),{configured:false,codes:true,open:false,authenticated:false});
   const judge=await login({code:'7KQ4-MUSE-2026'});assert.equal((await status(judge)).access.remaining,5);
   assert.equal(warnings.length,1);assert.doesNotMatch(warnings[0],/SECRET-VALUE/);
  }finally{console.warn=warn;}

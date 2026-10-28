@@ -72,6 +72,7 @@ Automated passes are not teaching readiness, and the app says so on screen.
 cp .env.example .env.local   # add MODEL_API_KEY and tester credentials, keep mode 600
 npm install
 npm run dev                  # http://127.0.0.1:4173
+npm run dev:open             # same, with sign-in skipped (local only; the cloud build ignores the flag)
 npm test
 ```
 
