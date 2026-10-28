@@ -43,6 +43,56 @@ npm run eval:studio -- --live --suite=studio-image-v1 --models=meta:muse-spark-1
 
 ## Comparing models and judging drafts (October 28)
 
+### Author prompt v2, measured against the baseline (October 28, 2026)
+
+The author instructions were revised (`author-v2` in `src/lesson-author.mjs`,
+version recorded in each report's metadata next to the prompt hash) to address
+what the judge found on the baseline prompt: framing that revealed the claim's
+outcome, loose quantity names, wrong units, and transfer questions that did not
+name the quantity and unit. The judge rubric, scorer and frozen cases are
+unchanged, so the two runs differ only in the author prompt.
+
+The final run used `--samples=2` (every case twice) so one-off variance shows in
+the table. Reports: `output/eval/studio-v1-2026-10-28T15-22-26.946Z-d4d901c3/`
+and `output/eval/studio-image-v1-2026-10-28T15-25-52.158Z-ec068602/` (ignored).
+
+| Suite · model | Baseline prompt (n=1) | Prompt v2 (n=2) |
+|---|---|---|
+| text · muse-spark-1.3 | 3/3 automated, judge 8.0 (pendulum-zh 5) | **6/6 automated, judge 10.0** on every row |
+| text · muse-wonder-1.0 | 3/3 automated, judge 8.67 | 5/6 automated (one process draft with the wrong stage count), judge 10.0 on valid rows |
+| image · muse-spark-1.3 | 2/2 automated, judge 9.5 | 3/4 automated (one rejected parameter id), judge 10.0 on valid rows |
+| image · muse-wonder-1.0 | 2/2 automated, judge 8.0 | **4/4 automated, judge 9.0** |
+
+What the revision fixed, by the judge's own criteria: no row lost points for
+neutral framing, quantity names or units in the final run; the transfer wording
+is now "What is the period in s at the marked length?" style on every valid
+model draft. Remaining findings are bilingual parity (an EN/ZH title that asks a
+yes/no question in one language and "how" in the other) and, on the sketch
+cases, a transfer point that names a length the sketch does not show, which the
+contract requires but the judge reads as invented.
+
+Two regressions appeared and were corrected before the final run; they are
+recorded because they are the kind of thing a prompt change does silently:
+
+- The first v2 wording told the model to use standard quantity names everywhere.
+  Spark renamed the case's required input ids (`tinit`, `tamb`), and the numeric
+  probes correctly failed. The rule now applies to labels and prose only, and
+  topic-specified ids, ranges and units must be kept exactly.
+- Wonder, asked to put the outcome in the explanation field, wrote explanations
+  over the 260-character limit and lost 3 of 6 rows to contract rejection. The
+  limit is now stated in that sentence and the length warning says that one
+  over-limit field rejects the whole lesson. Final run: 5 of 6 valid.
+
+Two tooling changes support this comparison: `--samples=N` repeats every case
+(rows are suffixed `#n`), and contract rejections now carry the validator's own
+message naming the field and limit (for example "chapter 1 explanation needs
+both languages, each 1–260 characters"), which is also what authors now see in
+the app.
+
+Limits: five cases, two samples, one judge model, no human grading. Spark
+remains the default; Wonder is roughly 1.4–1.6× slower here and more often
+exceeds the strict text-suite expectations (one chapter, 3–6 stages).
+
 ### First live comparison run (October 28, 2026)
 
 Three frozen text cases (`cooling-en`, `pendulum-zh`, `web-cache-en`) and the

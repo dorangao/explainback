@@ -45,7 +45,8 @@ export function selectStudioCases(suite,filter){
 export function scoreStudioCase(item,result){
  const score={scorerVersion:studioScorerVersion,contractValid:false,automatedPass:false,checks:{},probes:[],supplementalProbes:[],manualReview:'required',reviewCriteria:item.expected.review};
  let response;
- try{response=readLessonAuthor(result,'compose','generated');}catch{return {...score,failure:'contract-rejected'};}
+ // The rejection reason is our own validator's message, never provider text.
+ try{response=readLessonAuthor(result,'compose','generated');}catch(error){return {...score,failure:'contract-rejected',reason:String(error?.message??'').slice(0,160)};}
  score.contractValid=true;score.actualStatus=response.status;score.response=response;
  const expected=item.expected;
  score.checks.status=response.status===expected.status;
@@ -87,12 +88,14 @@ export function scoreStudioCase(item,result){
  return score;
 }
 
-export async function runStudioEvaluation({cases,call,onUpdate=async()=>{},metadata={},suite='studio-v1'}){
- const report={suite,scorerVersion:studioScorerVersion,startedAt:new Date().toISOString(),complete:false,planned:cases.length,attempted:0,contractValid:0,automatedPassed:0,metadata,cases:[],limitations:'One sample per frozen synthetic case. No retries, repairs or model judge. Automated checks do not establish scientific validity, bilingual fluency or learning effectiveness. Manual content review is separate.'};
+// `samples` repeats every case N times (rows are suffixed #n) so one-off variance is visible.
+export async function runStudioEvaluation({cases,call,onUpdate=async()=>{},metadata={},suite='studio-v1',samples=1}){
+ if(!Number.isInteger(samples)||samples<1||samples>5)throw new Error('Choose 1–5 samples per case.');
+ const report={suite,scorerVersion:studioScorerVersion,samples,startedAt:new Date().toISOString(),complete:false,planned:cases.length*samples,attempted:0,contractValid:0,automatedPassed:0,metadata,cases:[],limitations:'One sample per frozen synthetic case. No retries, repairs or model judge. Automated checks do not establish scientific validity, bilingual fluency or learning effectiveness. Manual content review is separate.'};
  await onUpdate(report);
- for(const item of cases){
+ for(let sample=1;sample<=samples;sample++)for(const item of cases){
   const request=lessonAuthorRequest({topic:item.topic,creation:'generated',...(item.imageDataUrl?{image:item.imageDataUrl}:{})},'compose');
-  const row={id:item.id,pair:item.pair,language:item.language,category:item.category,topic:item.topic,...(item.image?{image:item.image,imageSha256:item.imageSha256}:{}),promptHash:hash(JSON.stringify({...request,images:request.images?.map(u=>hash(u))})),requestSent:false,httpStatus:null,contractValid:false,automatedPass:false,manualReview:'required',reviewCriteria:item.expected.review};
+  const row={id:samples>1?`${item.id}#${sample}`:item.id,caseId:item.id,sample,pair:item.pair,language:item.language,category:item.category,topic:item.topic,...(item.image?{image:item.image,imageSha256:item.imageSha256}:{}),promptHash:hash(JSON.stringify({...request,images:request.images?.map(u=>hash(u))})),requestSent:false,httpStatus:null,contractValid:false,automatedPass:false,manualReview:'required',reviewCriteria:item.expected.review};
   const started=performance.now();report.attempted++;
   try{
    const result=await call({...request,onTrace:event=>{

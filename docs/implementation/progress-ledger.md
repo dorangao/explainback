@@ -41,6 +41,7 @@ current index; dated entries and linked evidence retain the history.
 | REL-001 | Codex | Release evidence in PR #8; file claim released | Base `ba4da7a`, `codex/react-studio-branding`; claims `vercel.json`, `.vercelignore`, `.github/workflows/`, suction fallback regression, release evidence and this ledger; committing the validated UI-001 files. | [PR #8](https://github.com/dorangao/explainback/pull/8) carries the final merge SHA, production deployment and live validation evidence; read its release verification section. |
 | REVIEW-001 | Claude | Assessment complete; no product code changed | Base `b7f82df` (`main` after PR #8), checkout on `codex/react-studio-branding`; read-only review of `frontend/`, `src/static.mjs`, build/CI config, tests; this ledger only | User chooses which findings to schedule; see the dated entry. |
 | CLEAN-001 | Claude | Merged as `92723db`; deployed to production | Base `b7f82df`, branch `feat/post-migration-cleanup`; claims `frontend/**`, `public/*.d.mts`, removed legacy shell files, `src/server.mjs` (asset map, reply metrics), `test/**`, lint/format/Vitest config, CI workflow, README, LICENSE, Studio docs | User reviews and merges the PR; deploy afterwards. Labs port left `react/refs` and `react/immutability` as warnings under `frontend/components/labs/**` (follow-up: idiomatic React state for the ported controllers). |
+| PROMPT-001 | Claude | Implemented, measured, PR open | Base `4f861c0`, branch `feat/author-prompt-v2`; `src/lesson-author.mjs` (author-v2), `src/eval/studio.mjs` (samples, rejection reasons), `scripts/eval-studio.mjs`, `public/lesson-schema.mjs` and `demo-model.mjs` (field-naming validator messages), evaluation docs | User reviews the before/after in `docs/studio-evaluation.md` and merges; deploy afterwards. |
 
 
 Before working, read the latest table and actual Git state, claim a bounded file
@@ -454,4 +455,26 @@ Playwright 18/18; build: index 360.6 KB (121.5 KB gzip), Labs 181.1 KB
 The main chunk grew about 10 KB from the message table and diff view.
 
 **State:** merged as `92723db` and deployed; see [release record](../vercel-deployment.md#post-migration-cleanup-release--october-28-2026-pacific).
+
+### 2026-10-28 Pacific — PROMPT-001 — Claude
+
+**Request:** revise the author prompt against the judge findings and measure the
+change against the preserved baseline.
+
+**Changes:** `author-v2` instructions (neutral framing, standard quantity names
+translated per language, correct units, transfer question names quantity and
+unit, explicit length limits); `--samples=N` in the Studio runner; validator
+rejections name the field and limit; prompt version recorded in report metadata.
+
+**Verification:** Node tests 231/231; Vitest 12/12; app typecheck pass. Live:
+two-sample comparison on both models for three text and two image cases, judge
+unchanged. Spark text 6/6 automated and judge 10.0 (baseline 3/3, 8.0); Wonder
+image 4/4 and 9.0 (baseline 2/2, 8.0); Wonder text 5/6 and Spark image 3/4 with
+one contract rejection each. Two intermediate regressions (renamed ids; Wonder
+over the explanation limit) were caught by the probes and the contract checks
+and fixed before the final run. Full table in
+[studio-evaluation.md](../studio-evaluation.md#author-prompt-v2-measured-against-the-baseline-october-28-2026).
+
+**State:** committed and pushed on `feat/author-prompt-v2`; PR open; not merged
+or deployed. Production still runs the baseline prompt.
 
