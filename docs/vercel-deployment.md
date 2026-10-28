@@ -350,3 +350,17 @@ sign-in, the library card carries the "Created from a sketch" chip, the player
 shows the sketch image beside the provenance note ("Drafted by Meta
 muse-spark-1.3 from this hand-drawn sketch"), and `/gallery/pendulum-sketch.png`
 returns 200 from the production host.
+
+## Explain-it-back release · October 28, 2026 (Pacific)
+
+Merged [PR #12](https://github.com/dorangao/explainback/pull/12) as `88d082c` and
+deployed `main` with `vercel deploy --prod -y`; deployment
+`explainback-monw0b6yk-doran-gaos-projects.vercel.app`, status Ready, serving
+[explainback.app](https://explainback.app/). No environment changes.
+
+Hosted check through the judge invite: on the web-cache lesson, a complete
+learner explanation (fresh copy served without network, conditional request on
+expiry, 304 reuses the body) sent with "Check my explanation with Muse" returned
+the verdict **Supported by the evidence**, feedback, a follow-up question and a
+next action from `muse-spark-1.3` in 4.7 s; the quota line showed the judge
+budget. Sign-out restored the public library afterwards.
