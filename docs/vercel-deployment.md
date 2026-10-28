@@ -308,3 +308,20 @@ Vercel uses the Vite preset, `npm ci --ignore-scripts`, and
 includes the new frontend and TypeScript/Vite entry/config files. The `/api/*`
 rewrite, Node 22 engine, security/noindex headers and hosted Redis/auth boundary
 remain intact. Node 22 CI runs tests, build and synthetic Chromium workflows.
+
+## Post-migration cleanup release · October 28, 2026 (Pacific)
+
+Merged [PR #9](https://github.com/dorangao/explainback/pull/9) as `92723db` and
+deployed `main` with `vercel deploy --prod -y`; deployment
+`explainback-16itcvz6m-doran-gaos-projects.vercel.app`, status Ready, serving
+[explainback.app](https://explainback.app/). The first preview build of the PR
+failed because the Vercel upload excludes `test-support/`; `e7928bc` split the
+typecheck (app vs tests) and a preview built before the merge.
+
+Hosted checks after the release: `/api/auth` reports codes enabled; the judge
+invite signed in; Physics and Quantum render from the React lab components
+(`.lab-workspace` present, no legacy container, no console errors); one live
+create (11.8 s) and one revision (9.4 s) on Spark produced the "What Muse
+changed" panel with 12 listed fields; the quota badge moved 40 → 38; sign-out
+restored the public library.
+

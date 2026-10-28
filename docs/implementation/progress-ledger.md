@@ -40,7 +40,7 @@ current index; dated entries and linked evidence retain the history.
 | UI-001 | Codex | Committed and pushed in `8bdc8ff`; release tracked by REL-001 | Base `ba4da7a`, branch `codex/react-studio-branding`; claim: `frontend/`, `e2e/`, package/build configs, static serving, physics adapter, brand assets, relevant tests and docs. | Ready for user review; commit/push/deployment remain separate next actions. |
 | REL-001 | Codex | Release evidence in PR #8; file claim released | Base `ba4da7a`, `codex/react-studio-branding`; claims `vercel.json`, `.vercelignore`, `.github/workflows/`, suction fallback regression, release evidence and this ledger; committing the validated UI-001 files. | [PR #8](https://github.com/dorangao/explainback/pull/8) carries the final merge SHA, production deployment and live validation evidence; read its release verification section. |
 | REVIEW-001 | Claude | Assessment complete; no product code changed | Base `b7f82df` (`main` after PR #8), checkout on `codex/react-studio-branding`; read-only review of `frontend/`, `src/static.mjs`, build/CI config, tests; this ledger only | User chooses which findings to schedule; see the dated entry. |
-| CLEAN-001 | Claude | Implemented, validated, pushed; PR open | Base `b7f82df`, branch `feat/post-migration-cleanup`; claims `frontend/**`, `public/*.d.mts`, removed legacy shell files, `src/server.mjs` (asset map, reply metrics), `test/**`, lint/format/Vitest config, CI workflow, README, LICENSE, Studio docs | User reviews and merges the PR; deploy afterwards. Labs port left `react/refs` and `react/immutability` as warnings under `frontend/components/labs/**` (follow-up: idiomatic React state for the ported controllers). |
+| CLEAN-001 | Claude | Merged as `92723db`; deployed to production | Base `b7f82df`, branch `feat/post-migration-cleanup`; claims `frontend/**`, `public/*.d.mts`, removed legacy shell files, `src/server.mjs` (asset map, reply metrics), `test/**`, lint/format/Vitest config, CI workflow, README, LICENSE, Studio docs | User reviews and merges the PR; deploy afterwards. Labs port left `react/refs` and `react/immutability` as warnings under `frontend/components/labs/**` (follow-up: idiomatic React state for the ported controllers). |
 
 
 Before working, read the latest table and actual Git state, claim a bounded file
@@ -453,5 +453,5 @@ Playwright 18/18; build: index 360.6 KB (121.5 KB gzip), Labs 181.1 KB
 (67.6 KB gzip), DraftReview 6.6 KB, ProviderConsole 5.6 KB, CSS 70.4 KB.
 The main chunk grew about 10 KB from the message table and diff view.
 
-**State:** committed and pushed; pull request open; not merged or deployed.
+**State:** merged as `92723db` and deployed; see [release record](../vercel-deployment.md#post-migration-cleanup-release--october-28-2026-pacific).
 
