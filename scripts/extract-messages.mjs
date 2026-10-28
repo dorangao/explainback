@@ -4,7 +4,7 @@
 // Usage: node scripts/extract-messages.mjs [--write]
 import { readFileSync, writeFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, basename } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 const root = fileURLToPath(new URL("../frontend/", import.meta.url));
 const write = process.argv.includes("--write");
 const files = [];
@@ -18,6 +18,11 @@ const files = [];
 const literal = String.raw`"((?:[^"\\]|\\.)*)"`;
 const call = new RegExp(String.raw`say\(\s*language\s*,\s*${literal}\s*,\s*${literal}\s*,?\s*\)`, "g");
 const messages = new Map(); // key -> {en, zh}
+// Keep every entry already in the table: earlier extractions turned their call sites into t() calls.
+try {
+  const existing = (await import(pathToFileURL(join(root, "lib/messages.ts")).href)).messages;
+  for (const [key, value] of Object.entries(existing)) messages.set(key, { en: value.en, zh: value.zh });
+} catch {}
 const slug = (text) =>
   text
     .toLowerCase()
