@@ -1190,6 +1190,57 @@ body {
   padding-left: 20px;
   margin: 20px 0;
 }
+.explain-back {
+  margin-top: 24px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface) 92%, #8aaf97);
+}
+.explain-back .eyebrow {
+  margin-top: 0;
+}
+.explain-back label {
+  display: block;
+  font-weight: 600;
+  margin: 8px 0 6px;
+}
+.explain-back textarea {
+  display: block;
+  width: 100%;
+  margin: 0 0 10px;
+}
+.explain-back-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.explain-back-actions p {
+  margin: 0;
+}
+.verdict {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: #e6efe9;
+  color: #2f5d44;
+}
+.verdict[data-verdict="partly"] {
+  background: #f6ecd4;
+  color: #6b4e12;
+}
+.verdict[data-verdict="unsupported"] {
+  background: #f3e1de;
+  color: #7a2f2a;
+}
+.follow-up {
+  font-style: italic;
+}
 .transfer-question {
   border-top: 1px solid var(--line);
   padding: 20px 0;

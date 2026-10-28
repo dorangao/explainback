@@ -152,7 +152,7 @@ export function createHandler({
         const call=trace?.start({provider:s.llm.provider,model:s.llm.model,input:args.input,instructions:args.instructions});
         try{
           await trace?.flush();const options={...args,...(call?{onTrace:call.event}:{})};
-          const startedAt=performance.now(),raw=await(modelCall?modelCall(options):router.call(s.llm.id,options)),result=readLessonAuthor(raw,mode,body.creation);
+          const startedAt=performance.now(),raw=await(modelCall?modelCall(options):router.call(s.llm.id,options)),result=readLessonAuthor(raw,mode,body.creation,mode==='guide'&&body.explanation!==undefined);
           const metrics={model:raw.model??s.llm.model,elapsedMs:Math.round(performance.now()-startedAt),usage:raw.usage?{input:raw.usage.input_tokens??null,output:raw.usage.output_tokens??null}:null};
           if(!await access.active(tester.id)){call?.finish('discarded');await state.remove(body.sessionId);throw new RequestError(401,'Sign in to tester access.');}
           if(!await state.get(body.sessionId))throw new RequestError(409,'Session was reset; response discarded.');

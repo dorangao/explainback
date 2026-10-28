@@ -79,3 +79,28 @@ test('an oversized streaming image request returns 413 before the upload finishe
  });
  assert.equal(status,413);
 });
+test('guide assesses a learner explanation when one is sent and requires the graded reply shape',async t=>{
+ let lastArgs,reply=()=>({verdict:'partly',explanation:'You named the key idea; the areas differ.',followUp:'Which car covers more ground in the second half?',nextAction:'transfer'});
+ const {post}=await setup(t,async args=>{
+  lastArgs=args;const name=args.tools[0].name;
+  return {toolCall:{name,arguments:JSON.stringify(name==='compose_lesson'?{status:'ready',message:bi('Ready'),lesson:lesson()}:reply())}};
+ },false);
+ const s=await(await post('/api/studio/session',{synthetic:true,language:'en'})).json();
+ const result=await(await post('/api/studio/compose',{sessionId:s.sessionId,topic:'Car acceleration'})).json();
+ const guide={sessionId:s.sessionId,lesson:result.lesson,chapter:0,variant:0,prediction:'disagree',language:'en'};
+ assert.equal((await post('/api/studio/guide',{...guide,explanation:''})).status,400);
+ assert.equal((await post('/api/studio/guide',{...guide,explanation:'x'.repeat(701)})).status,400);
+ const graded=await(await post('/api/studio/guide',{...guide,explanation:'The faster car covers more distance because the area under its line is bigger.'})).json();
+ assert.equal(graded.verdict,'partly');assert.match(graded.followUp,/second half/);assert.equal(graded.nextAction,'transfer');
+ const input=JSON.parse(lastArgs.input);assert.match(input.learnerExplanation,/area under its line/);assert.match(lastArgs.instructions,/verdict is supported when/);
+ assert.deepEqual(lastArgs.tools[0].parameters.required,['verdict','explanation','followUp','nextAction']);
+ // Without a learner explanation the plain guide shape is used and the graded fields are not accepted.
+ const plain=await post('/api/studio/guide',guide);assert.equal(plain.status,502);
+ reply=()=>({explanation:'Different areas imply different distances.',nextAction:'replay'});
+ const answer=await(await post('/api/studio/guide',guide)).json();assert.equal(answer.verdict,undefined);assert.equal(answer.nextAction,'replay');
+ assert.equal(JSON.parse(lastArgs.input).learnerExplanation,undefined);assert.deepEqual(lastArgs.tools[0].parameters.required,['explanation','nextAction']);
+ // A graded request whose reply omits the verdict is rejected rather than passed through.
+ assert.equal((await post('/api/studio/guide',{...guide,explanation:'Because it goes faster.'})).status,502);
+ reply=()=>({verdict:'certain',explanation:'ok',followUp:'q',nextAction:'replay'});
+ assert.equal((await post('/api/studio/guide',{...guide,explanation:'Because it goes faster.'})).status,502);
+});

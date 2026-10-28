@@ -50,9 +50,12 @@ API with structured output. The model never writes code that runs in the browser
 - **Revise on request.** Ask for one concrete change (a second output, a
   neutral framing, a corrected term). Muse edits the draft; the review gate
   stays unchecked until you look at what changed.
-- **Explain checked evidence.** After an experiment, Muse explains the learner's
-  prediction against values the code computed and suggests exactly one bounded
-  next action: replay, compare or transfer.
+- **Explain it back.** After an experiment, the learner writes what changed and
+  why in their own words. Muse grades that explanation against the values the
+  code computed (supported, partly supported or not yet supported), names the
+  one most important gap, asks a follow-up question that does not give the
+  answer away, and suggests exactly one bounded next action: replay, compare or
+  transfer. Learners can also ask Muse to explain the result itself.
 - **Read a photo or sketch.** Attach an image of a diagram, hand-drawn sketch or
   textbook figure in Lesson Studio; Muse reads its labels, arrows and numbers and
   builds the lesson around them. Images are downscaled in the browser, sent once

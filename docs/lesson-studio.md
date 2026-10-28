@@ -36,6 +36,22 @@ request and response bodies.
 
 ![What Muse changed panel](screenshots/revision-summary.jpg)
 
+## Explain it back (October 28)
+
+The Explain stage now asks the learner to write, before reading the reviewed
+explanation, what changed in the experiment and why, in their own words (up to
+700 characters, kept per chapter). With creation access, **Check my explanation
+with Muse** sends that text with the same checked evidence the guide call
+already receives. The reply is a graded assessment: a verdict (`supported`,
+`partly` or `unsupported` by the checked result), feedback that names what the
+learner got right and the single most important gap, one follow-up question
+that must not reveal the answer, and the usual bounded next action. The server
+requires all four fields when a learner explanation was sent and rejects any
+other shape; without one, the plain "explain this result" contract is unchanged.
+The learner text is untrusted subject matter in the prompt, never instructions.
+Signed-out visitors still see the textarea and the reviewed explanation; the
+feedback button is replaced by a note that it needs creation access.
+
 ## Image input and model choice (October 28)
 
 **Add a photo, sketch or diagram** sits above the Create button. The browser

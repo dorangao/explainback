@@ -7,8 +7,9 @@ current index; dated entries and linked evidence retain the history.
 ## Current baseline
 
 - **Product:** a question or image becomes a bilingual, reviewable interactive
-  lesson. The learner predicts, operates, explains and transfers. Five reviewed
-  gallery lessons play without signing in or making model requests.
+  lesson. The learner predicts, operates, explains and transfers. Six reviewed
+  gallery lessons (one drafted from a sketch) play without signing in or making
+  model requests.
 - **Grounding source:** `main` at `ba4da7a5182df30b399baad37a03494e4565ccf9`, merging
   PR #7. The locally stored `origin/main` matches; no remote refresh was performed
   in this grounding pass.
@@ -42,7 +43,8 @@ current index; dated entries and linked evidence retain the history.
 | REVIEW-001 | Claude | Assessment complete; no product code changed | Base `b7f82df` (`main` after PR #8), checkout on `codex/react-studio-branding`; read-only review of `frontend/`, `src/static.mjs`, build/CI config, tests; this ledger only | User chooses which findings to schedule; see the dated entry. |
 | CLEAN-001 | Claude | Merged as `92723db`; deployed to production | Base `b7f82df`, branch `feat/post-migration-cleanup`; claims `frontend/**`, `public/*.d.mts`, removed legacy shell files, `src/server.mjs` (asset map, reply metrics), `test/**`, lint/format/Vitest config, CI workflow, README, LICENSE, Studio docs | User reviews and merges the PR; deploy afterwards. Labs port left `react/refs` and `react/immutability` as warnings under `frontend/components/labs/**` (follow-up: idiomatic React state for the ported controllers). |
 | PROMPT-001 | Claude | Merged as `44434ef`; deployed to production | Base `4f861c0`, branch `feat/author-prompt-v2`; `src/lesson-author.mjs` (author-v2), `src/eval/studio.mjs` (samples, rejection reasons), `scripts/eval-studio.mjs`, `public/lesson-schema.mjs` and `demo-model.mjs` (field-naming validator messages), evaluation docs | User reviews the before/after in `docs/studio-evaluation.md` and merges; deploy afterwards. |
-| GALLERY-002 | Claude | Implemented, validated, PR open | Base `775b897`, branch `feat/sketch-gallery-and-restore`; `public/gallery-lessons.mjs`, `public/gallery/pendulum-sketch.png`, `src/static.mjs`, `scripts/build-vercel.mjs`, `frontend/components/{Gallery,Studio,RevisionSummary}.tsx`, types, styles, tests, README and Studio docs | User reviews and merges; deploy afterwards. |
+| GALLERY-002 | Claude | Merged as `118cd69`; deployed to production | Base `775b897`, branch `feat/sketch-gallery-and-restore`; `public/gallery-lessons.mjs`, `public/gallery/pendulum-sketch.png`, `src/static.mjs`, `scripts/build-vercel.mjs`, `frontend/components/{Gallery,Studio,RevisionSummary}.tsx`, types, styles, tests, README and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
+| EXPLAIN-001 | Claude | Implemented, validated, PR open | Base `118cd69`, branch `feat/explain-back`; `src/lesson-author.mjs` (graded guide contract), `src/server.mjs`, `frontend/components/{LessonPlayer,Studio}.tsx`, `frontend/lib/{types,messages}.ts`, styles, tests, README and Studio docs | User reviews and merges; deploy afterwards. |
 
 
 Before working, read the latest table and actual Git state, claim a bounded file
@@ -497,5 +499,34 @@ percent-encoded directory tree under `~/Library`, removed).
 (restore covered); typecheck, lint, format clean; build emits
 `dist/gallery/pendulum-sketch.png`; Playwright 18/18.
 
-**State:** committed and pushed; PR open; not merged or deployed.
+**State:** merged as `118cd69` (PR #11) and deployed; hosted check of the sketch lesson, card chip and image asset passed on explainback.app. Release recorded in `docs/vercel-deployment.md`.
 
+
+### 2026-10-28 Pacific — EXPLAIN-001 — Claude
+
+**Request (own pick after GALLERY-002):** make the learner actually explain
+back, which the product name promises and the Explain stage never asked for.
+
+**Changes:** the Explain stage gains an "Explain it back" textarea (per
+chapter, 700 characters) placed before the reviewed explanation. With creation
+access, "Check my explanation with Muse" posts the text as `explanation` on the
+existing guide request; `src/lesson-author.mjs` then switches to an assessment
+prompt and a graded `guide_lesson` tool (`verdict` supported/partly/unsupported,
+`explanation`, `followUp`, `nextAction`) and the reader requires exactly that
+shape (`readLessonAuthor(..., assessed)`), rejecting graded replies on plain
+requests and plain replies on graded ones. The player shows the verdict chip,
+feedback, follow-up question and next action; the one-line request summary
+still reports model, time and tokens. Signed-out visitors keep the textarea and
+see that feedback needs access. Learner text is untrusted subject matter in the
+prompt; it is traced like other request text (no secrets, no image bytes).
+
+**Verification:** Node tests (new graded-guide HTTP test: 400 on empty/over-
+long text, 502 on wrong reply shape, pass-through of graded fields); Vitest
+(two new Studio tests: graded flow with request body check, signed-out state);
+typecheck, lint (pre-existing labs warnings only), format; Node 233/233,
+Vitest 14/14, Playwright 18/18. Live local check (open-access dev server,
+`muse-spark-1.3`): a deliberately partial explanation of the web-cache lesson
+returned verdict "partly", feedback naming the missing freshness/revalidation
+path, and a follow-up question that did not reveal the answer, in 4.9 s.
+
+**State:** committed and pushed; PR open; not merged or deployed.
