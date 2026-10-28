@@ -16,20 +16,21 @@ export function lessonLanguageWarnings(lesson){
  }
  visit(lesson);return paths;
 }
-function bilingual(value,max){
- if(!shape(value,['en','zh'])||Object.values(value).some(s=>typeof s!=='string'||!s.trim()||s.length>max))throw new Error('Both languages need bounded text.');
+// Messages name the field and limit so authors and evaluation reports see what was rejected.
+function bilingual(value,max,field='text'){
+ if(!shape(value,['en','zh'])||Object.values(value).some(s=>typeof s!=='string'||!s.trim()||s.length>max))throw new Error(`${field} needs both languages, each 1–${max} characters.`);
  return {en:value.en.trim(),zh:value.zh.trim()};
 }
 export function validateLesson(value){
  if(!shape(value,['version','title','intro','chapters'])||![1,2].includes(value.version)||!Array.isArray(value.chapters)||value.chapters.length<1||value.chapters.length>3)throw new Error('Use a version 1 or 2 lesson with 1–3 chapters.');
  const ids=new Set();
- const lesson={version:value.version,title:bilingual(value.title,80),intro:bilingual(value.intro,200),chapters:value.chapters.map(c=>{
+ const lesson={version:value.version,title:bilingual(value.title,80,'title'),intro:bilingual(value.intro,200,'intro'),chapters:value.chapters.map((c,i)=>{
   if(value.version===2&&c?.experiment==='generated'){
    if(!shape(c,['experiment','framing','explanation','demo']))throw new Error('Invalid generated chapter.');
-   return {experiment:'generated',framing:bilingual(c.framing,180),explanation:bilingual(c.explanation,260),demo:validateDemo(c.demo)};
+   return {experiment:'generated',framing:bilingual(c.framing,180,`chapter ${i+1} framing`),explanation:bilingual(c.explanation,260,`chapter ${i+1} explanation`),demo:validateDemo(c.demo)};
   }
   if(!shape(c,['experiment','framing','explanation'])||!experimentIds.includes(c.experiment)||ids.has(c.experiment))throw new Error('Choose distinct supported experiments.');
-  ids.add(c.experiment);return {experiment:c.experiment,framing:bilingual(c.framing,180),explanation:bilingual(c.explanation,260)};
+  ids.add(c.experiment);return {experiment:c.experiment,framing:bilingual(c.framing,180,`chapter ${i+1} framing`),explanation:bilingual(c.explanation,260,`chapter ${i+1} explanation`)};
  })};
  if(new TextEncoder().encode(JSON.stringify(lesson)).length>(value.version===2?24000:12000))throw new Error('Lesson is too large.');
  return lesson;

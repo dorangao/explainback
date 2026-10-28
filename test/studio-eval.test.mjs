@@ -84,3 +84,12 @@ test('model comparison lines up the same cases across reports and keeps judge sc
  const md=studioComparisonMarkdown(comparison);assert.match(md,/muse-wonder-1\.0/);assert.match(md,/cooling-en/);assert.match(md,/not a ranking/);
  assert.match(studioReportMarkdown(a),/Tokens in\/out/);
 });
+test('samples repeat every case, suffix the rows and scale the planned count',async()=>{
+ const cases=loadStudioSuite().suite.cases.filter(c=>['cooling-en','ambiguous-en'].includes(c.id));let calls=0;
+ const report=await runStudioEvaluation({cases,samples:2,call:async()=>{calls++;return response(coolingLesson());}});
+ assert.equal(calls,4);assert.equal(report.planned,4);assert.equal(report.samples,2);
+ assert.deepEqual(report.cases.map(c=>c.id),['cooling-en#1','ambiguous-en#1','cooling-en#2','ambiguous-en#2']);
+ assert.deepEqual(report.cases.map(c=>c.caseId),['cooling-en','ambiguous-en','cooling-en','ambiguous-en']);
+ await assert.rejects(runStudioEvaluation({cases,samples:9,call:async()=>response(coolingLesson())}));
+ const single=await runStudioEvaluation({cases:[cases[0]],call:async()=>response(coolingLesson())});assert.equal(single.cases[0].id,'cooling-en');assert.equal(single.cases[0].sample,1);
+});

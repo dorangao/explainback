@@ -68,22 +68,31 @@ function range(axis){return finite(axis.min)&&finite(axis.max)&&axis.max>axis.mi
 export function validInputValue(input,value){return finite(value)&&value>=input.min&&value<=input.max&&Math.abs((value-input.min)/input.step-Math.round((value-input.min)/input.step))<1e-6;}
 export function validateDemo(demo){
  const base=['kind','title','claim','assumptions'];
- if(!demo||!bi(demo.title,80)||!bi(demo.claim,180)||!bi(demo.assumptions,700))throw new Error('Describe the model in both languages.');
+ // Specific messages: authors and evaluation reports learn which field broke the contract.
+ if(!demo||typeof demo!=='object')throw new Error('Describe the model in both languages.');
+ for(const [key,max] of [['title',80],['claim',180],['assumptions',700]])if(!bi(demo[key],max))throw new Error(`demo ${key} needs both languages, each 1–${max} characters.`);
  if(demo.kind==='process'){
-  if(!shape(demo,[...base,'stages','transfer'])||!Array.isArray(demo.stages)||demo.stages.length<3||demo.stages.length>6||demo.stages.some(s=>!shape(s,['title','detail'])||!bi(s.title,80)||!bi(s.detail,240)))throw new Error('Use 3–6 bilingual process stages.');
-  const t=demo.transfer;if(!shape(t,['question','choices','answer','rationale'])||!bi(t.question,200)||!bi(t.rationale,240)||!Array.isArray(t.choices)||t.choices.length!==3||t.choices.some(c=>!bi(c,120))||!Number.isInteger(t.answer)||t.answer<0||t.answer>2)throw new Error('Invalid authored question.');
+  if(!shape(demo,[...base,'stages','transfer'])||!Array.isArray(demo.stages)||demo.stages.length<3||demo.stages.length>6)throw new Error('Use 3–6 process stages.');
+  demo.stages.forEach((s,i)=>{if(!shape(s,['title','detail'])||!bi(s.title,80)||!bi(s.detail,240))throw new Error(`stage ${i+1} needs a bilingual title (1–80) and detail (1–240).`);});
+  const t=demo.transfer;if(!shape(t,['question','choices','answer','rationale']))throw new Error('Invalid authored question.');
+  if(!bi(t.question,200))throw new Error('transfer question needs both languages, each 1–200 characters.');
+  if(!bi(t.rationale,240))throw new Error('transfer rationale needs both languages, each 1–240 characters.');
+  if(!Array.isArray(t.choices)||t.choices.length!==3||t.choices.some(c=>!bi(c,120))||!Number.isInteger(t.answer)||t.answer<0||t.answer>2)throw new Error('transfer needs exactly 3 bilingual choices (1–120) and an answer index 0–2.');
   return structuredClone(demo);
  }
  if(demo.kind!=='model'||!shape(demo,[...base,'inputs','axis','outputs','transfer'])||!Array.isArray(demo.inputs)||demo.inputs.length<1||demo.inputs.length>4||!Array.isArray(demo.outputs)||demo.outputs.length<1||demo.outputs.length>3)throw new Error('Invalid generated model.');
  const names=new Set(),bounds=Object.create(null);
  for(const v of demo.inputs){
-  if(!shape(v,['id','label','unit','min','max','step','value'])||!identifier(v.id)||names.has(v.id)||!bi(v.label,60)||!text(v.unit,24)||!range(v)||!finite(v.step)||v.step<=0||(v.max-v.min)/v.step>1000||Math.abs((v.max-v.min)/v.step-Math.round((v.max-v.min)/v.step))>1e-6||!validInputValue(v,v.value))throw new Error('Invalid parameter range.');
+  if(!shape(v,['id','label','unit','min','max','step','value'])||!identifier(v.id)||names.has(v.id))throw new Error('Invalid parameter.');
+  if(!bi(v.label,60)||!text(v.unit,24))throw new Error(`input ${v.id} needs a bilingual label (1–60) and a unit (1–24).`);
+  if(!range(v)||!finite(v.step)||v.step<=0||(v.max-v.min)/v.step>1000||Math.abs((v.max-v.min)/v.step-Math.round((v.max-v.min)/v.step))>1e-6||!validInputValue(v,v.value))throw new Error(`input ${v.id} has an invalid range, step or default.`);
   names.add(v.id);bounds[v.id]=[v.min,v.max];
  }
  if(!shape(demo.axis,['label','unit','min','max'])||!bi(demo.axis.label,60)||!text(demo.axis.unit,24)||!range(demo.axis))throw new Error('Invalid independent axis.');
  bounds.x=[demo.axis.min,demo.axis.max];names.add('x');
  for(const o of demo.outputs){
-  if(!shape(o,['id','label','unit','expression'])||!identifier(o.id)||names.has(o.id)||!bi(o.label,60)||!text(o.unit,24))throw new Error('Invalid output.');
+  if(!shape(o,['id','label','unit','expression'])||!identifier(o.id)||names.has(o.id))throw new Error('Invalid output.');
+  if(!bi(o.label,60)||!text(o.unit,24))throw new Error(`output ${o.id} needs a bilingual label (1–60) and a unit (1–24).`);
   bounds[o.id]=expressionBounds(compileExpression(o.expression,[...names]),bounds);names.add(o.id);
  }
  const t=demo.transfer;
