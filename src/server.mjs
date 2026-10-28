@@ -19,7 +19,7 @@ import { motionScenario, motionTitle } from '../public/motion.mjs';
 const files = new Map([
   ['/', ['index.html', 'text/html; charset=utf-8']],
   ...['demo-model','generated-demo','demo-review'].map(name=>[`/assets/${name}.mjs`,[`${name}.mjs`,'text/javascript; charset=utf-8']]),
-  ...['lesson-schema','lesson-experiments','lesson-player','lesson-studio'].map(name=>[`/assets/${name}.mjs`,[`${name}.mjs`,'text/javascript; charset=utf-8']]),
+  ...['lesson-schema','lesson-experiments','lesson-player','lesson-studio','studio-showcase'].map(name=>[`/assets/${name}.mjs`,[`${name}.mjs`,'text/javascript; charset=utf-8']]),
   ...['quantum','quantum-content','quantum-view'].map(name=>[`/assets/${name}.mjs`,[`${name}.mjs`,'text/javascript; charset=utf-8']]),
   ['/assets/app.mjs', ['app.mjs', 'text/javascript; charset=utf-8']],
   ['/assets/math.mjs', ['math.mjs', 'text/javascript; charset=utf-8']],
@@ -35,7 +35,7 @@ const files = new Map([
   ['/assets/suction-demo.mjs', ['suction-demo.mjs', 'text/javascript; charset=utf-8']],
   ['/assets/flight.mjs', ['flight.mjs', 'text/javascript; charset=utf-8']],
   ['/assets/flight-view.mjs', ['flight-view.mjs', 'text/javascript; charset=utf-8']],
-  ...['journey','journey-view','demo-presets','demo-runner','demo-guide','provider-console'].map(name=>[`/assets/${name}.mjs`,[`${name}.mjs`,'text/javascript; charset=utf-8']]),
+  ...['journey','powered-journey','journey-view','demo-presets','demo-runner','demo-guide','provider-console'].map(name=>[`/assets/${name}.mjs`,[`${name}.mjs`,'text/javascript; charset=utf-8']]),
   ['/assets/style.css', ['style.css', 'text/css; charset=utf-8']],
 ]);
 export const safeHeaders = {

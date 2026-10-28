@@ -16,6 +16,7 @@
     "meta:check": "node --env-file-if-exists=.env.local scripts/meta-check.mjs",
     "meta:smoke": "node --env-file-if-exists=.env.local scripts/meta-smoke.mjs",
     "eval:models": "node --env-file-if-exists=.env.local scripts/compare-models.mjs",
+    "eval:studio": "node --env-file-if-exists=.env.local scripts/eval-studio.mjs",
     "llm:recover": "node --env-file-if-exists=.env.local scripts/recover-ollama.mjs"
   }
 }

@@ -1,5 +1,6 @@
 import {mountQuantumLab} from './quantum-view.mjs';
 import {mountLessonStudio} from './lesson-studio.mjs';
+import {areaFromHash} from './studio-showcase.mjs';
 import {demoPresentation,defaultSuctionFocus} from './presentation.mjs';
 import {mountSuctionLab} from './suction-view.mjs';
 import {runSuctionDemo,suctionGuide,suctionGuideStages} from './suction-demo.mjs';
@@ -28,7 +29,7 @@ let guidedDemo=false,autoEvidence=false,autoWaiting=false,autoGate=null;
 let autoRun=null,autoState='idle',autoStage='',autoCalls=0,autoStopReason='';
 const suctionLab=mountSuctionLab($('suction-lab'));
 const journey=mountJourney($('journey')),providerConsole=mountProviderConsole($('provider-console'),post);
-let activeArea=location.hash==='#studio'?'studio':location.hash==='#quantum'?'quantum':'physics',quantumBusy=false,studioBusy=false;
+let activeArea=areaFromHash(location.hash),quantumBusy=false,studioBusy=false;
 const quantumLab=mountQuantumLab($('quantum-area'),{post,onBusy:value=>{quantumBusy=value;renderAreaButtons();},onTarget:target=>{if(activeArea==='quantum'&&authenticated){$('connection').textContent=`${target?.label??'Model'} · ${target?.configured?t().ready:t().unavailable}`;$('connection').classList.toggle('ready',Boolean(target?.configured));}}});
 const lessonStudio=mountLessonStudio($('studio-area'),{post,onBusy:value=>{studioBusy=value;renderAreaButtons();},onTarget:target=>{if(activeArea==='studio'&&authenticated){$('connection').textContent=`${target?.label??'Model'} · ${target?.configured?t().ready:t().unavailable}`;$('connection').classList.toggle('ready',Boolean(target?.configured));}}});
 function renderAreaButtons(){
@@ -36,7 +37,9 @@ function renderAreaButtons(){
 }
 function renderArea(){
  const zh=language()==='zh';$('area-physics').textContent=zh?'物理与数学':'Physics & math';$('area-quantum').textContent=zh?'量子计算':'Quantum computing';
- $('area-studio').textContent=zh?'创建课程':'Create a lesson';$('studio-area').setAttribute('aria-label',zh?'课程工作室':'Lesson Studio');
+ $('area-studio').textContent=zh?'课程工作室':'Lesson Studio';$('studio-area').setAttribute('aria-label',zh?'课程工作室':'Lesson Studio');
+ $('headline').textContent=activeArea==='studio'?(zh?'把好奇，变成可操作的实验。':'Turn curiosity into an experiment.'):t().headline;
+ $('subtitle').textContent=activeArea==='studio'?(zh?'让 Muse 创建课程。审阅与修改，然后亲手检验其中的想法。':'Create a lesson with Muse. Review and revise it, then put its ideas to the test.'):t().subtitle;
  document.querySelector('.lab-areas').setAttribute('aria-label',zh?'学习区域':'Learning areas');$('quantum-area').setAttribute('aria-label',zh?'量子计算实验室':'Quantum computing lab');
  if(activeArea==='physics'&&authenticated){$('connection').textContent=`${selectedTarget()?.label??'Model'} · ${ready?t().ready:t().unavailable}`;$('connection').classList.toggle('ready',ready);}
  $('physics-area').hidden=activeArea!=='physics';renderAreaButtons();
@@ -44,7 +47,7 @@ function renderArea(){
  lessonStudio.set({visible:activeArea==='studio',language:language(),authenticated,traceEnabled,targets:providerTargets,defaultModel:defaultProviderId});
 }
 for(const area of ['physics','quantum','studio'])$('area-'+area).addEventListener('click',()=>{
- if(busy||quantumBusy||studioBusy)return;stopAutoDemo();stopPlayback();journey.stop();suctionLab.stop();lessonStudio.stop();activeArea=area;history.replaceState(null,'',area==='physics'?location.pathname:'#'+area);renderArea();
+ if(busy||quantumBusy||studioBusy)return;stopAutoDemo();stopPlayback();journey.stop();suctionLab.stop();lessonStudio.stop();activeArea=area;history.replaceState(null,'','#'+area);renderArea();
 });
 const copy = {
   en: {

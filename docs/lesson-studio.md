@@ -2,6 +2,14 @@
 
 The user asked to move lesson creation into ExplainBack so a topic can become a lesson that the app presents and operates. Carry forward the preference for direct implementation and the bilingual, claim-testing learning loop.
 
+## Studio-first presentation (October 27)
+
+Studio is now the default entry. A short Create → Review & revise → Operate
+walkthrough introduces the flow, with editable topic/revision starters and the
+existing review gate. See the [demo script and current verification](studio-demo.md)
+and [12-case frozen evaluation](studio-evaluation.md). Earlier counts below remain
+historical. Current local validation: 221 tests; build and configured-secret scan passed.
+
 ## Open-topic creation (current)
 
 The default **Create a new topic demo / 创建新主题演示** mode asks Muse to author a version 2 lesson rather than select a fixed experiment. Two generic renderers support new topics without adding topic-specific application code:

@@ -6,6 +6,12 @@ Explain it in your own words. Discover what you’re missing.
 
 ## Create lessons in the app
 
+Lesson Studio is now the default entry after sign-in. Use the short **Create →
+Review & revise → Operate** walkthrough, load an editable coffee question, then
+make an explicit Muse request. The revision starter only fills text; it never
+submits or approves a draft. Physics and quantum remain available through their
+area buttons and `#physics` / `#quantum` links. See the [three-minute demo](docs/studio-demo.md).
+
 **Create a lesson / 创建课程** turns a topic into an editable bilingual lesson using the configured model (Meta by default). Choose **Create a new topic demo** to generate an adjustable mathematical model or an interactive process diagram, including topics beyond the original eight experiments. Review its assumptions, formulas or steps, edit the definition or ask Muse to revise it, then present a guided prediction → experiment → explanation → transfer sequence. Switch between English and Chinese while operating the same demo.
 
 Generated demos use a bounded declarative format, never generated JavaScript or HTML. Numeric checks verify calculations from the authored formulas; they do not independently validate the science or units. Process answers remain explicitly authored. **Use existing experiments** retains the original eight physics/quantum experiments and their checked calculations. Export/import versioned JSON to keep a lesson; drafts are otherwise temporary and imports require a fresh review. The existing trace flag also controls the Studio provider console. See [Lesson Studio](docs/lesson-studio.md) for scope, limits and verification.
@@ -33,6 +39,10 @@ function instances. See [Vercel setup and retention](docs/vercel-deployment.md).
 
 ## Hackathon direction
 
+See the [current readiness checklist](docs/hackathon-readiness.md) for requirements,
+completed work, submission gaps and proposed next priorities. Older plans and
+verification records describe their own dated checkpoints.
+
 ### Guided vehicle physics walkthrough
 
 Choose **English / 中文**, sign in with your tester account, then click
@@ -51,10 +61,12 @@ transfer, the animation remains explicitly labeled **primary reference**, with
 its original parameters rather than the fresh problem’s values.
 
 The hypothetical preset uses 2000 kg, 60 mph in 5 s with cosine acceleration,
-a 1.5 s controlled flip, and 0.3 s vertical stopping. Playback pauses at 5.0,
-6.5 and 6.8 s; Next begins each following segment. Acceleration plays at 0.5×,
-flip at 0.25×, and landing at 0.1× so each is readable. Graph cursors and model
-boundary labels stay synchronized. The math and separate-model assumptions remain.
+0.75 s upright lift thrust, a 1.5 s controlled sideways roll, and 0.75 s upright
+landing thrust, followed by 0.5 s ground coasting. Playback pauses at 5.0, 7.25
+and 8.5 s; Next begins each following segment. Acceleration plays at 0.5×,
+lift/roll and landing at 0.25×. Graph cursors and model-boundary labels stay
+synchronized. The baseline 0.3 s contact-stopping experiment remains separate
+and does not control the powered landing.
 
 A completed walkthrough uses four live provider calls. Waiting or playing does
 not call a provider. Unexpected feedback or errors stop without retries. Confirmation
@@ -63,8 +75,10 @@ The console requires a configured provider and `EXPLAINBACK_TRACE=1`; restart
 after changing that flag. Trace-off still permits manual learning workflows.
 
 Stop, reset, language switching, or hiding the tab prevents future steps. Sent
-requests may still finish and incur usage. Switching language resets the session;
-click Start for the new language. Stopping a pending request keeps its returned
+requests may still finish and incur usage. Switching language preserves the
+session evidence and animation position while stopping the scripted run. Existing
+provider text keeps its request language; restart to obtain provider replies in
+the new language. Stopping a pending request keeps its returned
 state usable, and continuing manually restores the ordinary animation layout.
 
 The earlier one-click prototype remains baseline work in
@@ -76,16 +90,19 @@ See [guided-demo verification](docs/guided-demo-verification.md) and the
 
 Choose an acceleration or flip/landing topic. Each manual topic has its own
 settings; the guided demo uses a fixed primary scenario with a shared mass. After confirming a claim and submitting a
-prediction, the **continuous journey** plays acceleration, a controlled flip,
-and vertical stopping on one clock. Three graph tracks share a cursor; select
-speed/drive force, rotation/torque, and vertical motion/contact force. Phase
+prediction, the **continuous journey** plays ground acceleration, upright lift,
+an airborne sideways roll, powered landing and ground coasting on one clock.
+Three graph tracks share a cursor; select speed/drive force, rotation/torque,
+and vertical motion/thrust/weight/ground support. Phase
 buttons jump to boundaries; playback supports 1×, 0.5×, 0.25× and 0.1×.
 
 The stages remain separate physics models. Horizontal exit speed carries into
-ideal coasting. Launch adds an assumed vertical impulse with no takeoff
-mechanism. Contact stops only vertical velocity; horizontal braking and
-post-touchdown rotation are not modeled. The orientation during contact is a
-snapshot. Position continuity is not proof of a feasible or safe stunt.
+ideal coasting without drag. Lift and landing assume total upright thrust of
+2mg; the roll uses an ideal force couple with zero net force. Exact burn timing
+gives zero vertical speed at touchdown, while horizontal speed continues.
+Fuel, actuator capability, vehicle clearance, suspension and occupant loads are
+not modeled. The original ballistic/contact experiment remains a separate
+baseline. Position continuity is not proof of a feasible or safe stunt.
 
 For an easy bilingual demo, use **Load preset / 载入预设**, then Submit at each
 step: claim → local confirmation → prediction → revision → worked transfer.
@@ -529,3 +546,21 @@ node --env-file=.env.local scripts/eval-suction.mjs --live --cases=transfer-cita
 
 See [the verification record](docs/suction-lab-verification.md) and
 [the approved design](docs/superpowers/specs/2026-10-27-suction-lab-design.md).
+
+## Frozen generated-lesson evaluation
+
+Run `npm run eval:studio` with Node 22 to list the frozen cases without provider
+calls. Run `npm run eval:studio -- --live` for twelve sequential Meta
+`muse-spark-1.3` calls, or add `--cases=cooling-en,cooling-zh` for a labeled subset.
+No automatic retries and no Ollama calls. The checksum protects the fixed
+English/Chinese cases; reports stay in ignored `output/eval/`.
+
+The first run passed 12/12 automated checks, including eight drafts and four
+expected deferrals/refusals. Content review found teaching issues despite those
+passes. Read the [protocol, results and review findings](docs/studio-evaluation.md)
+before describing lesson quality. This small synthetic smoke suite does not
+measure learning effectiveness or general model accuracy.
+
+Provenance correction supplied by Doran: before October 26, only Muse API setup
+had been done; application work began October 26. Earlier “baseline” archives
+are development snapshots. [Hackathon checklist](docs/hackathon-readiness.md).
