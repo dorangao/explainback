@@ -88,10 +88,10 @@ cp .env.example .env.local   # add MODEL_API_KEY and tester credentials, keep mo
 npm ci                        # use Node 22 (22.23.1 verified)
 npm run dev                  # http://127.0.0.1:4173
 npm run dev:open             # same, with sign-in skipped (local only; the cloud build ignores the flag)
-npm run typecheck
-npm test
+npm run check                # typecheck + lint + Node tests + component tests
 npm run build
 npx playwright install chromium  # first browser-test run only
+npm run test:browser         # Playwright end-to-end checks
 npm run test:browser
 npm start                    # serves the last production build on port 4173
 ```

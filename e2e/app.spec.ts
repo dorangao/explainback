@@ -161,7 +161,7 @@ test("both retained labs mount, switch language, navigate and remount without er
     page.getByRole("heading", { name: "物理与数学", exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "退出登录", exact: true }).click();
-  await expect(page.locator(".legacy-workspace")).toHaveCount(0);
+  await expect(page.locator(".lab-workspace")).toHaveCount(0);
   expect(errors).toEqual([]);
 });
 
@@ -237,13 +237,11 @@ test("import, invalid definition, export and revision retain the review gate", a
   const { coolingLesson } =
     await import("../test-support/generated-lessons.mjs");
   await page.goto("/#invite:BROWSER-TEST-CODE");
-  await page
-    .getByLabel("Import lesson JSON")
-    .setInputFiles({
-      name: "lesson.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(coolingLesson())),
-    });
+  await page.getByLabel("Import lesson JSON").setInputFiles({
+    name: "lesson.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(coolingLesson())),
+  });
   await expect(
     page.getByRole("heading", { name: "Cooling coffee", exact: true }),
   ).toBeVisible();

@@ -80,8 +80,10 @@ export function useAuth() {
     }
   }, [loseAccess]);
   useEffect(() => {
-    mounted.current = true;
-    const token = ++version.current;
+    const mountedRef = mounted,
+      versionRef = version;
+    mountedRef.current = true;
+    const token = ++versionRef.current;
     void (async () => {
       try {
         const auth = await request<AuthInfo>("/api/auth");
@@ -99,8 +101,8 @@ export function useAuth() {
       }
     })();
     return () => {
-      mounted.current = false;
-      version.current++;
+      mountedRef.current = false;
+      versionRef.current++;
     };
   }, []);
   const login = useCallback(async (body: unknown) => {

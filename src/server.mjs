@@ -8,7 +8,6 @@ import {createTrace} from './trace.mjs';
 import {createMemoryState} from './state.mjs';
 import { createServer } from 'node:http';
 import {serveFrontend} from './static.mjs';
-import { readFile } from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import {createProviderRouter} from './llm/index.mjs';
@@ -18,28 +17,7 @@ import { confirmClaim, replayClaimEvidence } from './claim-testing.mjs';
 import { answerShapeValid } from './claim-domains.mjs';
 import { motionScenario, motionTitle } from '../public/motion.mjs';
 
-const files = new Map([
-  ['/', ['index.html', 'text/html; charset=utf-8']],
-  ...['demo-model','generated-demo','demo-review'].map(name=>[`/assets/${name}.mjs`,[`${name}.mjs`,'text/javascript; charset=utf-8']]),
-  ...['lesson-schema','lesson-experiments','lesson-player','lesson-studio','studio-showcase','gallery-lessons'].map(name=>[`/assets/${name}.mjs`,[`${name}.mjs`,'text/javascript; charset=utf-8']]),
-  ...['quantum','quantum-content','quantum-view'].map(name=>[`/assets/${name}.mjs`,[`${name}.mjs`,'text/javascript; charset=utf-8']]),
-  ['/assets/app.mjs', ['app.mjs', 'text/javascript; charset=utf-8']],
-  ['/assets/math.mjs', ['math.mjs', 'text/javascript; charset=utf-8']],
-  ['/assets/graph.mjs', ['graph.mjs', 'text/javascript; charset=utf-8']],
-  ['/assets/motion.mjs', ['motion.mjs', 'text/javascript; charset=utf-8']],
-  ['/assets/physics-panel.mjs', ['physics-panel.mjs', 'text/javascript; charset=utf-8']],
-  ['/assets/motion-graph.mjs', ['motion-graph.mjs', 'text/javascript; charset=utf-8']],
-  ['/assets/roll-view.mjs', ['roll-view.mjs', 'text/javascript; charset=utf-8']],
-  ['/assets/presentation.mjs', ['presentation.mjs', 'text/javascript; charset=utf-8']],
-  ['/assets/suction.mjs', ['suction.mjs', 'text/javascript; charset=utf-8']],
-  ['/assets/suction-view.mjs', ['suction-view.mjs', 'text/javascript; charset=utf-8']],
-  ['/assets/suction-presets.mjs', ['suction-presets.mjs', 'text/javascript; charset=utf-8']],
-  ['/assets/suction-demo.mjs', ['suction-demo.mjs', 'text/javascript; charset=utf-8']],
-  ['/assets/flight.mjs', ['flight.mjs', 'text/javascript; charset=utf-8']],
-  ['/assets/flight-view.mjs', ['flight-view.mjs', 'text/javascript; charset=utf-8']],
-  ...['journey','powered-journey','journey-view','demo-presets','demo-runner','demo-guide','provider-console'].map(name=>[`/assets/${name}.mjs`,[`${name}.mjs`,'text/javascript; charset=utf-8']]),
-  ['/assets/style.css', ['style.css', 'text/css; charset=utf-8']],
-]);
+// The React build in dist/ is the only page; legacy module serving was removed with the old shell.
 export const safeHeaders = {
   'Cache-Control': 'no-store',
   'X-Content-Type-Options': 'nosniff',
@@ -103,11 +81,6 @@ export function createHandler({
       const url = new URL(req.url, origin);
       const path = url.pathname;
       if (!path.startsWith('/api/') && await serveFrontend(req,res,safeHeaders)) return;
-      if (req.method === 'GET' && files.has(path)) {
-        const [name, type] = files.get(path);
-        const data = await readFile(new URL(`../public/${name}`, import.meta.url));
-        res.writeHead(200, { ...safeHeaders, 'Content-Type': type }); res.end(data); return;
-      }
       const tester=await access.authenticate(req.headers.cookie);
       if(req.method==='GET'&&path==='/api/auth'){json(200,{configured:access.configured,codes:access.codesConfigured===true,open:openAccess,authenticated:Boolean(tester)});return;}
       if(req.method==='POST'&&['/api/login','/api/logout'].includes(path)){
@@ -179,11 +152,12 @@ export function createHandler({
         const call=trace?.start({provider:s.llm.provider,model:s.llm.model,input:args.input,instructions:args.instructions});
         try{
           await trace?.flush();const options={...args,...(call?{onTrace:call.event}:{})};
-          const result=readLessonAuthor(await(modelCall?modelCall(options):router.call(s.llm.id,options)),mode,body.creation);
+          const startedAt=performance.now(),raw=await(modelCall?modelCall(options):router.call(s.llm.id,options)),result=readLessonAuthor(raw,mode,body.creation);
+          const metrics={model:raw.model??s.llm.model,elapsedMs:Math.round(performance.now()-startedAt),usage:raw.usage?{input:raw.usage.input_tokens??null,output:raw.usage.output_tokens??null}:null};
           if(!await access.active(tester.id)){call?.finish('discarded');await state.remove(body.sessionId);throw new RequestError(401,'Sign in to tester access.');}
           if(!await state.get(body.sessionId))throw new RequestError(409,'Session was reset; response discarded.');
           call?.finish('accepted');try{await trace?.flush();}catch{}
-          await save(trace?.read());json(200,{...result,llm:s.llm,attemptsRemaining:8-s.attempts});return;
+          await save(trace?.read());json(200,{...result,...metrics,llm:s.llm,attemptsRemaining:8-s.attempts});return;
         }catch(error){
           call?.finish(error instanceof RequestError?'discarded':'failed or rejected');
           if(error instanceof RequestError)throw error;

@@ -1,5 +1,5 @@
 import type { Experiment, Language } from "../lib/types";
-import { say } from "../lib/types";
+import { t } from "../lib/messages";
 import { formatDemoNumber as fmt } from "../lib/shared";
 const colors = ["#116d60", "#ad582d", "#655598", "#456a99"];
 export function ExperimentView({
@@ -117,11 +117,7 @@ export function ExperimentView({
       </div>
       {e.reference && u === 1 && (
         <p className="fine">
-          {say(
-            language,
-            "Classical 00/11 mixture in the same basis: ",
-            "同一测量基中的经典 00/11 混合态：",
-          )}
+          {t(language, "ExperimentView.classical0011MixtureIn")}
           {e.reference
             .map((p, i) => `${e.series[i]} ${p.toFixed(0)}%`)
             .join(" · ")}
@@ -131,7 +127,7 @@ export function ExperimentView({
         <svg
           viewBox="0 0 640 70"
           role="img"
-          aria-label={say(language, "Distance from the start", "离起点距离")}
+          aria-label={t(language, "ExperimentView.distanceFromTheStart")}
         >
           {e.position(u).map((x, i) => (
             <g key={i}>
@@ -158,10 +154,9 @@ export function ExperimentView({
         <svg
           viewBox="0 0 640 100"
           role="img"
-          aria-label={say(
+          aria-label={t(
             language,
-            "Controlled sideways roll, schematic front view",
-            "受控侧向翻滚的正视示意图",
+            "ExperimentView.controlledSidewaysRollSchematicFront",
           )}
         >
           <g

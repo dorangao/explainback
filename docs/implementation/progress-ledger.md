@@ -39,6 +39,8 @@ current index; dated entries and linked evidence retain the history.
 | GROUND-001 | Codex | Complete locally; uncommitted | `AGENTS.md`, `CLAUDE.md`, this ledger, README and readiness/deployment notes | Both agents use this handoff on their next task. |
 | UI-001 | Codex | Committed and pushed in `8bdc8ff`; release tracked by REL-001 | Base `ba4da7a`, branch `codex/react-studio-branding`; claim: `frontend/`, `e2e/`, package/build configs, static serving, physics adapter, brand assets, relevant tests and docs. | Ready for user review; commit/push/deployment remain separate next actions. |
 | REL-001 | Codex | Release evidence in PR #8; file claim released | Base `ba4da7a`, `codex/react-studio-branding`; claims `vercel.json`, `.vercelignore`, `.github/workflows/`, suction fallback regression, release evidence and this ledger; committing the validated UI-001 files. | [PR #8](https://github.com/dorangao/explainback/pull/8) carries the final merge SHA, production deployment and live validation evidence; read its release verification section. |
+| REVIEW-001 | Claude | Assessment complete; no product code changed | Base `b7f82df` (`main` after PR #8), checkout on `codex/react-studio-branding`; read-only review of `frontend/`, `src/static.mjs`, build/CI config, tests; this ledger only | User chooses which findings to schedule; see the dated entry. |
+| CLEAN-001 | Claude | Implemented, validated, pushed; PR open | Base `b7f82df`, branch `feat/post-migration-cleanup`; claims `frontend/**`, `public/*.d.mts`, removed legacy shell files, `src/server.mjs` (asset map, reply metrics), `test/**`, lint/format/Vitest config, CI workflow, README, LICENSE, Studio docs | User reviews and merges the PR; deploy afterwards. Labs port left `react/refs` and `react/immutability` as warnings under `frontend/components/labs/**` (follow-up: idiomatic React state for the ported controllers). |
 
 
 Before working, read the latest table and actual Git state, claim a bounded file
@@ -355,3 +357,101 @@ Verification: command or workflow, runtime, result, evidence path and limitation
 State: local / committed SHA / pushed / merged SHA / deployed SHA, each separately.
 Next: remaining work, blocker, owner and whether the file claim is released.
 ```
+
+### 2026-10-28 Pacific — REVIEW-001 — Claude
+
+**Request:** after the React + TypeScript + Vite migration (PR #8), check what
+can be improved further.
+
+**Base:** `main` at `b7f82df`; checkout found on `codex/react-studio-branding`
+at `14e918b` with a clean tracked tree. No branch switch, no product edits.
+
+**Fresh checks (Node 22.23.1):** `npm run typecheck` passed; `npm test` 246/246;
+`npm run build` emitted `index-*.js` 350 KB (118 KB gzip), `LegacyLabs-*.js`
+188 KB (68 KB gzip), CSS 69 KB. explainback.app serves the React build with no
+console errors. One earlier background `npm run typecheck` exited 1 with no
+output and passed on rerun; not reproduced, noted because the Vercel build
+command depends on it (TypeScript 7.0.2 native compiler).
+
+**Findings, in priority order (assessment, not a work claim):**
+
+1. Physics and quantum still run as imperative DOM code mounted through
+   `LegacyLabs` (`frontend/legacy/physics.html` 557 lines + `public/physics-controller.mjs`
+   601 lines + the old view modules). Two UI stacks and two styling systems
+   remain; the lazy chunk is mostly this code. Port the guided demo to React
+   components, or decide explicitly that the labs stay legacy.
+2. Dead code retained: `public/app.mjs`, `public/lesson-studio.mjs`,
+   `public/index.html`, `public/style.css`, and the old `/assets/*.mjs` map in
+   `src/server.mjs`. `test/lesson-view.test.mjs` and the UI half of
+   `test/gallery.test.mjs` exercise the dead Studio module. Remove them and
+   replace with component tests; there are no React unit tests, only 18
+   Chromium workflows and engine tests.
+3. The TypeScript boundary is hand-written: `frontend/lib/types.ts` duplicates
+   the lesson schema and `lib/shared.ts` uses `as unknown as` casts. Convert
+   `lesson-schema.mjs`/`demo-model.mjs` to TypeScript or generate types from
+   `demoSchema`, then enable `checkJs` for the engines incrementally.
+4. `Studio.tsx` is 911 lines with 31 hook calls and at least one effect with
+   an incomplete dependency list (`[starter, authenticated]`). Split into
+   hooks (provider session, compose/revise, image attachment) and add ESLint
+   with `react-hooks` rules; no linter or formatter is configured.
+5. Muse's contribution is still not visible: a revision replaces the draft
+   with no before/after view. A "what changed" diff after revise, and a
+   compact request summary (elapsed time, tokens) outside the developer
+   console, remain the highest-value judge-facing feature.
+6. Repository hygiene: no `LICENSE`; GitHub homepage still points at
+   `explainback-delta.vercel.app`; description empty. CI now exists.
+7. Smaller: split the authoring bundle from the public gallery path so
+   signed-out visitors load less; move ~110 inline `say()` string pairs into
+   a message table so a native speaker can review the Chinese in one place.
+
+**State:** findings only; nothing committed. Next action is the user's choice.
+
+### 2026-10-28 Pacific — CLEAN-001 — Claude
+
+**Request:** apply fixes for all seven REVIEW-001 findings on a new branch.
+
+**Base/branch:** `main` at `b7f82df`; work on `feat/post-migration-cleanup`.
+The physics/quantum port was done by a delegated agent in a worktree
+(`worktree-agent-a09d810a860cc1fde`, commit `3d748b5`) and merged with one
+resolved conflict in `ProviderConsole.tsx`.
+
+**Changes by finding:**
+
+1. Labs: `frontend/components/labs/` (Labs, PhysicsLab, QuantumLab, GuidedDemo,
+   MotionSettings, Workspace, ClaimWorkbench, mounted wrappers, a typed store that
+   ports the controller 1:1, copy tables) replace `LegacyLabs.tsx`,
+   `frontend/legacy/physics.html`, `public/physics-controller.mjs` and
+   `public/quantum-view.mjs`. Pure engines unchanged. Known differences recorded
+   by the port: journey/suction views remount when moved between demo host and
+   workspace (scrub resets), console polling at 1000 ms, quantum coach timeout
+   defaults to 30 s when a target has none, stale claim-decision items no longer
+   kept hidden. Not driven manually: calculus graph reveal, acceleration graph
+   and metric select, quantum coach exhaustion UI (all straight ports; covered by
+   typecheck/build and the existing Playwright flows where present).
+2. Dead code: removed `public/app.mjs`, `lesson-studio.mjs`, `demo-review.mjs`,
+   `index.html`, the server's legacy `/assets/*.mjs` map, and the DOM-double UI
+   tests. `public/style.css` is still imported by `frontend/main.tsx` and stays.
+3. Types: sibling `public/*.d.mts` declarations for lesson-schema, demo-model,
+   lesson-player, generated-demo, gallery-lessons and studio-showcase; `lib/shared.ts`
+   has no casts; `frontend/lib/engines.test.ts` keeps type keys and JSON schema in step.
+4. Studio: `hooks/useProviderSession.ts` and `hooks/useImageAttachment.ts`;
+   effects no longer read refs during render; oxlint with react-hooks rules,
+   Prettier, Vitest (`npm run check`); CI runs lint, format check and unit tests.
+5. "What Muse changed": `lib/lesson-diff.ts` + `components/RevisionSummary.tsx`;
+   server replies carry `model`, `elapsedMs`, `usage`. Verified live locally:
+   create 7.8 s, revise 11.2 s, seven listed field changes (screenshot in
+   `docs/screenshots/revision-summary.jpg`).
+6. Hygiene: MIT `LICENSE`; GitHub description and homepage set to explainback.app.
+7. Bundle/messages: DraftReview, RevisionSummary and ProviderConsole are lazy
+   chunks; `scripts/extract-messages.mjs` moved 177 literal EN/ZH pairs into
+   `frontend/lib/messages.ts` (20 non-literal strings remain inline).
+
+**Verification (Node 22.23.1, merged branch):** `tsc --noEmit` pass; oxlint
+0 errors (warnings remain: set-state-in-effect in App/Studio, refs/immutability
+in the ported labs); Prettier clean; Node tests 230/230; Vitest 12/12;
+Playwright 18/18; build: index 360.6 KB (121.5 KB gzip), Labs 181.1 KB
+(67.6 KB gzip), DraftReview 6.6 KB, ProviderConsole 5.6 KB, CSS 70.4 KB.
+The main chunk grew about 10 KB from the message table and diff view.
+
+**State:** committed and pushed; pull request open; not merged or deployed.
+

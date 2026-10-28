@@ -8,5 +8,4 @@ test('suction catalog, safe module routes and pinned settings survive HTTP sessi
  const body={problemId:'suction',language:'zh',synthetic:true,workflow:'claim-testing'};
  const s=await(await post(body)).json();assert.equal(s.problem.id,'suction');assert.equal(s.phase,'claim');assert.equal(s.graph,null);assert.equal(s.designProposal,null);
  assert.equal((await post({...body,suction:{pressurePa:'6000'}})).status,400);assert.equal((await post({...body,workflow:'baseline'})).status,400);
- for(const module of ['suction','suction-view','suction-demo','suction-presets'])assert.equal((await fetch(origin+`/assets/${module}.mjs`)).status,200);
 });

@@ -92,11 +92,7 @@ export type GalleryItem = {
   lesson: Lesson;
 };
 export type Stage =
-  | "predict"
-  | "experiment"
-  | "explain"
-  | "transfer"
-  | "complete";
+  "predict" | "experiment" | "explain" | "transfer" | "complete";
 export type PlayerState = {
   chapter: number;
   stage: Stage;
@@ -158,12 +154,18 @@ export interface Player {
   replay(): void;
   restart(): void;
 }
-export type Feedback = {
+export type Usage = { input: number | null; output: number | null };
+export type ReplyMetrics = {
+  model?: string;
+  elapsedMs?: number;
+  usage?: Usage | null;
+};
+export type Feedback = ReplyMetrics & {
   explanation: string;
   nextAction: "replay" | "compare" | "transfer";
   attemptsRemaining: number;
 };
-export type ComposeReply = {
+export type ComposeReply = ReplyMetrics & {
   status: "ready" | "unsupported";
   lesson: Lesson | null;
   message: Bilingual;

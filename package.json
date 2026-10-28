@@ -12,15 +12,21 @@
     "security:check": "node --env-file-if-exists=.env.local scripts/security-check.mjs",
     "eval:live": "node --env-file-if-exists=.env.local scripts/evaluate.mjs",
     "claim:smoke": "node --env-file-if-exists=.env.local scripts/claim-smoke.mjs",
-    "test": "node --test",
+    "test": "node --test \"test/**/*.test.mjs\"",
     "build": "node scripts/build-vercel.mjs",
     "meta:check": "node --env-file-if-exists=.env.local scripts/meta-check.mjs",
     "meta:smoke": "node --env-file-if-exists=.env.local scripts/meta-smoke.mjs",
     "eval:models": "node --env-file-if-exists=.env.local scripts/compare-models.mjs",
     "eval:studio": "node --env-file-if-exists=.env.local scripts/eval-studio.mjs",
     "llm:recover": "node --env-file-if-exists=.env.local scripts/recover-ollama.mjs",
-    "typecheck": "tsc --noEmit",
-    "test:browser": "playwright test"
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
+    "test:browser": "playwright test",
+    "lint": "oxlint frontend e2e vite.config.ts vitest.config.ts playwright.config.ts",
+    "format": "prettier --write frontend e2e *.ts",
+    "format:check": "prettier --check frontend e2e *.ts",
+    "test:unit": "vitest run",
+    "check": "npm run typecheck && npm run lint && npm test && npm run test:unit",
+    "typecheck:app": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "react": "19.3.1",
@@ -28,11 +34,17 @@
   },
   "devDependencies": {
     "@playwright/test": "1.64.1",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
     "@types/node": "22.20.5",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "6.1.2",
+    "jsdom": "^30.1.3",
+    "oxlint": "^1.90.0",
+    "prettier": "^3.9.10",
     "typescript": "7.0.2",
-    "vite": "8.3.5"
+    "vite": "8.3.5",
+    "vitest": "^5.0.5"
   }
 }

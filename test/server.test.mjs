@@ -19,32 +19,22 @@ const clarification = (text, feedback='Clarify.', question='Which end?') => ({ m
 test('serves the workspace but never serves environment or server files', async t => {
   const { origin } = await running(t);
   const page = await fetch(origin);
-  assert.equal(page.status, 200);
-  assert.match(await page.text(), /ExplainBack/);
-  const studioAsset = await fetch(origin + '/assets/studio-showcase.mjs');
-  assert.equal(studioAsset.status, 200);
-  assert.match(studioAsset.headers.get('content-type'), /javascript/);
-  assert.match(await studioAsset.text(), /areaFromHash/);
+  // The page comes from the Vite build in dist/ when present; the API never serves source files.
+  assert.ok([200, 404].includes(page.status));
+  if (page.status === 200) assert.match(await page.text(), /ExplainBack/);
   for (const path of ['/.env.local', '/src/meta.mjs', '/package.json', '/docs/', '/assets/../.env.local']) {
     assert.equal((await fetch(origin + path)).status, 404);
   }
   assert.match(page.headers.get('content-security-policy'), /default-src 'self'/);
 });
 
-test('serves the full browser module dependency graph', async t => {
-  const { origin } = await running(t), pending = [origin + '/assets/app.mjs'], seen = new Set();
-  while (pending.length) {
-    const url = pending.pop();
-    if (seen.has(url)) continue;
-    seen.add(url);
-    const response = await fetch(url);
-    assert.equal(response.status, 200, url);
-    assert.match(response.headers.get('content-type'), /javascript/, url);
-    for (const match of (await response.text()).matchAll(/(?:from\s*|import\s*)['"](\.[^'"]+)['"]/g)) {
-      pending.push(new URL(match[1], url).href);
-    }
+test('legacy shell modules are no longer served and repository files stay private', async t => {
+  const { origin } = await running(t);
+  for (const path of ['/assets/app.mjs', '/assets/lesson-studio.mjs', '/assets/lesson-schema.mjs', '/frontend/App.tsx', '/public/gallery-lessons.mjs']) {
+    assert.equal((await fetch(origin + path)).status, 404, path);
   }
-  assert.ok(seen.size > 20);
+  const auth = await fetch(origin + '/api/auth');
+  assert.equal(auth.status, 200);
 });
 
 test('rejects cross-origin requests and requires synthetic examples', async t => {
@@ -251,7 +241,6 @@ test('flight HTTP workflow binds settings, reveals after prediction, and complet
  await turn('Average contact force includes mg and the pulse peak is higher. This does not establish safety.',{averageContactForce:22064.96,peakContactForce:34323.28});
  assert.equal(s.report.outcome,'independent');assert.equal(calls,4);
  assert.equal((await(await post('/api/replay',{sessionId:s.sessionId,evidenceId:s.evidenceRecords[1].id})).json()).verified,true);
- for(const asset of ['flight.mjs','flight-view.mjs'])assert.equal((await fetch(origin+'/assets/'+asset)).status,200);
 });
 test('flight HTTP rejects malformed physics and baseline mode without model calls',async t=>{
  let calls=0;const {post}=await running(t,async()=>{calls++;throw new Error('unexpected');});

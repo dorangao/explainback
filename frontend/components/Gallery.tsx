@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { t } from "../lib/messages";
 import { galleryLessons, gallerySourceNote } from "../lib/shared";
 import type { Language } from "../lib/types";
 import { say } from "../lib/types";
@@ -122,20 +123,12 @@ export function Gallery({ language }: { language: Language }) {
     <section className="gallery" aria-labelledby={headingId}>
       <div className="section-title">
         <div>
-          <p className="eyebrow">
-            {say(language, "THE LEARNING LIBRARY", "互动课程库")}
-          </p>
-          <h2 id={headingId}>
-            {say(
-              language,
-              "Find a question. Try it for yourself.",
-              "找一个问题，亲手试一试。",
-            )}
-          </h2>
+          <p className="eyebrow">{t(language, "Gallery.theLearningLibrary")}</p>
+          <h2 id={headingId}>{t(language, "Gallery.findAQuestionTryIt")}</h2>
         </div>
         <span className="quiet-label">
           <span className="status-dot" />
-          {say(language, "Free to explore · No sign-in", "自由探索 · 无需登录")}
+          {t(language, "Gallery.freeToExploreNoSign")}
         </span>
       </div>
       <div className="gallery-grid">
@@ -171,15 +164,13 @@ export function Gallery({ language }: { language: Language }) {
               <a
                 className="lesson-link"
                 href={`#lesson:${item.id}`}
-                aria-label={`${say(language, "Open lesson", "打开课程")}: ${item.lesson.title[language]}`}
+                aria-label={`${t(language, "Gallery.openLesson")}: ${item.lesson.title[language]}`}
               >
-                {say(language, "Open lesson", "打开课程")}{" "}
+                {t(language, "Gallery.openLesson")}{" "}
                 <span aria-hidden="true">↗</span>
               </a>
               <details className="lesson-source">
-                <summary>
-                  {say(language, "About this lesson", "课程来源")}
-                </summary>
+                <summary>{t(language, "Gallery.aboutThisLesson")}</summary>
                 <p>{gallerySourceNote(item.source, language)}</p>
               </details>
             </div>
@@ -187,11 +178,7 @@ export function Gallery({ language }: { language: Language }) {
         ))}
       </div>
       <p className="gallery-footnote">
-        {say(
-          language,
-          "Predict. Change an input. Explain what happened. Then try a new case.",
-          "先预测，修改输入，解释结果，再尝试一个新情境。",
-        )}
+        {t(language, "Gallery.predictChangeAnInputExplain")}
       </p>
     </section>
   );
