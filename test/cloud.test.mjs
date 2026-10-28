@@ -37,7 +37,7 @@ test('a fresh handler can continue persisted state and reset prevents late write
 });
 test('cloud provider allowlist excludes Ollama even when a local endpoint is present',()=>{
  const router=createProviderRouter({env:{EXPLAINBACK_PROVIDERS:'meta',MODEL_API_KEY:'fixture',OLLAMA_BASE_URL:'http://192.0.2.1:11434'}});
- assert.deepEqual(router.list().map(t=>t.id),['meta:muse-spark-1.3']);assert.throws(()=>router.get('ollama:qwen3.8:27b'));
+ assert.deepEqual(router.list().map(t=>t.id),['meta:muse-spark-1.3','meta:muse-wonder-1.0']);assert.equal(router.defaultId,'meta:muse-spark-1.3');assert.throws(()=>router.get('ollama:qwen3.8:27b'));
 });
 test('an interim trace write failure cannot strand a successfully committed workflow',async t=>{
  const state=createMemoryState(),write=state.writeTrace;

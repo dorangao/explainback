@@ -3,7 +3,7 @@ import {test} from 'node:test';import assert from 'node:assert/strict';
 import {createApp} from '../src/server.mjs';import {createProviderRouter} from '../src/llm/index.mjs';
 test('router exposes only allowlisted public config and rejects arbitrary target IDs',()=>{
  const router=createProviderRouter({env:{MODEL_API_KEY:'fixture-secret',OLLAMA_BASE_URL:'http://127.0.0.1:11434'}});
- assert.equal(router.list().length,3);assert.doesNotMatch(JSON.stringify(router.list()),/fixture-secret|127.0.0.1/);assert.throws(()=>router.get('http://other-host/model'));assert.equal(router.get('ollama:qwen3.8:27b').provider,'ollama');
+ assert.deepEqual(router.list().map(t=>t.id),['meta:muse-spark-1.3','meta:muse-wonder-1.0','ollama:muse-glimmer:latest','ollama:qwen3.8:27b']);assert.equal(router.get('meta:muse-wonder-1.0').timeoutMs,50000);assert.doesNotMatch(JSON.stringify(router.list()),/fixture-secret|127.0.0.1/);assert.throws(()=>router.get('http://other-host/model'));assert.equal(router.get('ollama:qwen3.8:27b').provider,'ollama');
 });
 test('HTTP sessions pin the chosen provider/model across all turns and trace rows',async t=>{
  const calls=[],targets=[{id:'meta:a',provider:'meta',model:'a',label:'Meta a',configured:true,timeoutMs:30000},{id:'ollama:b',provider:'ollama',model:'b',label:'Ollama b',configured:true,timeoutMs:180000}];

@@ -34,8 +34,9 @@ expiry date; the tester password is never published.
 
 ## What Meta's model does here
 
-ExplainBack uses **Meta `muse-spark-1.3`** through the Responses API with
-structured output. The model never writes code that runs in the browser.
+ExplainBack uses **Meta `muse-spark-1.3`** by default and offers
+**`muse-wonder-1.0`** from the same model selector, both through the Responses
+API with structured output. The model never writes code that runs in the browser.
 
 - **Author a lesson from any question.** Muse returns a bounded, bilingual
   lesson contract: a formula model with ranged inputs and axis, or an ordered
@@ -47,13 +48,20 @@ structured output. The model never writes code that runs in the browser.
 - **Explain checked evidence.** After an experiment, Muse explains the learner's
   prediction against values the code computed and suggests exactly one bounded
   next action: replay, compare or transfer.
+- **Read a photo or sketch.** Attach an image of a diagram, hand-drawn sketch or
+  textbook figure in Lesson Studio; Muse reads its labels, arrows and numbers and
+  builds the lesson around them. Images are downscaled in the browser, sent once
+  with the request, and never stored or traced.
 - **Decline honestly.** Ambiguous or unsupported requests (a CFD simulation, a
   safety certification) return a bilingual clarification instead of a made-up model.
 
 A frozen 12-case bilingual evaluation (6 topic pairs × EN/ZH, one attempt each,
-no retries) returned 12 valid contracts. The content review that followed is
-recorded with its open issues in [docs/studio-evaluation.md](docs/studio-evaluation.md).
-Automated passes are not teaching readiness, and the app says so on screen.
+no retries) returned 12 valid contracts. The same runner now compares several
+Meta models side by side (`--models=`), adds an optional rubric judge
+(`--judge=`) whose scores stay separate from the deterministic checks, and has
+a frozen image-input suite built on a sketch. See
+[docs/studio-evaluation.md](docs/studio-evaluation.md). Automated passes are
+not teaching readiness, and the app says so on screen.
 
 ## How it is built
 

@@ -22,7 +22,7 @@ try{
  });
  const signedIn=await request(0,'/api/login',credentials);assert.equal(signedIn.status,200);
  const httpCookie=signedIn.headers.get('set-cookie').split(';')[0];
- const status=await(await request(1,'/api/status',undefined,httpCookie)).json();assert.deepEqual(status.models.map(m=>m.id),['meta:muse-spark-1.3']);
+ const status=await(await request(1,'/api/status',undefined,httpCookie)).json();assert.deepEqual(status.models.map(m=>m.id),['meta:muse-spark-1.3','meta:muse-wonder-1.0']);
  const httpSession=await(await request(0,'/api/session',{problemId:'flight',language:'zh',synthetic:true},httpCookie)).json();assert.equal(httpSession.language,'zh');
  assert.equal((await request(1,'/api/trace',{sessionId:httpSession.sessionId},httpCookie)).status,200);
  assert.equal((await request(1,'/api/logout',{},httpCookie)).status,200);assert.equal((await request(0,'/api/status',undefined,httpCookie)).status,401);

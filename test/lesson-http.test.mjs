@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {createApp} from '../src/server.mjs';import {testerCredentials,testerCookie} from '../test-support/tester.mjs';
-import {coolingLesson,processLesson} from '../test-support/generated-lessons.mjs';
+import {coolingLesson,processLesson,tinyPng} from '../test-support/generated-lessons.mjs';
 const bi=text=>({en:text,zh:'示例'+text});
 const lesson=()=>({version:1,title:bi('Motion'),intro:bi('Test a claim'),chapters:[{experiment:'acceleration',framing:bi('Two cars'),explanation:bi('Compare areas')}]});
 async function setup(t,modelCall,traceEnabled=true){
@@ -56,4 +56,12 @@ test('new-topic request rejects catalog substitution and formulas with hidden si
  assert.equal((await post('/api/studio/compose',body)).status,502);
  output=coolingLesson();output.chapters[0].demo.outputs[0].expression='1/(x-12.345)';assert.equal((await post('/api/studio/compose',body)).status,502);
  output=processLesson();assert.equal((await post('/api/studio/compose',body)).status,200);
+});
+test('studio compose accepts a bounded image for Meta targets only and never traces its bytes',async t=>{
+ let seen;const {post}=await setup(t,async args=>{seen=args;args.onTrace?.({type:'request',body:{input:'[image omitted]'}});return {toolCall:{name:'compose_lesson',arguments:JSON.stringify({status:'ready',message:bi('Ready'),lesson:lesson()})}};});
+ const s=await(await post('/api/studio/session',{synthetic:true,language:'en'})).json();
+ const ok=await post('/api/studio/compose',{sessionId:s.sessionId,topic:'',creation:'catalog',image:tinyPng});assert.equal(ok.status,200);assert.deepEqual(seen.images,[tinyPng]);
+ assert.equal((await post('/api/studio/compose',{sessionId:s.sessionId,topic:'x',creation:'catalog',image:'data:text/html;base64,QQ=='})).status,400);
+ const trace=await(await post('/api/trace',{sessionId:s.sessionId})).json();assert.doesNotMatch(JSON.stringify(trace),/iVBORw0KGgo/);
+ const big=await post('/api/studio/compose',{sessionId:s.sessionId,topic:'x',creation:'catalog',image:'data:image/png;base64,'+'A'.repeat(1_500_000)});assert.equal(big.status,413);
 });
