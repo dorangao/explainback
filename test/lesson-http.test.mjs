@@ -4,7 +4,7 @@ import {coolingLesson,processLesson,tinyPng} from '../test-support/generated-les
 const bi=text=>({en:text,zh:'示例'+text});
 const lesson=()=>({version:1,title:bi('Motion'),intro:bi('Test a claim'),chapters:[{experiment:'acceleration',framing:bi('Two cars'),explanation:bi('Compare areas')}]});
 async function setup(t,modelCall,traceEnabled=true){
- const server=createApp({testerCredentials,configured:true,traceEnabled,modelCall});await new Promise(r=>server.listen(0,'127.0.0.1',r));t.after(()=>new Promise(r=>server.close(r)));
+ const server=createApp({testerCredentials,configured:true,traceEnabled,modelCall});await new Promise(r=>server.listen(0,'127.0.0.1',r));t.after(()=>new Promise(r=>{server.close(r);server.closeAllConnections();}));
  const origin=`http://127.0.0.1:${server.address().port}`,cookie=await testerCookie(origin);
  return {origin,post:(path,body,c=cookie)=>fetch(origin+path,{method:'POST',headers:{Origin:origin,Cookie:c,'Content-Type':'application/json'},body:JSON.stringify(body)})};
 }
@@ -63,5 +63,21 @@ test('studio compose accepts a bounded image for Meta targets only and never tra
  const ok=await post('/api/studio/compose',{sessionId:s.sessionId,topic:'',creation:'catalog',image:tinyPng});assert.equal(ok.status,200);assert.deepEqual(seen.images,[tinyPng]);
  assert.equal((await post('/api/studio/compose',{sessionId:s.sessionId,topic:'x',creation:'catalog',image:'data:text/html;base64,QQ=='})).status,400);
  const trace=await(await post('/api/trace',{sessionId:s.sessionId})).json();assert.doesNotMatch(JSON.stringify(trace),/iVBORw0KGgo/);
- const big=await post('/api/studio/compose',{sessionId:s.sessionId,topic:'x',creation:'catalog',image:'data:image/png;base64,'+'A'.repeat(1_500_000)});assert.equal(big.status,413);
+ const big=await post('/api/studio/compose',{sessionId:s.sessionId,topic:'x',creation:'catalog',image:'data:image/png;base64,'+'A'.repeat(1_500_000)});assert.equal(big.status,413);await big.arrayBuffer();
+});
+
+test('an oversized streaming image request returns 413 before the upload finishes',async t=>{
+ const {request}=await import('node:http');
+ const {origin}=await setup(t,async()=>{throw new Error('No provider request is expected.');});
+ const cookie=await testerCookie(origin);
+ const status=await new Promise((resolve,reject)=>{
+  let endBody;
+  const req=request(origin+'/api/studio/compose',{method:'POST',headers:{Origin:origin,Cookie:cookie,'Content-Type':'application/json'}},res=>{
+   res.resume();res.on('end',()=>{clearTimeout(endBody);req.end('"}');resolve(res.statusCode);});
+  });
+  req.on('error',reject);req.setTimeout(2000,()=>req.destroy(new Error('No 413 response received.')));
+  req.write('{"image":"'+'A'.repeat(1_410_000));
+  endBody=setTimeout(()=>req.end('"}'),100);
+ });
+ assert.equal(status,413);
 });

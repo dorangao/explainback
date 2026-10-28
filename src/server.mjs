@@ -7,6 +7,7 @@ import {parseAccessCodes,budgetFor,publicAudience} from './access-codes.mjs';
 import {createTrace} from './trace.mjs';
 import {createMemoryState} from './state.mjs';
 import { createServer } from 'node:http';
+import {serveFrontend} from './static.mjs';
 import { readFile } from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
@@ -52,10 +53,15 @@ async function readJSON(req,maxBytes=16_384) {
   const chunks = [];
   let size = 0;
   // Vercel may supply an already parsed body; bare Node supplies the stream.
-  const input=req.body===undefined?req:[Buffer.from(typeof req.body==='string'?req.body:JSON.stringify(req.body))];
+  const streamed=req.body===undefined;
+  // Keep the socket alive long enough to deliver a 413 if streaming stops early.
+  const input=streamed?req.iterator({destroyOnReturn:false}):[Buffer.from(typeof req.body==='string'?req.body:JSON.stringify(req.body))];
   for await (const chunk of input) {
     size += chunk.length;
-    if (size > maxBytes) throw new RequestError(413, 'Request is too large.');
+    if (size > maxBytes) {
+      if(streamed)req.resume();
+      throw new RequestError(413, 'Request is too large.');
+    }
     chunks.push(chunk);
   }
   try {
@@ -96,6 +102,7 @@ export function createHandler({
       if(!origin)throw new RequestError(403,'This host is not allowed.');
       const url = new URL(req.url, origin);
       const path = url.pathname;
+      if (!path.startsWith('/api/') && await serveFrontend(req,res,safeHeaders)) return;
       if (req.method === 'GET' && files.has(path)) {
         const [name, type] = files.get(path);
         const data = await readFile(new URL(`../public/${name}`, import.meta.url));

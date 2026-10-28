@@ -1,10 +1,14 @@
 # ExplainBack hackathon readiness
 
-Updated **October 27, 2026, Pacific**. This is the current progress tracker;
-dated implementation notes remain historical evidence. The user selected and
+Updated **October 27, 2026, Pacific**. This tracks submission readiness. Current
+engineering work, Codex/Claude ownership and the latest local validation are in
+the [shared progress ledger](implementation/progress-ledger.md). Dated
+implementation and release notes remain historical evidence. The user selected and
 authorized priorities 1–2: Studio-first presentation and a frozen 12-case lesson
-evaluation. Other ideas remain proposals. Studio-first runtime commit `3f947d5` is now
-deployed to production; [release verification](vercel-deployment.md#studio-first-production-release--october-27-2026).
+evaluation. Studio-first runtime commit `3f947d5` was deployed at that checkpoint;
+later gallery, reviewer-code, Wonder and image-input work is mapped in the shared
+ledger and [release verification](vercel-deployment.md). Remaining checklist items
+below retain their individual evidence and completion conditions.
 
 **Assessment: the product works; submission readiness is incomplete.**
 The strongest next step is to make one convincing, measurable story from the
@@ -37,7 +41,7 @@ eligibility from that date discrepancy.
 
 | Requirement | Status | Evidence or remaining action |
 |---|---|---|
-| Meta model integration | Done | Production uses `muse-spark-1.3`; accepted creation, revision and guide calls recorded in [release verification](vercel-deployment.md). |
+| Meta model integration | Done | Latest release record includes default `muse-spark-1.3` and optional `muse-wonder-1.0`; accepted hosted calls are recorded in [release verification](vercel-deployment.md). |
 | Public repository | Done | GitHub reports [dorangao/explainback](https://github.com/dorangao/explainback) public. Final signed-out access check still due. |
 | Event-built contribution clearly identified | **Unresolved** | User confirms pre-Oct-26 work was API setup only. Record the development ledger and clarify the Oct 26 kickoff / Oct 27 building-window boundary. Commit dates alone do not establish creation dates. |
 | Beyond a simple education chatbot | Stronger fit; no eligibility ruling | Interactive authoring, controlled execution, review and transfer are working. Demonstrate these directly. |
@@ -56,7 +60,7 @@ Weights are from the guide; assessments below are our own, not predicted scores.
 |---|---|---|
 | Impact — 30% | Bilingual, interactive learning with an inspectable result | Observe 3–5 adult testers using the same short task; record completion, confusion, assistance and time. No learning-effectiveness claim from this small study. |
 | Meta tooling — 25% | Muse authors structured lessons, revises them, selects bounded actions and explains computed results | Show a new topic becoming an operable lesson, then one explicit revision changing its behavior. Show the actual call/result. |
-| Execution — 20% | Bounded interpreter, validation gates, replay, authentication, shared cloud state; latest release reports 210 passing tests | Frozen generated-lesson checks, failure retention, reproducible setup, release/main alignment. Tests are engineering evidence, not model accuracy. |
+| Execution — 20% | Bounded interpreter, validation gates, replay, authentication, shared cloud state; current local grounding passed 244 tests | Frozen generated-lesson checks, failure retention, reproducible setup, release/main alignment. Tests are engineering evidence, not model accuracy. |
 | Demo — 25% | Powered vehicle animation, synchronized graphs, bilingual presentation | One rehearsed three-minute sequence with readable labels and reliable judge entry. |
 
 ## Lead story selected; alternatives retained
@@ -82,10 +86,10 @@ hand-built vehicle animation as something Muse created live.
   change and predicts its effect; the user applies it; code calculates the result;
   Muse reconciles any disagreement. Extend existing bounded suggestions and the
   suction design pattern; measure the quality of the proposal before expanding it.
-- **Optional:** interpret a user-owned sketch, confirm arrows and unknowns, then
-  use a known solver. Meta documents image input and tool workflows for
-  [Muse Spark](https://dev.meta.ai/models/muse-spark); that is capability evidence,
-  not proof that ExplainBack already supports image uploads.
+- **Partially implemented:** Studio now accepts a bounded image with lesson
+  creation; the latest release record includes a Wonder pendulum-sketch check.
+  Confirming arrows/unknowns and checking ambiguous-image controls remain further
+  work under X02; image transport does not establish faithful interpretation.
 
 [Structured output](https://dev.meta.ai/docs/structured-output) is already used
 for Meta lesson composition. It improves the data contract; it does not establish
@@ -114,9 +118,9 @@ sent, rules accepted, or submission made by this update.
 
 - [ ] **R01 · Doran · Oct 28 — Contribution eligibility.** Clarify whether Oct 26 development after the kickoff qualifies when the guide lists Oct 27–Nov 4 for building. Disclose that pre-Oct-26 activity was only API setup. Record the reply and its scope; do not assume an eligibility ruling.
 - [ ] **R02 · Doran · Oct 28 — Entry choice and rules.** Confirm track, theme, all contributors, eligibility and any required official-rule acceptance. Reading the guide or seeing the form is not acceptance.
-- [ ] **R03 · Build + Doran · Oct 28 — Contribution ledger.** Record API setup before Oct 26 and application work from Oct 26, then list features, known dates, files/commits and demo timestamps. Label development snapshots accurately; keep unknown dates explicit. The user-provided timeline is recorded above; detailed ledger remains open.
+- [ ] **R03 · Build + Doran · Oct 28 — Contribution ledger.** The [shared engineering ledger](implementation/progress-ledger.md#reconciled-progress-history) now maps features to commits and preserves the user-provided timeline. Commit dates do not establish every feature's creation date. Confirm remaining dates and contributors and add demo timestamps; eligibility remains separate.
 - [x] **R04 · Doran + Build · Oct 27 — Choose the main story.** User chose Studio-first: help an adult learner/author turn a question into a reviewable interactive lesson. [Selected script](studio-demo.md)
-- [ ] **R05 · Build · Oct 29 — Source/release alignment.** Integrate the deployed powered-journey and structured-output fixes into reviewed main, then record final source SHA and deployment SHA. PR #2 merged the earlier Studio commit; subsequent release fixes are on the feature branch.
+- [ ] **R05 · Build · Oct 29 — Source/release alignment.** Local `main` at `ba4da7a` now includes the powered-journey/output fixes and PRs #3–7. The latest recorded runtime is `08e5591`; its release note from `59a725a` was restored during grounding. Finish with a fresh remote/source/deployment check for the final candidate; local refs and historical hosted checks alone do not complete this gate. See the [shared ledger](implementation/progress-ledger.md).
 - [ ] **R06 · Build + Doran · Oct 30 — Judge access.** Partly addressed Oct 27: five reviewed lessons now open at explainback.app without sign-in (`#lesson:<id>` deep links; playback makes no provider call). Creation/revision now accepts reviewer access codes (`EXPLAINBACK_ACCESS_CODES`, per-code hourly quota and expiry, `#invite:CODE` links) so the tester password stays private. Oct 28: a `judges` code (40/hour, expires 2026-11-20) is configured in Vercel Production and the invite link was verified on explainback.app, including one live creation and the Redis quota decrement. Remaining: put the invite link in the submission copy. Check a fresh browser, session expiry, quotas and recovery; ensure reviewers can reach the intended lesson. Do not remove authentication silently.
 - [ ] **R07 · Build · Oct 30 — Publishable source package.** Check setup from a clean clone; choose a source license with Doran; review assets/attributions and the full proposed history for secrets. Keep raw eval outputs private and publish only sanitized summaries. No LICENSE or GitHub test workflow was found in the inspected tracked tree.
 

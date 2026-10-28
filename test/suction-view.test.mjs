@@ -40,7 +40,9 @@ assert.equal(root.dataset.focus,'orientation','new reveal_graph decision should 
 
 test('background playback settles without animation frames, and stop cancels cleanly',async()=>{
  const {lab,root,restore}=fixture(),saved={};
- for(const key of ['requestAnimationFrame','cancelAnimationFrame','setTimeout','clearTimeout','matchMedia'])saved[key]=globalThis[key];
+ for(const key of ['requestAnimationFrame','cancelAnimationFrame','setTimeout','clearTimeout','matchMedia','performance'])saved[key]=globalThis[key];
+ // This start value rounds the old elapsed-time fallback to 0.9999999999999999.
+ globalThis.performance={now:()=>719.185185138};
  let fallback;globalThis.requestAnimationFrame=()=>1;globalThis.cancelAnimationFrame=()=>{};
  globalThis.setTimeout=fn=>{fallback=fn;return 1;};globalThis.clearTimeout=()=>{};globalThis.matchMedia=()=>({matches:false});
  try{

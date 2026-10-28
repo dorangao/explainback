@@ -4,7 +4,7 @@ export function mountProviderConsole(root,post,{prefix='trace'}={}){
  const q=id=>root.querySelector('#'+id.replace(/^trace/,prefix));let enabled=false,sessionId=null,zh=false,version=0,followLatest=false,lastFollowed=0,records=[];
  function summary(){const last=records.at(-1),status=last?({pending:zh?'等待中':'pending',accepted:zh?'已接受':'accepted',discarded:zh?'已丢弃':'discarded','failed or rejected':zh?'未通过':'failed or rejected'}[last.outcome]??last.outcome):'';q('trace-title').textContent=(zh?'模型调用':'Provider activity')+(last?` · ${last.model} · ${records.length} · ${status}`:(zh?' · 尚无请求':' · no requests yet'));}
  async function refresh(clear=false){
-  if(!enabled||!sessionId)return;const token=++version,id=sessionId;
+  if(!enabled||!sessionId||document.hidden)return;const token=++version,id=sessionId;
   q('trace-status').textContent=zh?'读取记录…':'Reading trace…';
   try{const data=await post('/api/trace',{sessionId:id,...(clear?{clear:true}:{})});if(token!==version||id!==sessionId)return;
    records=data.records;summary();
@@ -21,9 +21,9 @@ export function mountProviderConsole(root,post,{prefix='trace'}={}){
    const latest=q('trace-records').lastElementChild;if(followLatest&&latest&&Number(latest.dataset.sequence)!==lastFollowed){lastFollowed=Number(latest.dataset.sequence);root.scrollTop+=latest.getBoundingClientRect().top-root.getBoundingClientRect().top-12;}
   }catch{if(token===version)q('trace-status').textContent=zh?'记录不可用；会话可能已重置或过期。':'Trace unavailable; session may have reset or expired.';}
  }
- q('trace-refresh').addEventListener('click',()=>refresh());q('trace-clear').addEventListener('click',()=>refresh(true));
- root.addEventListener('toggle',()=>{if(root.open)refresh();});
- return {refresh,set({enabled:active,sessionId:id,language,followLatest:follow=false}){
+ const onRefresh=()=>refresh(),onClear=()=>refresh(true),onToggle=()=>{if(root.open)refresh();};
+ q('trace-refresh').addEventListener('click',onRefresh);q('trace-clear').addEventListener('click',onClear);root.addEventListener('toggle',onToggle);
+ return {refresh,destroy(){enabled=false;sessionId=null;version++;root.removeEventListener('toggle',onToggle);q('trace-refresh').removeEventListener('click',onRefresh);q('trace-clear').removeEventListener('click',onClear);},set({enabled:active,sessionId:id,language,followLatest:follow=false}){
   zh=language==='zh';enabled=active;followLatest=follow;root.hidden=!active;
   summary();
   q('trace-note').textContent=zh?'EXPLAINBACK_TRACE=1 已启用。服务端临时保留本会话的请求正文、工具响应、用量与耗时；不显示密钥、请求头、私有推理或原始错误正文。正文可能含核验答案，所以此会话计为开发演示。长记录会截断。重置会删除记录；会话开始 30 分钟后过期。':'EXPLAINBACK_TRACE=1 is enabled. This session’s request bodies, tool responses, usage and timing are held temporarily on the server. Keys, headers, private reasoning and raw error bodies are omitted. Context can include checked answers, so this session is a developer demo. Long records are truncated. Reset deletes the records; they expire 30 minutes after session creation.';

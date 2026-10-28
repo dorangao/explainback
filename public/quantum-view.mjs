@@ -24,7 +24,9 @@ export function mountQuantumLab(root,{post,onBusy=()=>{},onTarget=()=>{}}){
  let props={visible:false,authenticated:false,traceEnabled:false,targets:[],defaultModel:null},coachSession=null,modelId='',epoch=0,busy=false,feedback=null,error='',exhausted=false;
  const c=()=>quantumCopy[language],circuit=()=>quantumCircuit(config),target=()=>props.targets.find(t=>t.id===modelId);
  const setBusy=value=>{busy=value;onBusy(value);};
- function invalidateCoach(remote=true){epoch++;if(coachSession&&remote)post('/api/reset',{sessionId:coachSession.sessionId}).catch(()=>{});coachSession=null;feedback=null;error='';exhausted=false;setBusy(false);}
+ const activePolls=new Set();
+ const stopPolling=()=>{for(const timer of activePolls)clearInterval(timer);activePolls.clear();};
+ function invalidateCoach(remote=true){stopPolling();epoch++;if(coachSession&&remote)post('/api/reset',{sessionId:coachSession.sessionId}).catch(()=>{});coachSession=null;feedback=null;error='';exhausted=false;setBusy(false);}
  function resetExperiment({lesson=config.lesson,script=false}={}){config.lesson=lesson;step=0;prediction=script?'agree':null;tested=script;guided=script;collapsed=null;counts=null;feedback=null;error='';render();}
  const chapterButtons=quantumLessons.map(id=>{const b=el('button');b.type='button';b.className='example';b.addEventListener('click',()=>{if(!busy)resetExperiment({lesson:id});});q('lessons').append(b);return b;});
  const predictionButtons=['agree','disagree','unsure'].map(value=>{const b=el('button');b.type='button';b.className='example';b.addEventListener('click',()=>{if(busy)return;prediction=value;guided=false;tested=false;step=0;collapsed=null;counts=null;feedback=null;render();});q('choices').append(b);return b;});
@@ -79,7 +81,7 @@ export function mountQuantumLab(root,{post,onBusy=()=>{},onTarget=()=>{}}){
   q('new-coach').textContent=language==='zh'?'开始新的解释会话':'New explanation session';q('new-coach').hidden=!exhausted;q('new-coach').disabled=busy;
   q('coach-answer').textContent=feedback?`${text.coachPrefix} · ${target()?.label??''}\n${feedback.explanation}`:'';q('coach-next').textContent=feedback?.nextQuestion??'';
   for(const id of ['amplitudes','measurements','circuit'])q(id).classList.toggle('q-model-focus',feedback?.focus===({amplitudes:'amplitudes',measurements:'probabilities',circuit:'circuit'}[id]));
-  trace.set({enabled:props.traceEnabled,sessionId:coachSession?.sessionId??null,language});
+  trace.set({enabled:props.traceEnabled&&props.visible&&!document.hidden,sessionId:coachSession?.sessionId??null,language});
  }
  function go(next){step=next;collapsed=null;counts=null;feedback=null;error='';if(guided&&step===circuit().frames.length-1)counts=sampleQuantum(circuit().frames[step].state);render();}
  q('test').addEventListener('click',()=>{if(prediction&&!busy){tested=true;go(0);}});
@@ -99,22 +101,25 @@ export function mountQuantumLab(root,{post,onBusy=()=>{},onTarget=()=>{}}){
   const send=(path,body)=>post(path,body,{timeoutMs:pickedTarget.timeoutMs+65000});
   try{
    if(!coachSession){const s=await send('/api/quantum/session',{language:pickedLanguage,synthetic:true,llm:pickedTarget.id});if(token!==epoch){post('/api/reset',{sessionId:s.sessionId}).catch(()=>{});return;}coachSession=s;render();}
-   poll=setInterval(()=>{if(token===epoch)trace.refresh();},1000);
+   poll=setInterval(()=>{if(token===epoch&&props.visible&&!document.hidden)trace.refresh();},1000);activePolls.add(poll);
    const result=await send('/api/quantum/explain',{sessionId:coachSession.sessionId,circuit:snapshot,question,prediction:picked});if(token!==epoch)return;
    feedback=result;exhausted=result.attemptsRemaining===0;
   }catch(e){if(token===epoch){if(e.status===404)coachSession=null;error=c().coachError;exhausted=e.attemptsRemaining===0;}}
-  finally{if(poll)clearInterval(poll);if(token===epoch){setBusy(false);render();await trace.refresh();}}
+  finally{if(poll){clearInterval(poll);activePolls.delete(poll);}if(token===epoch){setBusy(false);render();await trace.refresh();}}
  }
  q('new-coach').addEventListener('click',()=>{if(!busy){invalidateCoach();render();}});
  q('ask').addEventListener('click',()=>ask('why'));q('challenge').addEventListener('click',()=>ask('claim'));
  for(const[label,url]of [['IBM · quantum information','https://quantum.cloud.ibm.com/learning/en/courses/basics-of-quantum-information/single-systems/quantum-information'],['IBM · entanglement','https://quantum.cloud.ibm.com/learning/en/courses/basics-of-quantum-information/entanglement-in-action/introduction'],['Microsoft · Grover search','https://learn.microsoft.com/en-us/azure/quantum/concepts-grovers']]){const item=el('li'),a=el('a',label);a.href=url;a.target='_blank';a.rel='noreferrer';item.append(a);q('sources').append(item);}
+ const onVisibility=()=>{if(document.hidden&&busy)invalidateCoach();render();};
+ document.addEventListener('visibilitychange',onVisibility);
  render();
  return {set(next){
+  if(!next.visible&&busy)invalidateCoach();
   const lost=props.authenticated&&!next.authenticated;if(lost){invalidateCoach(false);config={lesson:'qubit',phase:Math.PI,basis:'Z',target:3};resetExperiment();}
   if(next.language!==language){invalidateCoach();language=next.language;}
   props={...props,...next};
   const selected=modelId;modelId=props.targets.some(t=>t.id===selected)?selected:props.defaultModel??props.targets[0]?.id??'';
   if([...q('model').options].map(o=>o.value).join('|')!==props.targets.map(t=>t.id).join('|'))q('model').replaceChildren(...props.targets.map(t=>{const o=new Option(t.label,t.id);o.disabled=!t.configured;return o;}));q('model').value=modelId;
   render();
- },reset(){invalidateCoach();resetExperiment();}};
+ },reset(){invalidateCoach();resetExperiment();},destroy(){document.removeEventListener('visibilitychange',onVisibility);invalidateCoach();trace.destroy();root.replaceChildren();}};
 }
