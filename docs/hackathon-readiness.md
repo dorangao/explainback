@@ -3,7 +3,8 @@
 Updated **October 27, 2026, Pacific**. This is the current progress tracker;
 dated implementation notes remain historical evidence. The user selected and
 authorized priorities 1–2: Studio-first presentation and a frozen 12-case lesson
-evaluation. Other ideas remain proposals. This update is local, not deployed.
+evaluation. Other ideas remain proposals. Studio-first runtime commit `3f947d5` is now
+deployed to production; [release verification](vercel-deployment.md#studio-first-production-release--october-27-2026).
 
 **Assessment: the product works; submission readiness is incomplete.**
 The strongest next step is to make one convincing, measurable story from the
@@ -105,7 +106,7 @@ sent, rules accepted, or submission made by this update.
 - [x] **D02 — Studio:** create, edit/revise, review, present, operate, export/import and EN/ZH. [Evidence](lesson-studio.md)
 - [x] **D03 — Vehicle:** ground acceleration, thruster lift, sideways roll, forward inertia and powered landing, with separate baseline contact model. [Evidence](superpowers/plans/2026-10-27-powered-flight-release.md)
 - [x] **D04 — Inspection:** provider console under a flag, filtered actual requests/responses, deterministic evidence and assistance labels. [Evidence](../README.md)
-- [x] **D05 — Validation:** published runtime release passed 210 tests and hosted smoke checks; current local Studio work has separate verification in the demo record. [Evidence](vercel-deployment.md)
+- [x] **D05 — Validation:** Studio-first production release passed 221 tests, build/secret checks and hosted entry/EN-ZH smoke checks. Full creation/revision/transfer checks for this change were local; see the demo record. [Evidence](vercel-deployment.md)
 - [x] **D06 — Provider regression:** compact comparison and Qwen fixes exist. v4 ambiguity is 2/2 per model; Qwen's other six cases passed separately. This is not a fresh full three-model v4 comparison. [Evidence](tester-access-verification.md)
 - [x] **D07 — Documentation correction:** README now describes current powered timing and language preservation; older verification records remain dated.
 
@@ -124,7 +125,7 @@ sent, rules accepted, or submission made by this update.
 - [x] **Q01 · Build · Oct 27 — Freeze a small Studio eval.** Six bilingual pairs, 12 cases; checksum, independent numeric probes and manual rubric fixed before the run. [Frozen protocol and results](studio-evaluation.md). This is separate from the older proposed 24-case claim benchmark.
 - [ ] **Q02 · Build + Reviewer · Oct 31 — Run and report.** Automated baseline complete: 12/12 attempted, 12 valid contracts, 12 automated checks passed (8 drafts, 4 expected deferrals/refusals), no retries. AI-assisted author review found content issues; independent human review remains open. [Case findings](studio-evaluation.md). One model create/revise/operate/transfer flow is verified locally; process revision/transfer still needs a matching live run. Do not treat schema success as teaching readiness.
 - [ ] **Q03 · Doran + Build · Nov 1 — Observe 3–5 testers.** Ask each to create/review a lesson, predict, change one input and explain a new case. Record assistance and friction with consent; no real student records. Decide fixes from observed problems.
-- [ ] **Q04 · Build · Nov 1 — One presentation path.** Local implementation complete: Studio default entry, three-step introduction, editable starters and EN/ZH controls; console remains expandable. [Demo verification](studio-demo.md). Keep open until the same path and narrow-screen checks pass on the deployed release candidate.
+- [ ] **Q04 · Build · Nov 1 — One presentation path.** Studio default entry, three-step introduction, editable starters and EN/ZH controls are deployed; console remains expandable. Hosted entry/language/area smoke checks passed. [Demo verification](studio-demo.md). Keep open for the full hosted create/revise/operate path and narrow-screen checks on this release candidate.
 - [ ] **Q05 · Build · Nov 1 — Release quality gate.** Add or run reproducible Node 22 tests/build/secret checks for the final source. Resolve review findings; the PR #2 bot review did not complete because of a usage limit, so it is not passing-review evidence. Local fresh-review evidence remains separately documented.
 - [ ] **S01 · Build + Doran · Nov 2 — Rehearse and record.** Make a three-minute video with legible interactions, one real creation/revision, assumptions, a transfer result, and an accurate contribution disclosure. Label recorded/cached/demo-assisted material.
 - [ ] **S02 · Build + Doran · Nov 2 — Submission copy.** Prepare team name, description, track/theme, public repo, accessible video, Meta usage and why Meta matters. Include the live app and judge access instructions in the description if the form has no dedicated field.
@@ -158,10 +159,11 @@ export may be a labeled fallback, never passed off as a fresh model response.
 
 ### State at this checkpoint
 
-- Production runtime: `70d272091904e0531a416eb0bdb04aa345309d3c`; live at
-  [explainback.app](https://explainback.app/). Prior-turn browser checks are in
-  [deployment verification](vercel-deployment.md); not repeated here.
-- Remote feature branch: `6c3e42bbcc6418b2cbe47a3169a6cd53488c72f3`.
+- Production runtime: `3f947d593282cf558e686395fca7037978e1a02b`; live at
+  [explainback.app](https://explainback.app/). [Deployment verification](vercel-deployment.md)
+  distinguishes this release smoke test from earlier provider-flow checks.
+- Runtime feature-branch commit: `3f947d593282cf558e686395fca7037978e1a02b`;
+  deployment evidence is recorded in a subsequent documentation-only commit.
 - Remote main: `aa69769316d4c330da55e6160c56119a67b9b625`, verified by remote
   reference lookup. [PR #2](https://github.com/dorangao/explainback/pull/2) merged
   `b49d7f3`; later powered-flight/output fixes still need integration.
@@ -205,3 +207,7 @@ tokens, private provider responses or tester personal information here.
 - Oct 27: incorporated user timeline correction; implemented selected Studio-first
   flow and froze/ran 12 Meta cases. Content-review issues retained separately from
   automated passes. No commit, deployment, organizer message or submission.
+
+- Oct 27: user requested commit, push and deployment. Studio-first runtime
+  `3f947d5` is published at explainback.app; hosted entry/language/area smoke
+  checks passed. No main merge, organizer message or submission.

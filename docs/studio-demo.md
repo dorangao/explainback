@@ -63,9 +63,10 @@ result rather than assuming every request was fulfilled.
 
 ## Local verification, October 27
 
-This work is **uncommitted and not deployed**. Runtime changes are relative to
-feature-branch HEAD `6c3e42bbcc6418b2cbe47a3169a6cd53488c72f3`.
-Production/main alignment remains an item in the [readiness tracker](hackathon-readiness.md).
+The checks below were performed locally before release. Runtime commit
+`3f947d593282cf558e686395fca7037978e1a02b` is now pushed and deployed to
+[explainback.app](https://explainback.app/). See [production verification](vercel-deployment.md#studio-first-production-release--october-27-2026).
+Main-branch integration remains an item in the [readiness tracker](hackathon-readiness.md).
 
 - Fresh root URL showed Studio as selected after tester sign-in; no provider
   request occurred when loading the editable starter.

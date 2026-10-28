@@ -208,3 +208,43 @@ Secrets were uploaded only after explicit approval for the respective Vercel
 environments. Configured key/password values, .env.local and local QA/eval
 outputs are excluded from Git and deployment uploads. Installed reference skills
 remain untracked local files. Only synthetic topics were used for live tests.
+
+
+## Studio-first production release — October 27, 2026
+
+Runtime commit: `3f947d593282cf558e686395fca7037978e1a02b`, pushed to
+`feat/suction-design-lab`. Production deployment:
+`dpl_C8pcs3sGCMTmJsna2veohCn9D9td` at
+[deployment URL](https://explainback-1iyp8sd4u-doran-gaos-projects.vercel.app/).
+Vercel reports **READY / production** with **https://explainback.app/** assigned.
+Both `githubCommitSha` and explicit release metadata match the runtime commit.
+This release does not merge the feature branch into main.
+
+The app now opens in Lesson Studio, introduces Create → Review & revise →
+Operate, and provides editable starter/revision prompts in English and Chinese.
+It includes the frozen twelve-case lesson evaluation and published sanitized
+results; raw outputs remain local. The physics lab remains the supporting
+showcase in the three-minute script.
+
+Release validation: **221/221 Node 22 tests passed**, public build and whitespace
+checks passed. The configured-value scan checked the staged files and all 65
+Vercel upload files; API keys, tester passwords, `.env.local`, raw eval outputs,
+screenshots and unrelated installed skill files were excluded. Existing
+server-only Production configuration was reused without credential changes.
+
+Hosted smoke checks on the custom HTTPS domain confirmed:
+
+- The existing valid tester session opens the protected workspace and selects
+  Studio at the root URL. This was session reuse, not a new login/logout test.
+- The three-step walkthrough appears in English and Chinese; language switching
+  preserves typed topic text. Each localized starter fills an editable question.
+- Starter clicks leave the console at “no requests yet”; Meta Muse Spark is the
+  sole hosted provider option. No additional provider or Ollama calls were made.
+- Physics opens, and returning to Studio preserves the Chinese topic.
+- Document width equals viewport width (1265 px), with no horizontal overflow.
+
+The full create/revise/operate/transfer workflow was tested locally before this
+release, as recorded in [the demo verification](studio-demo.md). It was not
+re-run against the provider during this deployment smoke check. Narrow-screen
+release verification and independent human content review remain open.
+Screenshot: `output/studio-demo-eval/production-studio-zh.png` (local, ignored).
