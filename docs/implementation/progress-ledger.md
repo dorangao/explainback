@@ -14,22 +14,23 @@ current index; dated entries and linked evidence retain the history.
   in this grounding pass.
 - **Recent additions:** reviewer codes with quotas, local open-access mode,
   Muse Wonder alongside Spark, image input and model-comparison/judge evaluation.
-- **Latest recorded deployment:** runtime `08e5591`, described in Claude's
-  release record from documentation commit `59a725a`. Restored into
-  [the deployment notes](../vercel-deployment.md#wonder-image-input-and-comparison-eval-release--october-28-2026).
-  This is previous hosted verification, not a fresh production check by Codex.
+- **Production release tracking:** [PR #8 release verification](https://github.com/dorangao/explainback/pull/8)
+  records the final merge, deployment and live checks. Before this release, the
+  Vercel CLI verified production at `ba4da7a`, READY/PROMOTED with
+  `explainback.app` assigned. Older release records remain in
+  [the deployment notes](../vercel-deployment.md).
 - **Release branch:** `codex/react-studio-branding`; migration and branding
   implementation committed/pushed as `8bdc8ff` in [PR #8](https://github.com/dorangao/explainback/pull/8).
   The PR release-verification section records the final merged/deployed state.
 - **Fresh local checks:** Node **22.23.1**, **245/245 tests**, TypeScript and build
   pass; **18/18 Chromium workflows passed** after independent review fixes. See [migration verification](../react-ui-verification.md).
 - **Pre-existing untracked work:** `.agents/`, `.claude/`, `skills-lock.json`.
-  Left untouched. New handoff documents from this task remain uncommitted.
-- **Next phase:** UI and branding optimization, including favicon and associated
-  assets. User selected the green-and-paper learning studio. The
-  [design proposal](../superpowers/specs/2026-10-27-green-paper-branding-design.md)
-  is approved with React + TypeScript + Vite. User authorized implementation and
-  delegated further UI decisions; migration is complete locally on `codex/react-studio-branding`.
+  Left untouched and excluded from the release commits. Shared handoff documents
+  are included in PR #8.
+- **Current work:** the approved green-and-paper React migration is implemented
+  and validated. The user authorized commit/push/PR/merge/deployment; REL-001
+  links the live release record instead of inferring those external states.
+
 
 ## Work table
 
