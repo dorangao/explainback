@@ -337,3 +337,16 @@ a draft whose transfer question follows the revised contract ("What is the
 coffee temperature in °C at the marked time?") and whose framing poses the
 question without stating the outcome. Sign-out restored the public library.
 
+
+## Sketch gallery lesson release · October 28, 2026 (Pacific)
+
+Merged [PR #11](https://github.com/dorangao/explainback/pull/11) as `118cd69` and
+deployed `main` with `vercel deploy --prod -y`; deployment
+`explainback-6jkkfcntr-doran-gaos-projects.vercel.app`, status Ready, serving
+[explainback.app](https://explainback.app/). No environment changes.
+
+Hosted check: `https://explainback.app/#lesson:sketch-pendulum` opens without
+sign-in, the library card carries the "Created from a sketch" chip, the player
+shows the sketch image beside the provenance note ("Drafted by Meta
+muse-spark-1.3 from this hand-drawn sketch"), and `/gallery/pendulum-sketch.png`
+returns 200 from the production host.
