@@ -1,35 +1,15 @@
 // Typed boundaries around the existing validated learning engines. No duplicate solvers.
-import {
-  validateLesson as validate,
+// The engines' shapes come from frontend/lib/engines.d.ts; no casts are needed here.
+export {
+  validateLesson,
   lessonLanguageWarnings,
 } from "../../public/lesson-schema.mjs";
-import {
-  galleryLessons as catalog,
+export {
+  galleryLessons,
   gallerySourceNote,
   galleryIdFromHash,
 } from "../../public/gallery-lessons.mjs";
-import { createLessonPlayer as create } from "../../public/lesson-player.mjs";
-import { chapterExperiment as chapter } from "../../public/generated-demo.mjs";
-import type {
-  Lesson,
-  Player,
-  GalleryItem,
-  Chapter,
-  Experiment,
-  Language,
-} from "./types";
-export const validateLesson = validate as (input: unknown) => Lesson;
-export const createLessonPlayer = create as unknown as (
-  lesson: Lesson,
-) => Player;
-export const chapterExperiment = chapter as unknown as (
-  chapter: Chapter,
-  variant?: number,
-  language?: Language,
-  controls?: Record<string, number>,
-  metric?: number,
-) => Experiment;
-export const galleryLessons = catalog as GalleryItem[];
-export { lessonLanguageWarnings, gallerySourceNote, galleryIdFromHash };
+export { createLessonPlayer } from "../../public/lesson-player.mjs";
+export { chapterExperiment } from "../../public/generated-demo.mjs";
 export { formatDemoNumber } from "../../public/demo-model.mjs";
 export { studioWalkthrough } from "../../public/studio-showcase.mjs";

@@ -39,6 +39,7 @@ current index; dated entries and linked evidence retain the history.
 | GROUND-001 | Codex | Complete locally; uncommitted | `AGENTS.md`, `CLAUDE.md`, this ledger, README and readiness/deployment notes | Both agents use this handoff on their next task. |
 | UI-001 | Codex | Committed and pushed in `8bdc8ff`; release tracked by REL-001 | Base `ba4da7a`, branch `codex/react-studio-branding`; claim: `frontend/`, `e2e/`, package/build configs, static serving, physics adapter, brand assets, relevant tests and docs. | Ready for user review; commit/push/deployment remain separate next actions. |
 | REL-001 | Codex | Release evidence in PR #8; file claim released | Base `ba4da7a`, `codex/react-studio-branding`; claims `vercel.json`, `.vercelignore`, `.github/workflows/`, suction fallback regression, release evidence and this ledger; committing the validated UI-001 files. | [PR #8](https://github.com/dorangao/explainback/pull/8) carries the final merge SHA, production deployment and live validation evidence; read its release verification section. |
+| REVIEW-001 | Claude | Assessment complete; no product code changed | Base `b7f82df` (`main` after PR #8), checkout on `codex/react-studio-branding`; read-only review of `frontend/`, `src/static.mjs`, build/CI config, tests; this ledger only | User chooses which findings to schedule; see the dated entry. |
 
 
 Before working, read the latest table and actual Git state, claim a bounded file
@@ -355,3 +356,52 @@ Verification: command or workflow, runtime, result, evidence path and limitation
 State: local / committed SHA / pushed / merged SHA / deployed SHA, each separately.
 Next: remaining work, blocker, owner and whether the file claim is released.
 ```
+
+### 2026-10-28 Pacific — REVIEW-001 — Claude
+
+**Request:** after the React + TypeScript + Vite migration (PR #8), check what
+can be improved further.
+
+**Base:** `main` at `b7f82df`; checkout found on `codex/react-studio-branding`
+at `14e918b` with a clean tracked tree. No branch switch, no product edits.
+
+**Fresh checks (Node 22.23.1):** `npm run typecheck` passed; `npm test` 246/246;
+`npm run build` emitted `index-*.js` 350 KB (118 KB gzip), `LegacyLabs-*.js`
+188 KB (68 KB gzip), CSS 69 KB. explainback.app serves the React build with no
+console errors. One earlier background `npm run typecheck` exited 1 with no
+output and passed on rerun; not reproduced, noted because the Vercel build
+command depends on it (TypeScript 7.0.2 native compiler).
+
+**Findings, in priority order (assessment, not a work claim):**
+
+1. Physics and quantum still run as imperative DOM code mounted through
+   `LegacyLabs` (`frontend/legacy/physics.html` 557 lines + `public/physics-controller.mjs`
+   601 lines + the old view modules). Two UI stacks and two styling systems
+   remain; the lazy chunk is mostly this code. Port the guided demo to React
+   components, or decide explicitly that the labs stay legacy.
+2. Dead code retained: `public/app.mjs`, `public/lesson-studio.mjs`,
+   `public/index.html`, `public/style.css`, and the old `/assets/*.mjs` map in
+   `src/server.mjs`. `test/lesson-view.test.mjs` and the UI half of
+   `test/gallery.test.mjs` exercise the dead Studio module. Remove them and
+   replace with component tests; there are no React unit tests, only 18
+   Chromium workflows and engine tests.
+3. The TypeScript boundary is hand-written: `frontend/lib/types.ts` duplicates
+   the lesson schema and `lib/shared.ts` uses `as unknown as` casts. Convert
+   `lesson-schema.mjs`/`demo-model.mjs` to TypeScript or generate types from
+   `demoSchema`, then enable `checkJs` for the engines incrementally.
+4. `Studio.tsx` is 911 lines with 31 hook calls and at least one effect with
+   an incomplete dependency list (`[starter, authenticated]`). Split into
+   hooks (provider session, compose/revise, image attachment) and add ESLint
+   with `react-hooks` rules; no linter or formatter is configured.
+5. Muse's contribution is still not visible: a revision replaces the draft
+   with no before/after view. A "what changed" diff after revise, and a
+   compact request summary (elapsed time, tokens) outside the developer
+   console, remain the highest-value judge-facing feature.
+6. Repository hygiene: no `LICENSE`; GitHub homepage still points at
+   `explainback-delta.vercel.app`; description empty. CI now exists.
+7. Smaller: split the authoring bundle from the public gallery path so
+   signed-out visitors load less; move ~110 inline `say()` string pairs into
+   a message table so a native speaker can review the Chinese in one place.
+
+**State:** findings only; nothing committed. Next action is the user's choice.
+

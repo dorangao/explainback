@@ -30,6 +30,7 @@ function readRoute() {
 }
 export function App() {
   const auth = useAuth();
+  const { loading: authLoading, info: authInfo, login: authLogin } = auth;
   const [language, setLanguage] = useState<Language>(() => {
       try {
         return localStorage.getItem("explainback-language") === "zh"
@@ -81,30 +82,24 @@ export function App() {
     };
   }, []);
   useEffect(() => {
-    if (auth.loading) return;
+    if (authLoading) return;
     const code = invite.current;
     if (!code || handledInvite.current === code) return;
     handledInvite.current = code;
     invite.current = null;
-    if (auth.info.authenticated) {
+    if (authInfo.authenticated) {
       setStarter((n) => n + 1);
       return;
     }
-    if (auth.info.codes)
-      void auth.login({ code }).then((ok) => {
+    if (authInfo.codes)
+      void authLogin({ code }).then((ok) => {
         if (ok) {
           setStarter((n) => n + 1);
           setShowAccess(false);
         } else setShowAccess(true);
       });
     else setShowAccess(true);
-  }, [
-    auth.loading,
-    auth.info.authenticated,
-    auth.info.codes,
-    auth.login,
-    route,
-  ]);
+  }, [authLoading, authInfo.authenticated, authInfo.codes, authLogin, route]);
   useEffect(() => {
     if (auth.info.authenticated) {
       firstAuth.current = true;

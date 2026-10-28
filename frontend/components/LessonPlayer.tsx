@@ -45,15 +45,21 @@ export function LessonPlayer({
     [counts, setCounts] = useState<number[] | null>(null);
   const heading = useRef<HTMLHeadingElement>(null),
     state = player.state;
-  const controlsKey = JSON.stringify(state.controls);
+  // The player mutates in place; chapter, variant, metric and controls key the memo.
+  const experimentKey = `${state.chapter}/${state.variant}/${state.metric}/${JSON.stringify(state.controls)}`;
   const e = useMemo(
     () => player.experiment(language),
-    [player, language, state.chapter, state.variant, state.metric, controlsKey],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- experimentKey summarises the mutable player state
+    [player, language, experimentKey],
   );
   const chapter = player.lesson.chapters[state.chapter];
-  useEffect(() => {
-    setPlaying(false);
-  }, [language, visible, busy]);
+  // Pause when the lesson is hidden, busy or re-localised; playback resumes only on request.
+  const pauseKey = `${language}/${visible}/${busy}`;
+  const lastPause = useRef(pauseKey);
+  if (lastPause.current !== pauseKey) {
+    lastPause.current = pauseKey;
+    if (playing) setPlaying(false);
+  }
   useEffect(() => {
     const hide = () => {
       if (document.hidden) setPlaying(false);

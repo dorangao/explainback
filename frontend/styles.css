@@ -1805,3 +1805,18 @@ body {
     gap: 0.4rem;
   }
 }
+
+/* Revision summary and request metrics (what Muse changed) */
+.request-summary{margin:.4rem 0 1rem;font-size:.86rem;color:var(--muted,#5d6c67)}
+.request-summary strong{color:var(--ink,#20332f);font-weight:600}
+.revision-summary{margin:0 0 1.4rem;padding:1.1rem 1.3rem;border:1px solid #cfe0d4;border-left:4px solid var(--accent,#116d60);border-radius:12px;background:#f3f8f3}
+.revision-summary-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
+.revision-summary-head h2{font-size:1.25rem;margin:.2rem 0 .3rem}
+.revision-summary .eyebrow{margin:0 0 .3rem}
+.revision-changes{list-style:none;margin:.6rem 0 .4rem;padding:0;display:grid;gap:.55rem}
+.revision-changes li{display:grid;grid-template-columns:minmax(120px,180px) 1fr;gap:.3rem .9rem;align-items:start;font-size:.9rem;line-height:1.45}
+.revision-changes li del{color:#8c352b;background:#fbe7e2;text-decoration:line-through;padding:.05rem .3rem;border-radius:3px;overflow-wrap:anywhere}
+.revision-changes li ins{color:#145a4e;background:#dff0e6;text-decoration:none;padding:.05rem .3rem;border-radius:3px;overflow-wrap:anywhere}
+.revision-changes li del + ins{margin-left:.4rem}
+.revision-label{font-weight:600;color:var(--ink,#20332f)}
+@media (max-width:600px){.revision-changes li{grid-template-columns:1fr}.revision-summary{padding:.9rem 1rem}.revision-summary-head{flex-direction:column}}

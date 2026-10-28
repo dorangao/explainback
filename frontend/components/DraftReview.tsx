@@ -1,5 +1,5 @@
 import { useState, useId } from "react";
-import type { Lesson, Language, Chapter, Demo } from "../lib/types";
+import type { Lesson, Language, Demo } from "../lib/types";
 import { say } from "../lib/types";
 import {
   validateLesson,

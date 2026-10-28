@@ -1,4 +1,13 @@
-import { useCallback, useEffect, useRef, useState, useId } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type {
   ComposeReply,
   Feedback,
@@ -7,10 +16,8 @@ import type {
   Player,
   Post,
   Status,
-  StudioSession,
 } from "../lib/types";
 import { say } from "../lib/types";
-import { ApiError } from "../lib/api";
 import {
   createLessonPlayer,
   galleryLessons,
@@ -18,11 +25,24 @@ import {
   studioWalkthrough,
   validateLesson,
 } from "../lib/shared";
-import { prepareImage } from "../lib/image";
+import { useProviderSession } from "../hooks/useProviderSession";
+import { useImageAttachment } from "../hooks/useImageAttachment";
 import { Gallery } from "./Gallery";
-import { DraftReview } from "./DraftReview";
 import { LessonPlayer } from "./LessonPlayer";
-import { ProviderConsole } from "./ProviderConsole";
+import { RequestSummary } from "./RevisionSummary";
+// Authoring, review and diagnostics load only when someone creates or revises.
+const DraftReview = lazy(() =>
+  import("./DraftReview").then((m) => ({ default: m.DraftReview })),
+);
+const RevisionSummary = lazy(() =>
+  import("./RevisionSummary").then((m) => ({ default: m.RevisionSummary })),
+);
+const ProviderConsole = lazy(() =>
+  import("./ProviderConsole").then((m) => ({ default: m.ProviderConsole })),
+);
+
+type Revision = { before: Lesson; after: Lesson };
+
 export function Studio({
   language,
   authenticated,
@@ -55,101 +75,50 @@ export function Studio({
     [reviewed, setReviewed] = useState(false),
     [player, setPlayer] = useState<Player | null>(null),
     [presenting, setPresenting] = useState(false),
-    [busy, setBusy] = useState(false),
-    [remaining, setRemaining] = useState(8),
     [message, setMessage] = useState(""),
     [feedback, setFeedback] = useState<Feedback | null>(null),
-    [image, setImage] = useState<{ name: string; dataUrl: string } | null>(
-      null,
-    ),
-    [imageLoading, setImageLoading] = useState(false),
-    [sessionId, setSessionId] = useState<string | null>(null),
+    [revision, setRevision] = useState<Revision | null>(null),
     [source, setSource] = useState<string | null>(null);
-  const epoch = useRef(0),
-    imageEpoch = useRef(0),
-    session = useRef<StudioSession | null>(null),
-    alive = useRef(true),
-    pending = useRef<AbortController | null>(null),
-    busyRef = useRef(false),
-    languageRef = useRef(language),
-    postRef = useRef(post);
-  postRef.current = post;
-  const targets = providerStatus?.models ?? [],
-    target =
-      targets.find((t) => t.id === modelId) ??
-      targets.find((t) => t.id === providerStatus?.defaultModel) ??
-      targets[0];
-  const markBusy = useCallback(
-    (value: boolean) => {
-      busyRef.current = value;
-      setBusy(value);
-      onBusy(value);
-    },
-    [onBusy],
+  const clearFeedback = useCallback(() => setFeedback(null), []);
+  const provider = useProviderSession({
+    post,
+    language,
+    onBusy,
+    onInvalidate: clearFeedback,
+  });
+  const {
+    busy,
+    busyRef,
+    remaining,
+    sessionId,
+    metrics,
+    languageInterrupted,
+    run,
+    alive,
+    epoch,
+  } = provider;
+  const image = useImageAttachment(language);
+  const targets = useMemo(
+    () => providerStatus?.models ?? [],
+    [providerStatus?.models],
   );
-  const invalidate = useCallback(
-    (remote = true) => {
-      epoch.current++;
-      pending.current?.abort();
-      pending.current = null;
-      const old = session.current;
-      session.current = null;
-      setSessionId(null);
-      setRemaining(8);
-      setFeedback(null);
-      markBusy(false);
-      if (old && remote)
-        void postRef
-          .current("/api/reset", { sessionId: old.sessionId })
-          .catch(() => {});
-    },
-    [markBusy],
-  );
+  const target =
+    targets.find((t) => t.id === modelId) ??
+    targets.find((t) => t.id === providerStatus?.defaultModel) ??
+    targets[0];
+  const { invalidate } = provider;
+  const stopHidden = (!visible || (!lessonId && view === "studio")) && busy;
   useEffect(() => {
-    alive.current = true;
-    return () => {
-      alive.current = false;
-      epoch.current++;
-      imageEpoch.current++;
-      pending.current?.abort();
-      const old = session.current;
-      if (old)
-        void postRef
-          .current("/api/reset", { sessionId: old.sessionId })
-          .catch(() => {});
-      onBusy(false);
-    };
-  }, [onBusy]);
-  useEffect(() => {
-    if (languageRef.current !== language) {
-      const wasBusy = busyRef.current;
-      languageRef.current = language;
-      invalidate();
-      if (wasBusy)
-        setMessage(
-          say(
-            language,
-            "Language changed. The pending result will not be applied; retry explicitly.",
-            "语言已切换，当前请求结果不再应用，请手动重试。",
-          ),
-        );
-    }
-  }, [language, invalidate]);
-  useEffect(() => {
-    if ((!visible || (!lessonId && view === "studio")) && busyRef.current) {
-      invalidate();
-      setMessage(
-        say(
-          language,
-          "Request stopped here. Your current draft is preserved.",
-          "已停止应用请求结果，当前草稿已保留。",
-        ),
-      );
-    }
-  }, [visible, view, lessonId, invalidate, language]);
-  useEffect(() => {
-    if (!targets.some((t) => t.id === modelId) && target) setModelId(target.id);
-  }, [targets, modelId, target]);
+    if (!stopHidden) return;
+    invalidate();
+    setMessage(
+      say(
+        language,
+        "Request stopped here. Your current draft is preserved.",
+        "已停止应用请求结果，当前草稿已保留。",
+      ),
+    );
+  }, [stopHidden, invalidate, language]);
   const loadLesson = useCallback((input: unknown) => {
     const valid = validateLesson(input);
     setDraft(valid);
@@ -162,26 +131,7 @@ export function Studio({
     setMessage("");
     return valid;
   }, []);
-  useEffect(() => {
-    if (!lessonId) return;
-    const item = galleryLessons.find((g) => g.id === lessonId);
-    if (!item) return;
-    invalidate();
-    const lesson = loadLesson(structuredClone(item.lesson));
-    setReviewed(true);
-    setPlayer(createLessonPlayer(lesson));
-    setPresenting(true);
-    setSource(item.source);
-  }, [lessonId, invalidate, loadLesson]);
-  useEffect(() => {
-    if (starter && authenticated) {
-      invalidate();
-      closeLesson();
-      setTopic(studioWalkthrough(language).topic);
-      setCreation("generated");
-    }
-  }, [starter, authenticated]);
-  function closeLesson() {
+  const closeLesson = useCallback(() => {
     invalidate();
     setDraft(null);
     setPlayer(null);
@@ -189,19 +139,43 @@ export function Studio({
     setReviewed(false);
     setSource(null);
     setFeedback(null);
+    setRevision(null);
     setMessage("");
-  }
-  const clearFeedback = useCallback(() => setFeedback(null), []);
-  async function request(mode: "compose" | "guide", revision?: string) {
+  }, [invalidate]);
+  // A gallery lesson is reviewed content: open it straight into the player.
+  const openedGallery = useRef<string | null>(null);
+  useEffect(() => {
+    if (!lessonId || openedGallery.current === lessonId) return;
+    const item = galleryLessons.find((g) => g.id === lessonId);
+    if (!item) return;
+    openedGallery.current = lessonId;
+    invalidate();
+    const lesson = loadLesson(structuredClone(item.lesson));
+    setReviewed(true);
+    setPlayer(createLessonPlayer(lesson));
+    setPresenting(true);
+    setSource(item.source);
+  }, [lessonId, invalidate, loadLesson]);
+  // An invite or the Create link seeds the editable starter topic.
+  const seenStarter = useRef(0);
+  useEffect(() => {
+    if (!starter || !authenticated || seenStarter.current === starter) return;
+    seenStarter.current = starter;
+    closeLesson();
+    setTopic(studioWalkthrough(language).topic);
+    setCreation("generated");
+  }, [starter, authenticated, closeLesson, language]);
+  async function request(mode: "compose" | "guide", revisionText?: string) {
     if (
       busyRef.current ||
       !authenticated ||
       !target?.configured ||
       remaining === 0 ||
-      imageLoading
+      image.loading
     )
       return;
-    if (mode === "compose" && !revision && !topic.trim() && !image) {
+    const attached = image.image;
+    if (mode === "compose" && !revisionText && !topic.trim() && !attached) {
       setMessage(
         say(
           language,
@@ -211,7 +185,7 @@ export function Studio({
       );
       return;
     }
-    if (image && !revision && target.provider !== "meta") {
+    if (attached && !revisionText && target.provider !== "meta") {
       setMessage(
         say(
           language,
@@ -228,10 +202,12 @@ export function Studio({
           ? {
               topic:
                 topic.trim() ||
-                (!revision && image ? "" : (draft?.title[language] ?? "")),
+                (!revisionText && attached ? "" : (draft?.title[language] ?? "")),
               creation,
-              ...(!revision && image ? { image: image.dataUrl } : {}),
-              ...(revision ? { draft: validateLesson(draft), revision } : {}),
+              ...(!revisionText && attached ? { image: attached.dataUrl } : {}),
+              ...(revisionText
+                ? { draft: validateLesson(draft), revision: revisionText }
+                : {}),
             }
           : {
               lesson: validateLesson(player?.lesson),
@@ -252,69 +228,21 @@ export function Studio({
       );
       return;
     }
-    const token = ++epoch.current,
-      controller = new AbortController();
-    pending.current = controller;
-    markBusy(true);
+    const before = revisionText && draft ? structuredClone(draft) : null;
     setMessage("");
     setFeedback(null);
-    const options = {
-      timeoutMs: (target.timeoutMs ?? 60000) + 65000,
-      signal: controller.signal,
-    };
-    try {
-      if (!session.current) {
-        const created = await post<StudioSession>(
-          "/api/studio/session",
-          { synthetic: true, language, llm: target.id },
+    const result = await run<ComposeReply | Feedback>(
+      target,
+      mode === "guide" ? "guide" : revisionText ? "revise" : "compose",
+      (id, options) =>
+        post<ComposeReply | Feedback>(
+          `/api/studio/${mode}`,
+          { sessionId: id, ...body },
           options,
-        );
-        if (!alive.current || token !== epoch.current) {
-          void post("/api/reset", { sessionId: created.sessionId }).catch(
-            () => {},
-          );
-          return;
-        }
-        session.current = created;
-        setSessionId(created.sessionId);
-      }
-      const reply = await post<ComposeReply | Feedback>(
-        `/api/studio/${mode}`,
-        { sessionId: session.current.sessionId, ...body },
-        options,
-      );
-      if (!alive.current || token !== epoch.current) return;
-      setRemaining(reply.attemptsRemaining);
-      if (mode === "compose") {
-        const composed = reply as ComposeReply;
-        if (composed.status === "ready") {
-          loadLesson(composed.lesson);
-          setMessage(
-            say(
-              language,
-              "Draft ready. Review the model and assumptions before presenting.",
-              "草稿已就绪，演示前请审阅模型与假设。",
-            ) +
-              (composed.message?.[language]
-                ? `\n${composed.message[language]}`
-                : ""),
-          );
-          if (!revision) {
-            imageEpoch.current++;
-            setImage(null);
-          }
-        } else setMessage(composed.message[language]);
-      } else setFeedback(reply as Feedback);
-    } catch (error) {
-      if (alive.current && token === epoch.current) {
-        if (error instanceof ApiError) {
-          if (error.status === 404) {
-            session.current = null;
-            setSessionId(null);
-          }
-          if (error.attemptsRemaining !== undefined)
-            setRemaining(error.attemptsRemaining);
-        }
+        ),
+    );
+    if (!result.ok) {
+      if (!result.stale)
         setMessage(
           say(
             language,
@@ -322,48 +250,30 @@ export function Studio({
             "请求未完成或未通过验证，草稿已保留，请手动重试。",
           ),
         );
-      }
-    } finally {
-      if (alive.current && token === epoch.current) {
-        pending.current = null;
-        markBusy(false);
-      }
+      return;
     }
-  }
-  async function attach(file: File | undefined) {
-    if (!file || busyRef.current || !authenticated) return;
-    const token = ++imageEpoch.current;
-    setImageLoading(true);
-    try {
-      const prepared = await prepareImage(file);
-      if (alive.current && token === imageEpoch.current) {
-        setImage(prepared);
+    if (mode === "compose") {
+      const composed = result.reply as ComposeReply;
+      if (composed.status === "ready" && composed.lesson) {
+        const next = loadLesson(composed.lesson);
+        setRevision(before ? { before, after: next } : null);
         setMessage(
           say(
             language,
-            "Image attached. It will be sent only when you create a lesson.",
-            "图片已附加，仅在创建课程时发送。",
-          ),
+            before
+              ? "Revision ready. Check what changed, then review before presenting."
+              : "Draft ready. Review the model and assumptions before presenting.",
+            before
+              ? "修改已就绪。先查看改动，再审阅后演示。"
+              : "草稿已就绪，演示前请审阅模型与假设。",
+          ) +
+            (composed.message?.[language]
+              ? `\n${composed.message[language]}`
+              : ""),
         );
-      }
-    } catch (error) {
-      if (alive.current && token === imageEpoch.current) {
-        setImage(null);
-        setMessage(
-          say(
-            language,
-            error instanceof Error && error.message === "size"
-              ? "Choose an image under 12 MB that can be reduced to about 1 MB."
-              : "Choose a readable PNG, JPEG, WebP or GIF image.",
-            error instanceof Error && error.message === "size"
-              ? "请选择小于 12 MB、可缩小到约 1 MB 的图片。"
-              : "请选择可读取的 PNG、JPEG、WebP 或 GIF 图片。",
-          ),
-        );
-      }
-    } finally {
-      if (alive.current && token === imageEpoch.current) setImageLoading(false);
-    }
+        if (!revisionText) image.clear();
+      } else setMessage(composed.message[language]);
+    } else setFeedback(result.reply as Feedback);
   }
   async function importLesson(file: File | undefined) {
     if (!file || busyRef.current || !authenticated) return;
@@ -373,6 +283,7 @@ export function Studio({
       const value = JSON.parse(await file.text());
       if (alive.current && token === epoch.current && !busyRef.current) {
         loadLesson(value);
+        setRevision(null);
         setMessage(
           say(
             language,
@@ -433,6 +344,16 @@ export function Studio({
   const canRequest =
     authenticated && Boolean(target?.configured) && remaining > 0;
   const showLesson = Boolean(lessonId) || view === "create";
+  const statusMessage = languageInterrupted
+    ? say(
+        language,
+        "Language changed. The pending result will not be applied; retry explicitly.",
+        "语言已切换，当前请求结果不再应用，请手动重试。",
+      )
+    : message || image.notice;
+  const loadingNote = (
+    <p role="status">{say(language, "Loading…", "正在加载…")}</p>
+  );
   return (
     <div className="studio" hidden={!visible}>
       {draft && authenticated && showLesson && (
@@ -733,7 +654,8 @@ export function Studio({
                       type="file"
                       accept="image/png,image/jpeg,image/webp,image/gif"
                       onChange={(event) => {
-                        void attach(event.target.files?.[0]);
+                        if (!busyRef.current && authenticated)
+                          void image.attach(event.target.files?.[0]);
                         event.target.value = "";
                       }}
                       disabled={busy}
@@ -746,7 +668,7 @@ export function Studio({
                       "可选 · 最大 12 MB",
                     )}
                   </span>
-                  {imageLoading && (
+                  {image.loading && (
                     <p role="status">
                       {say(
                         language,
@@ -755,25 +677,22 @@ export function Studio({
                       )}
                     </p>
                   )}
-                  {image && (
+                  {image.image && (
                     <div className="image-preview">
                       <img
-                        src={image.dataUrl}
+                        src={image.image.dataUrl}
                         alt={say(
                           language,
                           "Attached image preview",
                           "已附加图片预览",
                         )}
                       />
-                      <span>{image.name}</span>
+                      <span>{image.image.name}</span>
                       <button
                         type="button"
                         className="text-button"
                         disabled={busy}
-                        onClick={() => {
-                          imageEpoch.current++;
-                          setImage(null);
-                        }}
+                        onClick={image.clear}
                       >
                         {say(language, "Remove image", "移除图片")}
                       </button>
@@ -783,7 +702,7 @@ export function Studio({
                 <div className="author-submit">
                   <button
                     type="submit"
-                    disabled={busy || imageLoading || !canRequest}
+                    disabled={busy || image.loading || !canRequest}
                   >
                     {say(
                       language,
@@ -818,9 +737,9 @@ export function Studio({
         </section>
       )}
       <div hidden={!showLesson}>
-        {message && (
+        {statusMessage && (
           <p className="studio-message" role="status">
-            {message}
+            {statusMessage}
           </p>
         )}
         {busy && (
@@ -834,23 +753,38 @@ export function Studio({
           </p>
         )}
         {draft && !presenting && (
-          <DraftReview
-            key={revisionKey}
-            draft={draft}
-            language={language}
-            busy={busy}
-            reviewed={reviewed}
-            setReviewed={setReviewed}
-            onChange={(next) => {
-              setDraft(next);
-              setReviewed(false);
-            }}
-            onPresent={present}
-            onExport={exportLesson}
-            onClose={closeLesson}
-            onRevise={(revision) => void request("compose", revision)}
-            canRequest={canRequest}
-          />
+          <Suspense fallback={loadingNote}>
+            {revision ? (
+              <RevisionSummary
+                before={revision.before}
+                after={draft}
+                language={language}
+                metrics={metrics?.mode === "revise" ? metrics : null}
+                onDismiss={() => setRevision(null)}
+              />
+            ) : (
+              metrics?.mode === "compose" && (
+                <RequestSummary metrics={metrics} language={language} />
+              )
+            )}
+            <DraftReview
+              key={revisionKey}
+              draft={draft}
+              language={language}
+              busy={busy}
+              reviewed={reviewed}
+              setReviewed={setReviewed}
+              onChange={(next) => {
+                setDraft(next);
+                setReviewed(false);
+              }}
+              onPresent={present}
+              onExport={exportLesson}
+              onClose={closeLesson}
+              onRevise={(text) => void request("compose", text)}
+              canRequest={canRequest}
+            />
+          </Suspense>
         )}
         {presenting && player && (
           <>
@@ -864,11 +798,11 @@ export function Studio({
               onGuide={() => void request("guide")}
               onClearFeedback={clearFeedback}
               onBack={() => setPresenting(false)}
-              onLibrary={() => {
-                invalidate();
-                closeLesson();
-              }}
+              onLibrary={closeLesson}
             />
+            {feedback && metrics?.mode === "guide" && (
+              <RequestSummary metrics={metrics} language={language} />
+            )}
             {source && (
               <p className="lesson-provenance">
                 {gallerySourceNote(source, language)}
@@ -895,15 +829,17 @@ export function Studio({
           </div>
         )}
         {authenticated && (
-          <ProviderConsole
-            post={post}
-            language={language}
-            enabled={
-              Boolean(providerStatus?.traceEnabled) && visible && showLesson
-            }
-            sessionId={sessionId}
-            busy={busy}
-          />
+          <Suspense fallback={null}>
+            <ProviderConsole
+              post={post}
+              language={language}
+              enabled={
+                Boolean(providerStatus?.traceEnabled) && visible && showLesson
+              }
+              sessionId={sessionId}
+              busy={busy}
+            />
+          </Suspense>
         )}
       </div>
     </div>

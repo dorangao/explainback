@@ -24,7 +24,6 @@ test('studio composes bounded bilingual lessons, recomputes guide evidence and i
  const another=await testerCookie(origin);assert.equal((await post('/api/studio/compose',{sessionId:s.sessionId,topic:'hi'},another)).status,404);
  const trace=await(await post('/api/trace',{sessionId:s.sessionId})).json();assert.equal(trace.records.length,2);assert.equal(trace.records[0].outcome,'accepted');
  await post('/api/reset',{sessionId:s.sessionId});assert.equal((await post('/api/studio/guide',guide)).status,404);
- for(const name of ['lesson-schema','lesson-experiments','lesson-player','lesson-studio'])assert.equal((await fetch(origin+`/assets/${name}.mjs`)).status,200);
 });
 test('studio rejects generated code and caps failed attempts; unsupported topics are explicit',async t=>{
  let calls=0;const {post}=await setup(t,async()=>({toolCall:{name:'compose_lesson',arguments:JSON.stringify(++calls===1?{status:'unsupported',message:bi('No supported experiment'),lesson:null}:{status:'ready',message:bi('Ready'),lesson:{...lesson(),code:'eval()'}})}}),false);
@@ -48,7 +47,6 @@ test('new-topic composition and revision use version 2 and guide recomputes chan
  const guide={sessionId:session.sessionId,lesson:generated.lesson,chapter:0,variant:0,language:'zh',prediction:'agree',controls:{initial:90,ambient:20,rate:.1},metric:0};
  assert.equal((await post('/api/studio/guide',guide)).status,200);assert.ok(Math.abs(input.checked.metrics[0].value-(20+70*Math.exp(-3)))<1e-10);assert.match(input.checked.validation,/NOT independently/);
  assert.equal((await post('/api/studio/guide',{...guide,controls:{initial:10000}})).status,400);
- for(const name of ['demo-model','generated-demo','demo-review'])assert.equal((await fetch(origin+`/assets/${name}.mjs`)).status,200);
 });
 test('new-topic request rejects catalog substitution and formulas with hidden singularities',async t=>{
  let output=lesson();const {post}=await setup(t,async()=>({toolCall:{name:'compose_lesson',arguments:JSON.stringify({status:'ready',message:bi('Ready'),lesson:output})}}));

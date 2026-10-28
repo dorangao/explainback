@@ -36,11 +36,11 @@ export function ProviderConsole({
       mounted.destroy();
       controller.current = null;
     };
-  }, [post]);
+  }, [post, prefix]);
   useEffect(() => {
     controller.current?.set({ enabled: active, sessionId, language });
     if (active && sessionId) void controller.current?.refresh();
-  }, [active, sessionId, language, busy]);
+  }, [active, sessionId, language]);
   useEffect(() => {
     if (!busy || !active || !sessionId) return;
     const id = setInterval(() => void controller.current?.refresh(), 1000);

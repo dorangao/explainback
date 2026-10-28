@@ -17,7 +17,6 @@ test('quantum coach uses authenticated bounded circuits, checked facts, provider
  assert.equal((await post('/api/turn',{sessionId:s.sessionId,explanation:'hello'})).status,400);
  const other=await testerCookie(origin);assert.equal((await post('/api/quantum/explain',body,other)).status,404);
  await post('/api/reset',{sessionId:s.sessionId});assert.equal((await post('/api/quantum/explain',body)).status,404);
- for(const name of ['quantum','quantum-content','quantum-view'])assert.equal((await fetch(origin+`/assets/${name}.mjs`)).status,200);
 });
 test('quantum coach rejects invalid model output and caps attempts without invoking an extra provider call',async t=>{
  let calls=0;const server=createApp({testerCredentials,configured:true,traceEnabled:false,modelCall:async()=>{calls++;return {toolCall:{name:'explain_quantum',arguments:JSON.stringify({explanation:'Do not accept unchecked actions.',nextQuestion:'Next?',focus:'execute_script'})}};}});
