@@ -323,6 +323,28 @@ checkpoint. This keeps the shared ledger linked to actual release evidence
 without a documentation-only release loop. File claim released after committing
 this evidence pointer; no other agent's files were changed.
 
+### 2026-10-28 Pacific — REL-001 Linux CI correction — Codex
+
+The PR's new Linux check surfaced an existing oversized-upload stream issue in
+`test/lesson-http.test.mjs`. The cancelled check was waiting for HTTP completion/fixture cleanup after a
+413. An early throw from Node's default async iterator can destroy its stream;
+the byte-limit path and fixture cleanup were reviewed together. A new chunked
+upload regression exercises an unfinished oversized request; it passed locally
+on both versions, so it is not claimed as a local reproduction of the Linux
+cancellation. `readJSON` now uses
+`iterator({destroyOnReturn:false})`, drains excess bytes without buffering them,
+and returns the same bounded 413 error. The HTTP fixture consumes the final
+413 body and explicitly closes its own connections at teardown, avoiding a
+platform-dependent keep-alive/upload race. Parsed Vercel request bodies keep their
+existing byte limit. No provider call is made for oversized input.
+
+The CI runner is pinned to Ubuntu 24.04; checkout/setup-node v5 use Node 24 for
+the Actions runtime, while application checks still run on Node 22. The v5
+runtime declarations were checked in the official action manifests. The PR must
+pass these checks before merge; its release section remains the final evidence
+pointer. Owned correction scope: server body reader, HTTP regression, workflow
+and this ledger; unrelated files remain excluded.
+
 ### Entry template
 
 ```text

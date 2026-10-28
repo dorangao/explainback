@@ -53,10 +53,15 @@ async function readJSON(req,maxBytes=16_384) {
   const chunks = [];
   let size = 0;
   // Vercel may supply an already parsed body; bare Node supplies the stream.
-  const input=req.body===undefined?req:[Buffer.from(typeof req.body==='string'?req.body:JSON.stringify(req.body))];
+  const streamed=req.body===undefined;
+  // Keep the socket alive long enough to deliver a 413 if streaming stops early.
+  const input=streamed?req.iterator({destroyOnReturn:false}):[Buffer.from(typeof req.body==='string'?req.body:JSON.stringify(req.body))];
   for await (const chunk of input) {
     size += chunk.length;
-    if (size > maxBytes) throw new RequestError(413, 'Request is too large.');
+    if (size > maxBytes) {
+      if(streamed)req.resume();
+      throw new RequestError(413, 'Request is too large.');
+    }
     chunks.push(chunk);
   }
   try {
