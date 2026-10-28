@@ -22,7 +22,7 @@ import { renderPhysicsPanel } from './physics-panel.mjs';
 const $ = id => document.getElementById(id);
 let playbackFrame=null,playbackLast=0;
 let session = null, generation = 0, busy = false, ready = false, catalog = [];
-let authenticated=false,authConfigured=false,authBusy=false,authMessage='',authVersion=0;
+let authenticated=false,authConfigured=false,codesConfigured=false,authBusy=false,authMessage='',authVersion=0,access=null,accessRefresh=null;
 let traceEnabled=false,demoPresetUsed=false,journeyModel=null,providerTargets=[],defaultProviderId=null;
 const selectedTarget=()=>providerTargets.find(t=>t.id===$('llm-model').value);
 let experienceMode='demo';
@@ -273,6 +273,7 @@ async function post(path, body, {timeoutMs:requestedTimeout}={}) {
   const response = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(timeoutMs) });
   const data = await response.json();
   if(response.status===401&&authenticated&&accessVersion===authVersion)loseAccess('TESTER_REQUIRED');
+  if(['/api/turn','/api/studio/compose','/api/studio/guide','/api/quantum/explain'].includes(path))scheduleAccessRefresh();
   if (!response.ok) { const error = new Error(data.error || 'Local request failed.'); error.status=response.status;error.attemptsRemaining = data.attemptsRemaining; throw error; }
   return data;
 }
@@ -591,8 +592,8 @@ $('flight-play').addEventListener('click',()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopPlayback();});
 for(const [id,topic]of [['vehicle-acceleration','acceleration'],['vehicle-flight','flight']])$(id).addEventListener('click',()=>{if(busy)return;if((session?.problem.id||$('topic').value)===topic)return;clear();$('topic').value=topic;localize();controls();});
 const authCopy={
- en:{heading:'Sign in to the lab',kicker:'EARLY ACCESS',description:'The reviewed lessons above open without an account. Sign in with a tester account to create and revise new lessons with Muse.',username:'Username',password:'Password',submit:'Sign in',logout:'Sign out',pending:'Please wait…',connection:'Tester sign-in required',note:'Use synthetic examples. Do not enter real student or private information.',errors:{TESTER_SETUP:'Set EXPLAINBACK_TESTER_USERNAME and EXPLAINBACK_TESTER_PASSWORD (12–512 characters) in .env.local or the server environment, then restart.',TESTER_CREDENTIALS:'Username or password is incorrect.',TESTER_RATE:'Too many login attempts. Try again in one minute.',TESTER_CAPACITY:'Tester session limit reached. Sign out another session or wait for expiry.',TESTER_REQUIRED:'Your session ended. Please sign in again.',NETWORK:'The server could not be reached. Try again.'}},
- zh:{heading:'登录学习实验室',kicker:'早期测试',description:'上方经审阅的课程无需账号即可打开。登录测试账号后，可用 Muse 创建和修改新课程。',username:'用户名',password:'密码',submit:'登录',logout:'退出登录',pending:'请稍候……',connection:'请先登录测试账号',note:'请使用虚构示例，不输入真实学生资料或私人信息。',errors:{TESTER_SETUP:'请在 .env.local 或服务端环境中设置 EXPLAINBACK_TESTER_USERNAME 和 EXPLAINBACK_TESTER_PASSWORD（12–512 个字符），然后重启。',TESTER_CREDENTIALS:'用户名或密码不正确。',TESTER_RATE:'登录尝试过多，请在一分钟后重试。',TESTER_CAPACITY:'测试会话数量已达上限。请退出其他会话或等待会话过期。',TESTER_REQUIRED:'会话已结束，请重新登录。',NETWORK:'无法连接服务器，请重试。'}},
+ en:{heading:'Sign in to the lab',kicker:'EARLY ACCESS',description:'The reviewed lessons above open without an account. Sign in with a tester account to create and revise new lessons with Muse.',username:'Username',password:'Password',submit:'Sign in',logout:'Sign out',pending:'Please wait…',connection:'Tester sign-in required',note:'Use synthetic examples. Do not enter real student or private information.',errors:{TESTER_SETUP:'Set EXPLAINBACK_TESTER_USERNAME and EXPLAINBACK_TESTER_PASSWORD (12–512 characters) in .env.local or the server environment, then restart.',TESTER_CREDENTIALS:'Username or password is incorrect.',TESTER_RATE:'Too many login attempts. Try again in one minute.',TESTER_CAPACITY:'Tester session limit reached. Sign out another session or wait for expiry.',TESTER_REQUIRED:'Your session ended. Please sign in again.',NETWORK:'The server could not be reached. Try again.',ACCESS_CODE:'This access code is not valid or has expired.'},codeHeading:'Have a reviewer access code?',codeLabel:'Access code',codeSubmit:'Open with code',badge:(a,zh)=>`${a.label} preview · ${a.remaining}/${a.quota} live requests left this hour · until ${new Date(a.expiresAt-1).toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'})}`},
+ zh:{heading:'登录学习实验室',kicker:'早期测试',description:'上方经审阅的课程无需账号即可打开。登录测试账号后，可用 Muse 创建和修改新课程。',username:'用户名',password:'密码',submit:'登录',logout:'退出登录',pending:'请稍候……',connection:'请先登录测试账号',note:'请使用虚构示例，不输入真实学生资料或私人信息。',errors:{TESTER_SETUP:'请在 .env.local 或服务端环境中设置 EXPLAINBACK_TESTER_USERNAME 和 EXPLAINBACK_TESTER_PASSWORD（12–512 个字符），然后重启。',TESTER_CREDENTIALS:'用户名或密码不正确。',TESTER_RATE:'登录尝试过多，请在一分钟后重试。',TESTER_CAPACITY:'测试会话数量已达上限。请退出其他会话或等待会话过期。',TESTER_REQUIRED:'会话已结束，请重新登录。',NETWORK:'无法连接服务器，请重试。',ACCESS_CODE:'访问码无效或已过期。'},codeHeading:'有评审访问码？',codeLabel:'访问码',codeSubmit:'使用访问码进入',badge:a=>`${a.label} 预览 · 本小时剩余 ${a.remaining}/${a.quota} 次模型请求 · 有效至 ${new Date(a.expiresAt-1).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric',timeZone:'UTC'})}`},
 };
 function renderAccess(){
  renderArea();
@@ -600,12 +601,23 @@ function renderAccess(){
  for(const [id,key]of [['tester-heading','heading'],['tester-kicker','kicker'],['tester-description','description'],['tester-username-label','username'],['tester-password-label','password'],['tester-note','note']])$(id).textContent=c[key];
  $('tester-submit').textContent=authBusy?c.pending:c.submit;$('tester-logout').textContent=c.logout;
  $('tester-submit').disabled=authBusy||!authConfigured;for(const id of ['tester-username','tester-password'])$(id).disabled=authBusy||!authConfigured;
+ $('tester-form').hidden=!authConfigured&&codesConfigured;$('code-form').hidden=!codesConfigured;
+ $('code-heading').textContent=c.codeHeading;$('access-code-label').textContent=c.codeLabel;$('code-submit').textContent=authBusy?c.pending:c.codeSubmit;$('access-code').disabled=$('code-submit').disabled=authBusy;
+ renderAccessBadge();
  $('tester-login').hidden=authenticated;$('tester-workspace').hidden=false;$('tester-logout').hidden=!authenticated;
  $('tester-logout').disabled=authBusy;$('tester-message').hidden=!authMessage;$('tester-message').textContent=c.errors[authMessage]??'';
  if(!authenticated){$('connection').textContent=c.connection;$('connection').classList.remove('ready');}
 }
+function renderAccessBadge(){
+ const c=authCopy[language()];$('access-badge').hidden=!authenticated||!access;if(authenticated&&access)$('access-badge').textContent=c.badge(access);
+}
+// Live requests change the code's remaining budget; refresh the badge after each one.
+function scheduleAccessRefresh(){
+ if(!access||accessRefresh)return;const version=authVersion;
+ accessRefresh=setTimeout(async()=>{accessRefresh=null;try{const status=await authRequest('/api/status');if(version!==authVersion||!authenticated)return;access=status.access??null;renderAccessBadge();}catch{}},300);
+}
 function loseAccess(code=''){
- authVersion++;authenticated=false;ready=false;traceEnabled=false;providerTargets=[];defaultProviderId=null;catalog=[];authMessage=code;
+ authVersion++;authenticated=false;access=null;ready=false;traceEnabled=false;providerTargets=[];defaultProviderId=null;catalog=[];authMessage=code;
  clear({remote:false});$('tester-password').value='';renderAccess();$('tester-username').focus();
 }
 async function authRequest(path,body){
@@ -615,7 +627,7 @@ async function authRequest(path,body){
 async function loadStatus(version){
  const status=await authRequest('/api/status');if(version!==authVersion)return;
  defaultProviderId=status.defaultModel;providerTargets=status.models??[];$('llm-model').replaceChildren(...providerTargets.map(t=>{const o=new Option(t.label,t.id);o.disabled=!t.configured;return o;}));$('llm-model').value=status.defaultModel;
- ready=Boolean(selectedTarget()?.configured);catalog=status.problems;traceEnabled=status.traceEnabled===true;authenticated=true;
+ ready=Boolean(selectedTarget()?.configured);catalog=status.problems;traceEnabled=status.traceEnabled===true;authenticated=true;access=status.access??null;
  const selected=$('topic').value;$('topic').replaceChildren(...catalog.map(p=>new Option(p.title[language()],p.id)));$('topic').value=catalog.some(p=>p.id===selected)?selected:catalog[0]?.id;
  $('connection').classList.toggle('ready',ready);localize();controls();
 }
@@ -626,6 +638,16 @@ $('tester-form').addEventListener('submit',async event=>{
  catch(error){if(version===authVersion){authenticated=false;authMessage=error.code??'NETWORK';}}
  finally{authBusy=false;renderAccess();}
 });
+// A reviewer code signs in without the password and lands on the Studio starter topic.
+async function loginWithCode(code){
+ if(authBusy||!codesConfigured)return false;
+ authBusy=true;authMessage='';const version=++authVersion;renderAccess();
+ try{await authRequest('/api/login',{code});$('access-code').value='';await loadStatus(version);
+  if(authenticated){activeArea='studio';history.replaceState(null,'','#studio');renderArea();lessonStudio.loadStarter();}return authenticated;}
+ catch(error){if(version===authVersion){authenticated=false;authMessage=error.code??'NETWORK';}return false;}
+ finally{authBusy=false;renderAccess();}
+}
+$('code-form').addEventListener('submit',event=>{event.preventDefault();const code=$('access-code').value.trim();if(code)loginWithCode(code);});
 $('tester-logout').addEventListener('click',async()=>{
  if(authBusy)return;authBusy=true;clear({remote:false});renderAccess();
  try{await authRequest('/api/logout',{});loseAccess();}
@@ -634,8 +656,16 @@ $('tester-logout').addEventListener('click',async()=>{
 });
 localize();controls();
 try{
- const status=await authRequest('/api/auth');authConfigured=status.configured;
- if(status.authenticated)await loadStatus(authVersion);else authMessage=authConfigured?'':'TESTER_SETUP';
+ const status=await authRequest('/api/auth');authConfigured=status.configured;codesConfigured=status.codes===true;
+ if(status.authenticated)await loadStatus(authVersion);else authMessage=authConfigured||codesConfigured?'':'TESTER_SETUP';
 }catch(error){authMessage=error.code??'NETWORK';}
 renderAccess();
-{const deepLink=galleryIdFromHash(location.hash);if(deepLink)lessonStudio.openGallery(deepLink);}
+// #invite:CODE stays in the fragment, so the code never reaches server logs or referrers.
+// Runs on first load and on later fragment changes, since a hash change does not reload the page.
+async function handleHash(){
+ const invite=/^#invite:([A-Za-z0-9-]{8,64})$/.exec(location.hash)?.[1],deepLink=galleryIdFromHash(location.hash);
+ if(invite){history.replaceState(null,'','#studio');if(authenticated){activeArea='studio';renderArea();lessonStudio.loadStarter();}else if(codesConfigured)await loginWithCode(invite);else{authMessage='ACCESS_CODE';renderAccess();}}
+ else if(deepLink){if(!busy&&!quantumBusy&&!studioBusy){activeArea='studio';renderArea();lessonStudio.openGallery(deepLink);}}
+}
+window.addEventListener('hashchange',()=>{handleHash();});
+await handleHash();

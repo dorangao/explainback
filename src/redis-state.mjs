@@ -1,5 +1,6 @@
 import {createHash,randomBytes,randomUUID,timingSafeEqual} from 'node:crypto';
 import {SESSION_TTL,LOCK_TTL,snapshot} from './state.mjs';
+import {findAccessCode,audienceOf,audienceValid} from './access-codes.mjs';
 
 const AUTH_TTL=8*60*60_000,COOKIE='explainback_tester';
 const digest=value=>createHash('sha256').update(value).digest();
@@ -17,7 +18,7 @@ export function createRedisClient({url,token,fetchImpl=globalThis.fetch}={}){
  };
 }
 
-export function createRedisServices({command,namespace='explainback:preview:v1',username,password,now=Date.now}={}){
+export function createRedisServices({command,namespace='explainback:preview:v1',username,password,accessCodes=[],now=Date.now}={}){
  const configured=typeof username==='string'&&username.trim().length>0&&username.length<=80&&typeof password==='string'&&password.length>=12&&password.length<=512;
  const userHash=digest(configured?username:''),passwordHash=digest(configured?password:'');
  // A credential change invalidates old cookies, including across deployments.
@@ -32,28 +33,44 @@ export function createRedisServices({command,namespace='explainback:preview:v1',
   return /^[a-f0-9]{64}$/.test(token??'')?digest(token).toString('hex'):null;
  };
  const auth={
-  configured,expiredCookie:`${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0`,
-  async authenticate(cookie){const id=tokenId(cookie);return id&&await get(authKey(id))?{id}:null;},
+  configured,codesConfigured:accessCodes.length>0,expiredCookie:`${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0`,
+  // The auth value is '1' for the tester login or a JSON audience for an access code.
+  // A removed, rotated or expired code invalidates its cookies on the next request.
+  async authenticate(cookie){
+   const id=tokenId(cookie);const value=id?await get(authKey(id)):null;if(!value)return null;
+   if(value==='1')return {id,audience:null};
+   let audience;try{audience=JSON.parse(value).audience;}catch{return null;}
+   if(!audienceValid(accessCodes,audience,now())){await auth.revoke(cookie);return null;}
+   return {id,audience};
+  },
   async active(id){return Boolean(await get(authKey(id)));},
-  async revoke(cookie){const id=tokenId(cookie);if(id)await run("redis.call('DEL',KEYS[1]);redis.call('ZREM',KEYS[2],ARGV[1]);return 1",[authKey(id),key('logins')],[id]);},
+  async revoke(cookie){const id=tokenId(cookie);if(!id)return;const buckets=['tester',...accessCodes.map(c=>c.label)];await run("redis.call('DEL',KEYS[1]);for i=2,#KEYS do redis.call('ZREM',KEYS[i],ARGV[1]) end;return 1",[authKey(id),...buckets.map(b=>key('logins',b))],[id]);},
   async login(body,cookie){
-   if(!configured)fail(503,'TESTER_SETUP','Configure tester access in the server environment.');
-   const shape=typeof body?.username==='string'&&body.username.length<=80&&typeof body?.password==='string'&&body.password.length<=512;
-   const userMatch=timingSafeEqual(digest(shape?body.username:''),userHash),passwordMatch=timingSafeEqual(digest(shape?body.password:''),passwordHash);
+   let valid,audience=null;
+   if(body?.code!==undefined){
+    const entry=typeof body.code==='string'&&body.code.length<=64?findAccessCode(accessCodes,body.code,now()):null;
+    valid=Boolean(entry);if(entry)audience=audienceOf(entry);
+   }else{
+    if(!configured)fail(503,'TESTER_SETUP','Configure tester access in the server environment.');
+    const shape=typeof body?.username==='string'&&body.username.length<=80&&typeof body?.password==='string'&&body.password.length<=512;
+    const userMatch=timingSafeEqual(digest(shape?body.username:''),userHash),passwordMatch=timingSafeEqual(digest(shape?body.password:''),passwordHash);
+    valid=shape&&userMatch&&passwordMatch;
+   }
    const token=randomBytes(32).toString('hex'),id=digest(token).toString('hex'),previous=tokenId(cookie);
+   const expiresAt=Math.min(now()+AUTH_TTL,audience?.expiresAt??Infinity),ttl=expiresAt-now(),bucket=audience?.label??'tester';
    const result=await run(`
     if tonumber(redis.call('GET',KEYS[1]) or '0')>=5 then return 'rate' end
     if ARGV[1]~='yes' then local n=redis.call('INCR',KEYS[1]);if n==1 then redis.call('PEXPIRE',KEYS[1],60000) end;return 'invalid' end
     redis.call('ZREMRANGEBYSCORE',KEYS[2],'-inf',ARGV[2])
     if redis.call('ZCARD',KEYS[2])>=20 and redis.call('EXISTS',KEYS[3])==0 then return 'capacity' end
     redis.call('DEL',KEYS[1],KEYS[3]);redis.call('ZREM',KEYS[2],ARGV[4])
-    redis.call('SET',KEYS[4],'1','PX',ARGV[5]);redis.call('ZADD',KEYS[2],ARGV[3],ARGV[6]);redis.call('PEXPIRE',KEYS[2],ARGV[5]);return 'ok'
-   `,[key('login-failures'),key('logins'),authKey(previous??'none'),authKey(id)],[shape&&userMatch&&passwordMatch?'yes':'no',now(),now()+AUTH_TTL,previous??'none',AUTH_TTL,id]);
+    redis.call('SET',KEYS[4],ARGV[7],'PX',ARGV[5]);redis.call('ZADD',KEYS[2],ARGV[3],ARGV[6]);redis.call('PEXPIRE',KEYS[2],ARGV[5]);return 'ok'
+   `,[key('login-failures'),key('logins',bucket),authKey(previous??'none'),authKey(id)],[valid?'yes':'no',now(),expiresAt,previous??'none',ttl,id,audience?JSON.stringify({audience}):'1']);
    if(result==='rate')fail(429,'TESTER_RATE','Too many login attempts. Try again in one minute.');
-   if(result==='invalid')fail(401,'TESTER_CREDENTIALS','Username or password is incorrect.');
+   if(result==='invalid'){if(body?.code!==undefined)fail(401,'ACCESS_CODE','This access code is not valid or has expired.');fail(401,'TESTER_CREDENTIALS','Username or password is incorrect.');}
    if(result==='capacity')fail(429,'TESTER_CAPACITY','Tester session limit reached. Sign out another session or wait for expiry.');
    if(result!=='ok')throw new Error('Could not create tester session.');
-   return {id,cookie:`${COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${AUTH_TTL/1000}`};
+   return {id,audience,cookie:`${COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${Math.floor(ttl/1000)}`};
   },
  };
  const sessionKey=id=>key('session',id),lockKey=id=>key('lock',id),traceKey=id=>key('trace',id);
@@ -79,7 +96,8 @@ export function createRedisServices({command,namespace='explainback:preview:v1',
    local ttl=redis.call('PTTL',KEYS[2]);if ttl<=0 then return 0 end
    redis.call('SET',KEYS[3],ARGV[2],'PX',ttl);return 1
   `,[lockKey(id),sessionKey(id),traceKey(id)],[token,JSON.stringify(rows)]);},
-  async consumeTurn(){return await run("local n=redis.call('INCR',KEYS[1]);if n==1 then redis.call('PEXPIRE',KEYS[1],3600000) end;return n",[key('turns')])<=60;},
+  async consumeTurn(bucket='global',limit=60){return await run("local n=redis.call('INCR',KEYS[1]);if n==1 then redis.call('PEXPIRE',KEYS[1],3600000) end;return n",[key('turns',bucket)])<=limit;},
+  async remainingTurns(bucket='global',limit=60){return Math.max(0,limit-Number(await get(key('turns',bucket))??0));},
  };
  return {state,auth};
 }

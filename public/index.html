@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="/assets/style.css"><script type="module" src="/assets/app.mjs"></script>
 </head>
 <body>
-  <header class="topbar"><a class="wordmark" href="/">ExplainBack<span>讲给我听</span></a><span id="connection" class="connection" role="status">Checking model configuration…</span><button id="tester-logout" class="example" type="button" hidden>Sign out</button></header>
+  <header class="topbar"><a class="wordmark" href="/">ExplainBack<span>讲给我听</span></a><span id="connection" class="connection" role="status">Checking model configuration…</span><span id="access-badge" class="access-badge" role="status" hidden></span><button id="tester-logout" class="example" type="button" hidden>Sign out</button></header>
   <main>
     <div class="intro"><div><p class="eyebrow" id="eyebrow">LEARNING LAB · TESTER PREVIEW</p><h1 id="headline">Make your reasoning visible.</h1><p id="subtitle">Explain in your own words. Find one gap. Try the idea somewhere new.</p></div><label class="language-label">Language / 语言<select id="language"><option value="en">English</option><option value="zh">中文</option></select></label></div>
     <div id="tester-workspace" hidden>
@@ -90,6 +90,7 @@
       <form id="tester-form"><label for="tester-username" id="tester-username-label">Username</label><input id="tester-username" name="username" autocomplete="username" maxlength="80" required>
       <label for="tester-password" id="tester-password-label">Password</label><input id="tester-password" name="password" type="password" autocomplete="current-password" maxlength="512" required>
       <button id="tester-submit" type="submit" disabled>Sign in</button></form>
+      <form id="code-form" class="code-form" hidden><p id="code-heading" class="code-heading">Have a reviewer access code?</p><label for="access-code" id="access-code-label">Access code</label><div class="code-row"><input id="access-code" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="64" required><button id="code-submit" type="submit" class="example">Open with code</button></div></form>
       <p id="tester-message" class="error" role="alert" hidden></p><p id="tester-note" class="fine">Use synthetic examples. Do not enter real student or private information.</p>
     </section>
   </main>

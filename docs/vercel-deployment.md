@@ -45,6 +45,7 @@ server variables privately using the Vercel dashboard or stdin to `vercel env ad
 - `MODEL_API_KEY`
 - `EXPLAINBACK_TESTER_USERNAME`
 - `EXPLAINBACK_TESTER_PASSWORD` (12–512 characters)
+- `EXPLAINBACK_ACCESS_CODES` (optional reviewer codes, `label:CODE:YYYY-MM-DD:quota`, comma-separated; each has its own hourly provider budget and expiry, see `.env.example`)
 - `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` (the integration's
   `KV_REST_API_URL` / `KV_REST_API_TOKEN` names are also supported)
 - `EXPLAINBACK_TRACE=1` for the guided demo and provider console
