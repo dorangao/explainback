@@ -1190,6 +1190,47 @@ body {
   padding-left: 20px;
   margin: 20px 0;
 }
+.tryout-section {
+  border-top: 1px solid var(--line);
+  padding: 20px 0 8px;
+}
+.tryout-section > .fine {
+  margin: 8px 0 12px;
+}
+.tryout-report {
+  margin-top: 16px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.tryout-report h3 {
+  font-size: 1rem;
+  margin: 12px 0 6px;
+}
+.tryout-report dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 14px;
+  margin: 0;
+  font-size: 0.93rem;
+}
+.tryout-report dt {
+  font-weight: 600;
+}
+.tryout-report dd {
+  margin: 0;
+}
+.tryout-report ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.tryout-report .verdict {
+  margin-left: 6px;
+}
+.tryout-report .actions {
+  margin-top: 12px;
+}
 .explain-back {
   margin-top: 24px;
   padding: 16px 18px;

@@ -4,33 +4,7 @@ import type { Language, Lesson } from "../lib/types";
 import { say } from "../lib/types";
 import { lessonChanges } from "../lib/lesson-diff";
 import type { RequestMetrics } from "../hooks/useProviderSession";
-
-export function RequestSummary({
-  metrics,
-  language,
-}: {
-  metrics: RequestMetrics | null;
-  language: Language;
-}) {
-  if (!metrics) return null;
-  const seconds = (metrics.elapsedMs / 1000).toFixed(1);
-  const verb = {
-    compose: t(language, "RevisionSummary.draftedThisLesson"),
-    revise: t(language, "RevisionSummary.revisedThisLesson"),
-    guide: t(language, "RevisionSummary.explainedThisResult"),
-  }[metrics.mode];
-  const tokens =
-    metrics.usage && (metrics.usage.input ?? metrics.usage.output) !== null
-      ? ` · ${metrics.usage.input ?? "—"} ${t(language, "RevisionSummary.tokensIn")} / ${metrics.usage.output ?? "—"} ${t(language, "RevisionSummary.out")}`
-      : "";
-  return (
-    <p className="request-summary" role="status">
-      <strong>{metrics.model}</strong> {verb} · {seconds} s · 1{" "}
-      {t(language, "RevisionSummary.request")}
-      {tokens}
-    </p>
-  );
-}
+import { RequestSummary } from "./RequestSummary";
 
 // Shows what an explicit revision changed, field by field, so the model's
 // contribution is visible and reviewable. Pure comparison; no judgement of correctness.

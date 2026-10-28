@@ -1,6 +1,8 @@
 import { useState, useId } from "react";
 import { t } from "../lib/messages";
-import type { Lesson, Language, Demo } from "../lib/types";
+import type { Lesson, Language, Demo, TryoutReply } from "../lib/types";
+import type { RequestMetrics } from "../hooks/useProviderSession";
+import { RequestSummary } from "./RequestSummary";
 import { say } from "../lib/types";
 import {
   validateLesson,
@@ -112,6 +114,106 @@ function Definition({
     </details>
   );
 }
+// What the test learner reported, chapter by chapter. Answers were checked by code on the
+// server; the confusions and suggestions are the model's opinion for the author to weigh.
+function TryoutReport({
+  tryout,
+  language,
+  metrics,
+  onUse,
+}: {
+  tryout: TryoutReply;
+  language: Language;
+  metrics: RequestMetrics | null;
+  onUse: (text: string) => void;
+}) {
+  const suggestions = tryout.chapters.flatMap((c) => c.suggestions);
+  const prediction = {
+    agree: say(language, "Agree", "同意"),
+    disagree: say(language, "Disagree", "不同意"),
+    unsure: say(language, "Not sure", "不确定"),
+  };
+  const items = (list: string[]) =>
+    list.length === 0 ? (
+      t(language, "DraftReview.noneReported")
+    ) : (
+      <ul>
+        {list.map((item, i) => (
+          <li key={i}>{item}</li>
+        ))}
+      </ul>
+    );
+  return (
+    <div className="tryout-report" role="status">
+      <p>
+        <strong>{t(language, "DraftReview.overall")}:</strong> {tryout.overall}{" "}
+        <span
+          className="verdict"
+          data-verdict={
+            tryout.rating >= 4
+              ? "supported"
+              : tryout.rating >= 3
+                ? "partly"
+                : "unsupported"
+          }
+        >
+          {tryout.rating}/5 {t(language, "DraftReview.clarityRating")}
+        </span>
+      </p>
+      {tryout.chapters.map((c, i) => (
+        <div key={i}>
+          <h3>
+            {say(language, "Chapter", "章节")} {i + 1}
+          </h3>
+          <dl>
+            <dt>{t(language, "DraftReview.predicted")}</dt>
+            <dd>
+              {prediction[c.prediction]} · {c.reason}
+            </dd>
+            <dt>{t(language, "DraftReview.explainedBack")}</dt>
+            <dd>{c.explanation}</dd>
+            <dt>{t(language, "DraftReview.transferAnswer")}</dt>
+            <dd>
+              {c.transfer.type === "choice"
+                ? (c.transfer.choice ?? c.transfer.given)
+                : `${c.transfer.given} ${c.transfer.unit ?? ""}`.trim()}{" "}
+              <span
+                className="verdict"
+                data-verdict={c.transfer.correct ? "supported" : "unsupported"}
+              >
+                {t(
+                  language,
+                  c.transfer.correct
+                    ? "DraftReview.correct"
+                    : "DraftReview.incorrect",
+                )}
+              </span>
+            </dd>
+            <dt>{t(language, "DraftReview.confusions")}</dt>
+            <dd>{items(c.confusions)}</dd>
+            <dt>{t(language, "DraftReview.suggestions")}</dt>
+            <dd>{items(c.suggestions)}</dd>
+          </dl>
+        </div>
+      ))}
+      <RequestSummary
+        metrics={metrics?.mode === "tryout" ? metrics : null}
+        language={language}
+      />
+      {suggestions.length > 0 && (
+        <div className="actions">
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => onUse(suggestions.join(" ").slice(0, 600))}
+          >
+            {t(language, "DraftReview.useTheseSuggestionsIn")}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 export function DraftReview({
   draft,
   language,
@@ -124,6 +226,10 @@ export function DraftReview({
   onClose,
   onRevise,
   canRequest,
+  tryout,
+  onTryout,
+  testerLabel,
+  metrics,
 }: {
   draft: Lesson;
   language: Language;
@@ -136,6 +242,10 @@ export function DraftReview({
   onClose: () => void;
   onRevise: (value: string) => void;
   canRequest: boolean;
+  tryout: TryoutReply | null;
+  onTryout: () => void;
+  testerLabel: string | null;
+  metrics: RequestMetrics | null;
 }) {
   const formId = useId();
   const [pending, setPending] = useState<Record<number, string>>({}),
@@ -325,6 +435,38 @@ export function DraftReview({
         <p className="error" role="alert">
           {error}
         </p>
+      )}
+      {canRequest && (
+        <section
+          className="tryout-section"
+          aria-labelledby={`${formId}-tryout`}
+        >
+          <p className="eyebrow" id={`${formId}-tryout`}>
+            {t(language, "DraftReview.testLearnerReport")}
+          </p>
+          <p className="fine">
+            {t(language, "DraftReview.testLearnerIntro")}
+            {testerLabel ? ` · ${testerLabel}` : ""}
+          </p>
+          <button
+            type="button"
+            className="secondary"
+            disabled={busy || hasPending}
+            onClick={onTryout}
+          >
+            {busy
+              ? say(language, "Muse is working…", "Muse 正在处理…")
+              : t(language, "DraftReview.letTheTestLearnerTry")}
+          </button>
+          {tryout && (
+            <TryoutReport
+              tryout={tryout}
+              language={language}
+              metrics={metrics}
+              onUse={setRevision}
+            />
+          )}
+        </section>
       )}
       {canRequest && (
         <section className="revision-section">

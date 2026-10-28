@@ -29,6 +29,7 @@ const status: Status = {
     },
   ],
   defaultModel: "meta:test",
+  roles: { creator: "meta:test", tester: "meta:test" },
   traceEnabled: false,
   access: null,
   problems: [],
@@ -353,5 +354,107 @@ describe("Explain it back", () => {
       screen.queryByRole("button", { name: /Check my explanation with Muse/ }),
     ).toBeNull();
     expect(screen.getByText(/needs creation access/)).toBeTruthy();
+  });
+});
+
+describe("Creator and test learner roles", () => {
+  it("starts on the creator model the server names and labels the test learner", async () => {
+    const wonder = {
+      id: "meta:wonder",
+      label: "Meta · wonder",
+      provider: "meta",
+      model: "wonder",
+      configured: true,
+      timeoutMs: 100,
+    };
+    mount({
+      authenticated: true,
+      view: "create",
+      status: {
+        ...status,
+        models: [...status.models, wonder],
+        roles: { creator: "meta:wonder", tester: "meta:test" },
+      },
+    });
+    expect(
+      (screen.getByLabelText(/Creator model/) as HTMLSelectElement).value,
+    ).toBe("meta:wonder");
+  });
+  it("lets the test learner try a draft, shows checked answers and feeds suggestions into a revision", async () => {
+    const bodies: Record<string, unknown>[] = [];
+    const post: Post = async (path, body) => {
+      if (path === "/api/studio/session")
+        return { sessionId: "s1", attemptsRemaining: 8 } as never;
+      if (path === "/api/studio/compose")
+        return {
+          status: "ready",
+          lesson: coolingLesson(),
+          message: { en: "", zh: "" },
+          attemptsRemaining: 7,
+          model: "test",
+          elapsedMs: 900,
+          usage: null,
+        } as never;
+      if (path === "/api/studio/tryout") {
+        bodies.push(body as Record<string, unknown>);
+        return {
+          chapters: [
+            {
+              prediction: "unsure",
+              reason: "Hot drinks cool, but I am not sure how fast.",
+              explanation:
+                "The gap to room temperature shrinks, so cooling slows.",
+              transfer: {
+                given: "41.2",
+                correct: false,
+                type: "number",
+                unit: "°C",
+              },
+              confusions: ["The rate unit 1/min is unexplained."],
+              suggestions: ["Explain what the rate means in plain words."],
+            },
+          ],
+          overall: "Clear framing; the rate needs one sentence.",
+          rating: 4,
+          llm: status.models[0],
+          attemptsRemaining: 6,
+          model: "test",
+          elapsedMs: 1200,
+          usage: { input: 900, output: 200 },
+        } as never;
+      }
+      return { records: [] } as never;
+    };
+    mount({ authenticated: true, status, view: "create" }, post);
+    fireEvent.change(screen.getByLabelText(/What would you like to explore/), {
+      target: { value: "Cooling" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Create a lesson/ }));
+    await screen.findByText(/Draft ready/);
+    expect(screen.getByText(/Test learner: Test/)).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole("button", { name: /Let the test learner try/ }),
+    );
+    await screen.findByText(/Clear framing; the rate needs one sentence/);
+    expect(bodies).toHaveLength(1);
+    expect(bodies[0].language).toBe("en");
+    expect((bodies[0].lesson as { version: number }).version).toBe(2);
+    const report = screen.getByText(/Clear framing/).closest(".tryout-report")!;
+    expect(report.textContent).toMatch(/4\/5 clarity/);
+    expect(report.textContent).toMatch(/41\.2 °C\s*incorrect/);
+    expect(report.textContent).toMatch(/Not sure · Hot drinks cool/);
+    expect(report.textContent).toMatch(/The rate unit 1\/min is unexplained/);
+    expect(report.textContent).toMatch(
+      /test tried this lesson as a test learner · 1\.2 s · 1 request · 900 tokens in \/ 200 out/,
+    );
+    fireEvent.click(
+      within(report as HTMLElement).getByRole("button", {
+        name: /Use these suggestions in a revision/,
+      }),
+    );
+    expect(
+      (screen.getByLabelText(/Ask Muse to revise/i) as HTMLTextAreaElement)
+        .value,
+    ).toBe("Explain what the rate means in plain words.");
   });
 });

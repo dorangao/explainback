@@ -36,6 +36,33 @@ request and response bodies.
 
 ![What Muse changed panel](screenshots/revision-summary.jpg)
 
+## Creator and test learner roles (October 28)
+
+`/api/status` now reports `roles`: the **creator** (the configured
+`muse-wonder-1.0`, else the default model) and the **tester** (the configured
+`muse-spark-1.3`, else the default). The Studio starts on the creator for
+drafting and revising, and the model selector is labelled "Creator model"; the
+test learner is shown beside it and cannot be changed in the UI.
+
+**Let the test learner try this lesson** (Draft review, below the definition)
+posts the validated draft to `/api/studio/tryout`. The server always runs that
+call on the tester role, whatever the session pinned for creation, and gives the
+model only what a learner would see before the explanation: framing, claim,
+assumptions, controls, observed values at three points (or the process stages)
+and the transfer question, never the answer, hint or authored explanation
+(`src/lesson-tester.mjs`, `learnerView`). The reply is one structured
+`try_lesson` call: per chapter a prediction with a reason, an explanation in the
+learner's own words, a transfer answer, up to three confusions and up to three
+suggestions; then an overall note and a 1–5 clarity rating. The server checks
+each transfer answer by code (numeric within the demo's tolerance, choices by
+index) and rejects malformed reports; the opinions pass through unjudged.
+
+The report shows the checked answers with correct/incorrect marks, the
+confusions and suggestions, and the usual one-line request summary. **Use these
+suggestions in a revision** copies the suggestions into the revision box so the
+creator can act on them. A tryout spends one request from the session budget and
+one from the reviewer quota, like any other call.
+
 ## Explain it back (October 28)
 
 The Explain stage now asks the learner to write, before reading the reviewed

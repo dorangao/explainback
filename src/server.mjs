@@ -1,5 +1,7 @@
 import {quantumCoachRequest,readQuantumCoach} from './quantum-coach.mjs';
 import {lessonAuthorRequest,readLessonAuthor} from './lesson-author.mjs';
+import {learnerTryoutRequest,readLearnerTryout} from './lesson-tester.mjs';
+import {validateLesson} from '../public/lesson-schema.mjs';
 import {suctionScenario,suctionTitle} from '../public/suction.mjs';
 import {flightScenario,flightTitle} from '../public/flight.mjs';
 import {createTesterAuth,expiredTesterCookie} from './tester-auth.mjs';
@@ -71,6 +73,10 @@ export function createHandler({
   const targets=router.list().map(t=>({...t,...(configured!==undefined&&t.id===router.defaultId?{configured}:{})}));
   const selected=id=>{const t=targets.find(t=>t.id===(id??router.defaultId));if(!t)throw new RequestError(400,'Choose an allowed provider/model.');return {...t};};
   const defaultTarget=selected();
+  // Roles: the stronger Wonder model drafts and revises; Spark plays the first-time learner
+  // who tries a draft and reports back. Each falls back to the default target when absent.
+  const roleTarget=prefix=>targets.find(t=>t.configured&&t.provider==='meta'&&t.model.startsWith(prefix))??defaultTarget;
+  const roles={creator:roleTarget('muse-wonder').id,tester:roleTarget('muse-spark').id};
   const sessionView=s=>({...view(s),llm:s.llm});
   return async (req, res) => {
     let lockedId,lock;
@@ -95,11 +101,11 @@ export function createHandler({
       const quotaExceeded=()=>new RequestError(429,tester?.audience?'This access code’s hourly request budget is used up. Reviewed lessons still open without live requests.':'API request limit reached. No request was sent.');
       if (req.method === 'GET' && path === '/api/status') {
         const access=tester.audience?{...publicAudience(tester.audience),remaining:await state.remainingTurns(bucket,limit)}:null;
-        json(200, { configured:defaultTarget.configured, mode: 'live', access, model:defaultTarget.model, models:targets,defaultModel:defaultTarget.id, traceEnabled, audience: 'tester-poc', problems: [...Object.values(problems).map(p => ({ id: p.id, title: p.title })),{id:'acceleration',title:motionTitle},{id:'flight',title:flightTitle},{id:'suction',title:suctionTitle}] }); return;
+        json(200, { configured:defaultTarget.configured, mode: 'live', access, model:defaultTarget.model, models:targets,defaultModel:defaultTarget.id,roles, traceEnabled, audience: 'tester-poc', problems: [...Object.values(problems).map(p => ({ id: p.id, title: p.title })),{id:'acceleration',title:motionTitle},{id:'flight',title:flightTitle},{id:'suction',title:suctionTitle}] }); return;
       }
-      if (req.method !== 'POST' || !['/api/studio/session','/api/studio/compose','/api/studio/guide','/api/quantum/session','/api/quantum/explain','/api/session', '/api/turn', '/api/reset', '/api/claim', '/api/replay',...(traceEnabled?['/api/trace']:[])].includes(path)) { json(404, { error: 'Not found.' }); return; }
+      if (req.method !== 'POST' || !['/api/studio/session','/api/studio/compose','/api/studio/guide','/api/studio/tryout','/api/quantum/session','/api/quantum/explain','/api/session', '/api/turn', '/api/reset', '/api/claim', '/api/replay',...(traceEnabled?['/api/trace']:[])].includes(path)) { json(404, { error: 'Not found.' }); return; }
       if (req.headers.origin !== origin) throw new RequestError(403, 'This action must come from this app.');
-      const body = await readJSON(req,path==='/api/studio/compose'?1_400_000:path==='/api/studio/guide'?48_000:16_384);
+      const body = await readJSON(req,path==='/api/studio/compose'?1_400_000:['/api/studio/guide','/api/studio/tryout'].includes(path)?48_000:16_384);
       if(!await access.active(tester.id)){json(401,{error:'Sign in to tester access.',code:'TESTER_REQUIRED'});return;}
       if(path==='/api/quantum/session'||path==='/api/studio/session'){
         if(body.synthetic!==true||!['en','zh'].includes(body.language))throw new RequestError(400,'Choose a language and synthetic quantum demo.');
@@ -142,22 +148,25 @@ export function createHandler({
         if(body.clear)await state.writeTrace(body.sessionId,[],lock);json(200,{records:await state.readTrace(body.sessionId)});return;
       }
       if(s.workflow==='lesson-studio'){
-        const mode=path==='/api/studio/compose'?'compose':path==='/api/studio/guide'?'guide':null;
+        const mode=path==='/api/studio/compose'?'compose':path==='/api/studio/guide'?'guide':path==='/api/studio/tryout'?'tryout':null;
         if(!mode)throw new RequestError(400,'Use this session for Lesson Studio only.');
-        let args;try{args=lessonAuthorRequest(body,mode);}catch{throw new RequestError(400,'Use a short topic or a valid lesson and experiment.');}
+        // The tryout always runs on the tester role, whatever model the session pinned for creation.
+        const llm=mode==='tryout'?selected(roles.tester):s.llm;
+        if(mode==='tryout'&&!llm.configured)throw new RequestError(503,'The test learner model is not configured.');
+        let args;try{args=mode==='tryout'?learnerTryoutRequest(body):lessonAuthorRequest(body,mode);}catch{throw new RequestError(400,'Use a short topic or a valid lesson and experiment.');}
         if(args.images&&s.llm.provider!=='meta')throw new RequestError(400,'Image input needs a Meta model. Switch the model or remove the image.');
         if(s.attempts>=8||!await state.consumeTurn(bucket,limit)){const failure=quotaExceeded();failure.attemptsRemaining=8-s.attempts;throw failure;}
         s.attempts++;await save();
         const trace=traceEnabled?createTrace(redacted,{initial:await state.readTrace(body.sessionId),onChange:rows=>state.writeTrace(body.sessionId,rows,lock)}):null;
-        const call=trace?.start({provider:s.llm.provider,model:s.llm.model,input:args.input,instructions:args.instructions});
+        const call=trace?.start({provider:llm.provider,model:llm.model,input:args.input,instructions:args.instructions});
         try{
           await trace?.flush();const options={...args,...(call?{onTrace:call.event}:{})};
-          const startedAt=performance.now(),raw=await(modelCall?modelCall(options):router.call(s.llm.id,options)),result=readLessonAuthor(raw,mode,body.creation,mode==='guide'&&body.explanation!==undefined);
-          const metrics={model:raw.model??s.llm.model,elapsedMs:Math.round(performance.now()-startedAt),usage:raw.usage?{input:raw.usage.input_tokens??null,output:raw.usage.output_tokens??null}:null};
+          const startedAt=performance.now(),raw=await(modelCall?modelCall(options,llm.id):router.call(llm.id,options)),result=mode==='tryout'?readLearnerTryout(raw,validateLesson(body.lesson),body.language):readLessonAuthor(raw,mode,body.creation,mode==='guide'&&body.explanation!==undefined);
+          const metrics={model:raw.model??llm.model,elapsedMs:Math.round(performance.now()-startedAt),usage:raw.usage?{input:raw.usage.input_tokens??null,output:raw.usage.output_tokens??null}:null};
           if(!await access.active(tester.id)){call?.finish('discarded');await state.remove(body.sessionId);throw new RequestError(401,'Sign in to tester access.');}
           if(!await state.get(body.sessionId))throw new RequestError(409,'Session was reset; response discarded.');
           call?.finish('accepted');try{await trace?.flush();}catch{}
-          await save(trace?.read());json(200,{...result,...metrics,llm:s.llm,attemptsRemaining:8-s.attempts});return;
+          await save(trace?.read());json(200,{...result,...metrics,llm,attemptsRemaining:8-s.attempts});return;
         }catch(error){
           call?.finish(error instanceof RequestError?'discarded':'failed or rejected');
           if(error instanceof RequestError)throw error;
