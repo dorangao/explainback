@@ -13,7 +13,7 @@ export function mountProviderConsole(root,post,{prefix='trace'}={}){
     const detail=document.createElement('details'),title=document.createElement('summary');
     detail.dataset.sequence=String(row.sequence);detail.open=openRows.has(String(row.sequence))||(followLatest&&row===data.records.at(-1));
     const outcomes=zh?{pending:'等待中',accepted:'已接受',discarded:'已丢弃','failed or rejected':'失败或未通过验证'}:{};
-    title.textContent=`#${row.sequence} · ${row.provider??"model"} / ${row.model??""} · ${row.startedAt} · ${row.durationMs} ms · HTTP ${row.httpStatus??'—'} · ${outcomes[row.outcome]??row.outcome}`;detail.append(title);
+    title.textContent=`#${row.sequence} · ${row.provider??"model"} / ${row.model??""} · ${row.startedAt} · ${row.durationMs} ms · HTTP ${row.httpStatus??'—'} · ${outcomes[row.outcome]??row.outcome}${row.reason?` · ${row.reason}`:''}`;detail.append(title);
     for(const[label,value]of [[row.requestSent?(zh?'发送给模型的请求（已过滤）':'Request sent to provider (filtered)'):(zh?'准备的上下文（尚未发送）':'Prepared context (not sent)'),row.request],[zh?'模型响应（已过滤）':'Provider response (filtered)',row.response??{error:row.error??(zh?'尚无响应':'No response yet')}],...(row.lifecycle?.length?[[zh?'模型切换事件':'Model switch events',row.lifecycle]]:[])] ){
      const h=document.createElement('h4'),pre=document.createElement('pre');h.textContent=label;pre.textContent=JSON.stringify(value,null,2);detail.append(h,pre);
     }return detail;

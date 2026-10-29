@@ -26,7 +26,7 @@ export function createTrace(secret='',{initial=[],onChange}={}) {
      if(event.type==='error'){row.httpStatus=event.status??null;row.error=clean(event.message);}
      changed();
     },
-    finish(outcome){row.outcome=outcome;row.durationMs=Date.now()-start;changed();},
+    finish(outcome,reason){row.outcome=outcome;row.durationMs=Date.now()-start;if(typeof reason==='string'&&reason)row.reason=clean(reason);changed();},
    };
   },
   read:()=>structuredClone(rows),clear:()=>{rows=[];changed();},

@@ -10,6 +10,7 @@ import {
 } from "@testing-library/react";
 import { Studio } from "./Studio";
 import type { Post, Status } from "../lib/types";
+import { ApiError } from "../lib/api";
 import {
   coolingLesson,
   processLesson,
@@ -527,5 +528,30 @@ describe("Lesson show", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: /Watch the show/ }));
     expect(await screen.findByText("Spoken cover.")).toBeTruthy();
+  });
+});
+
+describe("Rejection reason", () => {
+  it("shows the server's reason under the generic failure line", async () => {
+    const post: Post = async (path) => {
+      if (path === "/api/studio/session")
+        return { sessionId: "s1", attemptsRemaining: 8 } as never;
+      if (path === "/api/studio/compose")
+        throw new ApiError(
+          "Provider lesson could not be completed or validated. Retry explicitly.",
+          502,
+          undefined,
+          7,
+          "Use 3–6 process stages.",
+        );
+      return { records: [] } as never;
+    };
+    mount({ authenticated: true, status, view: "create" }, post);
+    fireEvent.change(screen.getByLabelText(/What would you like to explore/), {
+      target: { value: "Differentiation rules" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Create a lesson/ }));
+    const message = await screen.findByText(/could not be completed/);
+    expect(message.textContent).toMatch(/Reason: Use 3–6 process stages\./);
   });
 });

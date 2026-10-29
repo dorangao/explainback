@@ -554,6 +554,7 @@ export const messages = {
     en: "Request stopped here. Your current draft is preserved.",
     zh: "已停止应用请求结果，当前草稿已保留。",
   },
+  "Studio.reason": { en: "Reason", zh: "原因" },
   "Studio.requestsLeftInThisProvider": {
     en: "requests left in this provider session",
     zh: "次请求剩余 / 当前模型会话",

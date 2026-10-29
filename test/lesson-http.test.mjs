@@ -143,3 +143,22 @@ test('a show runs the script on the creator session model and adds a cover from 
  const trace=await(await post('/api/trace',{sessionId:s.sessionId})).json();
  assert.ok(!JSON.stringify(trace).includes('QUJD'));assert.ok(trace.records.some(r=>r.model==='muse-image-1.0'));
 });
+test('a rejected draft reports the validator reason in the 502 and the trace, with secrets removed',async t=>{
+ let title='x'.repeat(81);
+ const {post}=await setup(t,async args=>{
+  const name=args.tools[0].name;
+  if(name==='compose_lesson')return {toolCall:{name,arguments:JSON.stringify({status:'ready',message:bi('Ready'),lesson:{...lesson(),title:bi(title)}})}};
+  throw new Error(`Meta API returned HTTP 429 for key ${testerCredentials.password}. Check credits.`);
+ });
+ const s=await(await post('/api/studio/session',{synthetic:true,language:'en'})).json();
+ const rejected=await post('/api/studio/compose',{sessionId:s.sessionId,topic:'Car acceleration'});
+ assert.equal(rejected.status,502);const body=await rejected.json();
+ assert.match(body.error,/could not be completed or validated/);assert.equal(body.reason,'title needs both languages, each 1–80 characters.');assert.equal(body.attemptsRemaining,7);
+ title='Motion';
+ const result=await(await post('/api/studio/compose',{sessionId:s.sessionId,topic:'Car acceleration'})).json();
+ const guide=await post('/api/studio/guide',{sessionId:s.sessionId,lesson:result.lesson,chapter:0,variant:0,prediction:'agree',language:'en'});
+ assert.equal(guide.status,502);const g=await guide.json();assert.equal(g.reason,undefined);assert.ok(!JSON.stringify(g).includes('429'));
+ const trace=await(await post('/api/trace',{sessionId:s.sessionId})).json();
+ assert.equal(trace.records[0].outcome,'failed or rejected');assert.equal(trace.records[0].reason,'title needs both languages, each 1–80 characters.');
+ assert.equal(trace.records[1].reason,undefined);assert.equal(trace.records[2].reason,undefined);assert.equal(trace.records[2].outcome,'failed or rejected');assert.ok(!JSON.stringify(trace).includes(testerCredentials.password));
+});

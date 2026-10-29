@@ -47,6 +47,7 @@ current index; dated entries and linked evidence retain the history.
 | EXPLAIN-001 | Claude | Merged as `88d082c`; deployed to production | Base `118cd69`, branch `feat/explain-back`; `src/lesson-author.mjs` (graded guide contract), `src/server.mjs`, `frontend/components/{LessonPlayer,Studio}.tsx`, `frontend/lib/{types,messages}.ts`, styles, tests, README and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
 | ROLES-001 | Claude | Merged as `bc9f1d2`; deployed to production | Base `00dc995`, branch `feat/creator-tester-roles`; `src/lesson-tester.mjs` (new), `src/server.mjs` (roles, `/api/studio/tryout`), `frontend/components/{Studio,DraftReview,RequestSummary,RevisionSummary}.tsx`, types, messages, styles, tests, README and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
 | SHOW-001 | Claude | Merged as `b8ba6ce`; deployed to production | Base `5f80635`, branch `feat/lesson-show`; `src/lesson-show.mjs` (new), `src/meta.mjs` (Muse Image), `src/server.mjs` (`/api/studio/show`), `scripts/make-gallery-shows.mjs`, `public/gallery-shows.mjs` + six covers, `src/static.mjs`, `frontend/components/ShowPlayer.tsx` (new), App routing `#show:`, Gallery, Studio, DraftReview, types, messages, styles, tests, README (Why Muse) and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
+| REASON-001 | Claude | Implemented, validated, PR open | Base `7bd28a1`, branch `fix/rejection-reason`; `src/server.mjs` (rejection reason on 502 and trace), `src/trace.mjs`, `public/provider-console.mjs`, `frontend/lib/api.ts`, `frontend/components/Studio.tsx`, messages, styles, tests, Studio docs | User reviews and merges; deploy afterwards. |
 
 
 Before working, read the latest table and actual Git state, claim a bounded file
@@ -610,3 +611,31 @@ the review with "Watch the show" available. A cover heading was unreadable on
 the dark stage in the first run; fixed before commit.
 
 **State:** merged as `b8ba6ce` (PR #14) and deployed; hosted check of `#show:quantum` signed out (cover, narration, experiment slide, browser voice, no console errors). Release recorded in `docs/vercel-deployment.md`.
+
+### 2026-10-28 Pacific — REASON-001 — Claude
+
+**Request (user):** a production creation from an uploaded "differentiation
+rules" image showed as failed after the call went through; find out why.
+
+**Diagnosis:** Claude in Chrome was not connected, so the tab could not be
+read. Vercel runtime logs for the afternoon deployment show the tester login
+(17:06), a Studio session (17:24:43) and a compose that returned 502; the
+provider-activity polling ran about 26 s, so Wonder answered and the draft
+failed the lesson contract. A 1.1 MB JPEG of differentiation rules on Wonder
+through the judge invite drafted fine on production (11.5 s), so size, format
+and the creator default are not the trigger; the rejection is content-dependent.
+The exact validator message was not visible anywhere: the server replaced it
+with a generic 502 and the trace recorded only "failed or rejected".
+
+**Changes:** the Studio block attaches a bounded, one-line `reason` to the
+502 and to the trace row, but only for errors raised while reading the reply
+(our validator messages, tagged at the read step; configured secrets redacted);
+provider and transport errors keep carrying no text, as before; the client reads it into
+`ApiError.reason`; the Studio appends "Reason: …" to the failure line; the
+provider console shows it after the outcome.
+
+**Verification:** Node tests (new HTTP test: validator reason on the 502 and in
+the trace, provider errors carry none, accepted rows carry none); Vitest (Studio shows the reason and the remaining budget);
+typecheck, lint, format, Playwright. Live check recorded below when run.
+
+**State:** committed and pushed; PR open; not merged or deployed.

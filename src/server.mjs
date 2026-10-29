@@ -74,6 +74,11 @@ export function createHandler({
   // Configuration problems are reported by position only; code values never reach logs.
   for(const warning of accessCodes.warnings??[])console.warn('EXPLAINBACK_ACCESS_CODES '+warning);
   const redacted=[process.env.MODEL_API_KEY?.trim(),testerCredentials.password??process.env.EXPLAINBACK_TESTER_PASSWORD,...codes.map(c=>c.code)];
+  // Why a provider reply was rejected: only our own reader/validator messages (tagged where the
+  // reply is read), one line, bounded, configured secrets removed. Provider and transport errors
+  // carry no reason: their text is never returned to the browser.
+  const tagRejection=error=>{const e=error instanceof SyntaxError?new Error('Provider reply was not valid JSON.'):error;if(e&&typeof e==='object')e.rejection=true;return e;};
+  const rejectionReason=error=>{if(error?.rejection!==true||typeof error.message!=='string')return null;const text=error.message.replace(/\s+/g,' ').trim().slice(0,200);return redacted.filter(Boolean).reduce((t,key)=>t.split(key).join('[REDACTED]'),text)||null;};
   const targets=router.list().map(t=>({...t,...(configured!==undefined&&t.id===router.defaultId?{configured}:{})}));
   const selected=id=>{const t=targets.find(t=>t.id===(id??router.defaultId));if(!t)throw new RequestError(400,'Choose an allowed provider/model.');return {...t};};
   const defaultTarget=selected();
@@ -165,7 +170,8 @@ export function createHandler({
         const call=trace?.start({provider:llm.provider,model:llm.model,input:args.input,instructions:args.instructions});
         try{
           await trace?.flush();const options={...args,...(call?{onTrace:call.event}:{})};
-          const startedAt=performance.now(),raw=await(modelCall?modelCall(options,llm.id):router.call(llm.id,options)),result=mode==='tryout'?readLearnerTryout(raw,validateLesson(body.lesson),body.language):mode==='show'?{show:readShow(raw,validateLesson(body.lesson))}:readLessonAuthor(raw,mode,body.creation,mode==='guide'&&body.explanation!==undefined);
+          const startedAt=performance.now(),raw=await(modelCall?modelCall(options,llm.id):router.call(llm.id,options));let result=null;
+          try{result=mode==='tryout'?readLearnerTryout(raw,validateLesson(body.lesson),body.language):mode==='show'?{show:readShow(raw,validateLesson(body.lesson))}:readLessonAuthor(raw,mode,body.creation,mode==='guide'&&body.explanation!==undefined);}catch(error){throw tagRejection(error);}
           const metrics={model:raw.model??llm.model,elapsedMs:Math.round(performance.now()-startedAt),usage:raw.usage?{input:raw.usage.input_tokens??null,output:raw.usage.output_tokens??null}:null};
           // A show gets one cover illustration from Muse Image when Meta is configured; a failed
           // or missing image never fails the show. Image bytes go to the client only.
@@ -182,10 +188,11 @@ export function createHandler({
           call?.finish('accepted');try{await trace?.flush();}catch{}
           await save(trace?.read());json(200,{...result,...metrics,llm,attemptsRemaining:8-s.attempts});return;
         }catch(error){
-          call?.finish(error instanceof RequestError?'discarded':'failed or rejected');
+          const reason=rejectionReason(error);
+          call?.finish(error instanceof RequestError?'discarded':'failed or rejected',reason);
           if(error instanceof RequestError)throw error;
           if(['OLLAMA_BUSY','OLLAMA_UNCERTAIN','OLLAMA_OTHER_MODEL','OLLAMA_CONTROL'].includes(error.code)){const failure=new RequestError(409,error.message);failure.attemptsRemaining=8-s.attempts;throw failure;}
-          const failure=new RequestError(502,'Provider lesson could not be completed or validated. Retry explicitly.');failure.attemptsRemaining=8-s.attempts;throw failure;
+          const failure=new RequestError(502,'Provider lesson could not be completed or validated. Retry explicitly.');failure.attemptsRemaining=8-s.attempts;failure.reason=reason;throw failure;
         }finally{try{await trace?.flush();}catch{}}
       }
       if(path.startsWith('/api/studio/'))throw new RequestError(400,'Start a Lesson Studio session first.');
@@ -263,7 +270,8 @@ export function createHandler({
     } catch (error) {
       json(error instanceof RequestError ? error.status : 500,
         { error: error instanceof RequestError ? error.message : 'Request failed. Please try again.',
-          ...(Number.isInteger(error.attemptsRemaining) ? { attemptsRemaining: error.attemptsRemaining } : {}) });
+          ...(Number.isInteger(error.attemptsRemaining) ? { attemptsRemaining: error.attemptsRemaining } : {}),
+          ...(typeof error.reason === 'string' && error.reason ? { reason: error.reason } : {}) });
     } finally {
       if(lock)try{await state.release(lockedId,lock);}catch{/* A bounded lease expires after a storage failure. */}
     }

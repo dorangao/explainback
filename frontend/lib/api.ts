@@ -6,6 +6,8 @@ export class ApiError extends Error {
     public status: number,
     public code?: string,
     public attemptsRemaining?: number,
+    // Why a provider reply was rejected (validator message), when the server knows.
+    public reason?: string,
   ) {
     super(message);
   }
@@ -36,6 +38,7 @@ async function request<T>(
       response.status,
       data.code,
       data.attemptsRemaining,
+      typeof data.reason === "string" ? data.reason : undefined,
     );
   return data as T;
 }

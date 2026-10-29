@@ -21,6 +21,7 @@ import type {
   ShowReply,
 } from "../lib/types";
 import { say } from "../lib/types";
+import { ApiError } from "../lib/api";
 import {
   createLessonPlayer,
   galleryLessons,
@@ -182,6 +183,12 @@ export function Studio({
     setTopic(studioWalkthrough(language).topic);
     setCreation("generated");
   }, [starter, authenticated, closeLesson, language]);
+  // The generic failure line, plus the server's rejection reason when it sent one.
+  const failureMessage = (error: unknown) =>
+    t(language, "Studio.theRequestCouldNotBe") +
+    (error instanceof ApiError && error.reason
+      ? `\n${t(language, "Studio.reason")}: ${error.reason}`
+      : "");
   // `text` is the revision request for compose, or the learner's own explanation for guide.
   async function request(mode: "compose" | "guide", text?: string) {
     const revisionText = mode === "compose" ? text : undefined,
@@ -247,7 +254,7 @@ export function Studio({
         ),
     );
     if (!result.ok) {
-      if (!result.stale) setMessage(t(language, "Studio.theRequestCouldNotBe"));
+      if (!result.stale) setMessage(failureMessage(result.error));
       return;
     }
     if (mode === "compose") {
@@ -303,7 +310,7 @@ export function Studio({
         ),
     );
     if (!result.ok) {
-      if (!result.stale) setMessage(t(language, "Studio.theRequestCouldNotBe"));
+      if (!result.stale) setMessage(failureMessage(result.error));
       return;
     }
     setTryout(result.reply);
@@ -335,7 +342,7 @@ export function Studio({
       ),
     );
     if (!result.ok) {
-      if (!result.stale) setMessage(t(language, "Studio.theRequestCouldNotBe"));
+      if (!result.stale) setMessage(failureMessage(result.error));
       return;
     }
     setShow(result.reply);
