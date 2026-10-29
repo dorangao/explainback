@@ -44,3 +44,20 @@ test('the sketch-sourced lesson records its image, ships the image with the bran
  const {readFileSync}=await import('node:fs');const bytes=readFileSync(new URL('../public/gallery/pendulum-sketch.png',import.meta.url));assert.equal(bytes.subarray(1,4).toString(),'PNG');
  assert.match(gallerySourceNote('muse-image','en'),/sketch/);assert.match(gallerySourceNote('muse-image','zh'),/草图/);
 });
+test('every gallery lesson has a generated show whose cover is packaged with the brand assets',async()=>{
+ const {galleryShows,galleryShow,showIdFromHash}=await import('../public/gallery-shows.mjs');
+ const {brandFiles}=await import('../src/static.mjs');
+ const {readShow}=await import('../src/lesson-show.mjs');
+ const {statSync}=await import('node:fs');
+ for(const item of galleryLessons){
+  const entry=galleryShow(item.id);assert.ok(entry,`${item.id} has a show`);
+  // The stored script still satisfies the reader's contract against its lesson.
+  const show=readShow({structured:{name:'make_show',value:{slides:entry.show.slides,coverPrompt:entry.show.coverPrompt}}},item.lesson);
+  assert.ok(show.slides.length>=5);assert.equal(show.slides[0].kind,'cover');assert.equal(show.slides.at(-1).kind,'takeaway');
+  assert.ok(entry.cover&&brandFiles.has(entry.cover),`${item.id} cover is served`);
+  assert.ok(statSync(new URL('../public'+entry.cover,import.meta.url)).size>10_000);
+  assert.equal(entry.coverModel,'muse-image-1.0');assert.match(entry.model,/^muse-wonder/);
+ }
+ assert.equal(Object.keys(galleryShows).length,galleryLessons.length);
+ assert.equal(showIdFromHash('#show:cooling'),'cooling');assert.equal(showIdFromHash('#show:nope'),null);assert.equal(showIdFromHash('#lesson:cooling'),null);
+});

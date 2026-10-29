@@ -193,6 +193,31 @@ export type TryoutReply = ReplyMetrics & {
   llm: Target;
   attemptsRemaining: number;
 };
+export type ShowSlideKind =
+  "cover" | "claim" | "experiment" | "evidence" | "transfer" | "takeaway";
+export type ShowSlide = {
+  kind: ShowSlideKind;
+  chapter: number;
+  heading: Bilingual;
+  narration: Bilingual;
+};
+// A narrated slide script written by the creator model; the browser renders the slides
+// from the checked lesson and speaks the narration.
+export type Show = { version: 1; slides: ShowSlide[]; coverPrompt: string };
+export type ShowReply = ReplyMetrics & {
+  show: Show;
+  cover: string | null;
+  coverModel: string | null;
+  llm: Target;
+  attemptsRemaining: number;
+};
+export type GalleryShow = {
+  show: Show;
+  cover: string | null;
+  model: string;
+  coverModel: string | null;
+  createdAt: string;
+};
 export type ComposeReply = ReplyMetrics & {
   status: "ready" | "unsupported";
   lesson: Lesson | null;

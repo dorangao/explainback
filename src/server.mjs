@@ -1,6 +1,8 @@
 import {quantumCoachRequest,readQuantumCoach} from './quantum-coach.mjs';
 import {lessonAuthorRequest,readLessonAuthor} from './lesson-author.mjs';
 import {learnerTryoutRequest,readLearnerTryout} from './lesson-tester.mjs';
+import {showRequest,readShow} from './lesson-show.mjs';
+import {generateMetaImage} from './meta.mjs';
 import {validateLesson} from '../public/lesson-schema.mjs';
 import {suctionScenario,suctionTitle} from '../public/suction.mjs';
 import {flightScenario,flightTitle} from '../public/flight.mjs';
@@ -58,6 +60,8 @@ function localOrigin(req){
 }
 export function createHandler({
   configured, modelCall, router = createProviderRouter(),
+  // Cover illustrations for shows; null disables them. Tests inject a fake.
+  imageCall = process.env.MODEL_API_KEY?.trim()?(args=>generateMetaImage({apiKey:process.env.MODEL_API_KEY,...args})):null,
   traceEnabled = process.env.EXPLAINBACK_TRACE === '1',
   testerCredentials = {},accessCodes=parseAccessCodes(process.env.EXPLAINBACK_ACCESS_CODES),openAccess=process.env.EXPLAINBACK_OPEN_ACCESS==='1',
   state=createMemoryState(),auth=createTesterAuth({...testerCredentials,accessCodes:accessCodes.codes??accessCodes,onRevoke:owner=>state.revokeOwner(owner)}),getOrigin=localOrigin,
@@ -103,9 +107,9 @@ export function createHandler({
         const access=tester.audience?{...publicAudience(tester.audience),remaining:await state.remainingTurns(bucket,limit)}:null;
         json(200, { configured:defaultTarget.configured, mode: 'live', access, model:defaultTarget.model, models:targets,defaultModel:defaultTarget.id,roles, traceEnabled, audience: 'tester-poc', problems: [...Object.values(problems).map(p => ({ id: p.id, title: p.title })),{id:'acceleration',title:motionTitle},{id:'flight',title:flightTitle},{id:'suction',title:suctionTitle}] }); return;
       }
-      if (req.method !== 'POST' || !['/api/studio/session','/api/studio/compose','/api/studio/guide','/api/studio/tryout','/api/quantum/session','/api/quantum/explain','/api/session', '/api/turn', '/api/reset', '/api/claim', '/api/replay',...(traceEnabled?['/api/trace']:[])].includes(path)) { json(404, { error: 'Not found.' }); return; }
+      if (req.method !== 'POST' || !['/api/studio/session','/api/studio/compose','/api/studio/guide','/api/studio/tryout','/api/studio/show','/api/quantum/session','/api/quantum/explain','/api/session', '/api/turn', '/api/reset', '/api/claim', '/api/replay',...(traceEnabled?['/api/trace']:[])].includes(path)) { json(404, { error: 'Not found.' }); return; }
       if (req.headers.origin !== origin) throw new RequestError(403, 'This action must come from this app.');
-      const body = await readJSON(req,path==='/api/studio/compose'?1_400_000:['/api/studio/guide','/api/studio/tryout'].includes(path)?48_000:16_384);
+      const body = await readJSON(req,path==='/api/studio/compose'?1_400_000:['/api/studio/guide','/api/studio/tryout','/api/studio/show'].includes(path)?48_000:16_384);
       if(!await access.active(tester.id)){json(401,{error:'Sign in to tester access.',code:'TESTER_REQUIRED'});return;}
       if(path==='/api/quantum/session'||path==='/api/studio/session'){
         if(body.synthetic!==true||!['en','zh'].includes(body.language))throw new RequestError(400,'Choose a language and synthetic quantum demo.');
@@ -148,12 +152,12 @@ export function createHandler({
         if(body.clear)await state.writeTrace(body.sessionId,[],lock);json(200,{records:await state.readTrace(body.sessionId)});return;
       }
       if(s.workflow==='lesson-studio'){
-        const mode=path==='/api/studio/compose'?'compose':path==='/api/studio/guide'?'guide':path==='/api/studio/tryout'?'tryout':null;
+        const mode=path==='/api/studio/compose'?'compose':path==='/api/studio/guide'?'guide':path==='/api/studio/tryout'?'tryout':path==='/api/studio/show'?'show':null;
         if(!mode)throw new RequestError(400,'Use this session for Lesson Studio only.');
         // The tryout always runs on the tester role, whatever model the session pinned for creation.
         const llm=mode==='tryout'?selected(roles.tester):s.llm;
         if(mode==='tryout'&&!llm.configured)throw new RequestError(503,'The test learner model is not configured.');
-        let args;try{args=mode==='tryout'?learnerTryoutRequest(body):lessonAuthorRequest(body,mode);}catch{throw new RequestError(400,'Use a short topic or a valid lesson and experiment.');}
+        let args;try{args=mode==='tryout'?learnerTryoutRequest(body):mode==='show'?showRequest(body):lessonAuthorRequest(body,mode);}catch{throw new RequestError(400,'Use a short topic or a valid lesson and experiment.');}
         if(args.images&&s.llm.provider!=='meta')throw new RequestError(400,'Image input needs a Meta model. Switch the model or remove the image.');
         if(s.attempts>=8||!await state.consumeTurn(bucket,limit)){const failure=quotaExceeded();failure.attemptsRemaining=8-s.attempts;throw failure;}
         s.attempts++;await save();
@@ -161,8 +165,18 @@ export function createHandler({
         const call=trace?.start({provider:llm.provider,model:llm.model,input:args.input,instructions:args.instructions});
         try{
           await trace?.flush();const options={...args,...(call?{onTrace:call.event}:{})};
-          const startedAt=performance.now(),raw=await(modelCall?modelCall(options,llm.id):router.call(llm.id,options)),result=mode==='tryout'?readLearnerTryout(raw,validateLesson(body.lesson),body.language):readLessonAuthor(raw,mode,body.creation,mode==='guide'&&body.explanation!==undefined);
+          const startedAt=performance.now(),raw=await(modelCall?modelCall(options,llm.id):router.call(llm.id,options)),result=mode==='tryout'?readLearnerTryout(raw,validateLesson(body.lesson),body.language):mode==='show'?{show:readShow(raw,validateLesson(body.lesson))}:readLessonAuthor(raw,mode,body.creation,mode==='guide'&&body.explanation!==undefined);
           const metrics={model:raw.model??llm.model,elapsedMs:Math.round(performance.now()-startedAt),usage:raw.usage?{input:raw.usage.input_tokens??null,output:raw.usage.output_tokens??null}:null};
+          // A show gets one cover illustration from Muse Image when Meta is configured; a failed
+          // or missing image never fails the show. Image bytes go to the client only.
+          if(mode==='show'){
+            result.cover=null;result.coverModel=null;
+            if(imageCall&&llm.provider==='meta'){
+              const imageTrace=trace?.start({provider:'meta',model:'muse-image-1.0',input:result.show.coverPrompt,instructions:'image generation'});
+              try{const image=await imageCall({prompt:result.show.coverPrompt,...(imageTrace?{onTrace:imageTrace.event}:{})});result.cover=image.dataUrl;result.coverModel=image.model;imageTrace?.finish('accepted');}
+              catch{imageTrace?.finish('failed or rejected');}
+            }
+          }
           if(!await access.active(tester.id)){call?.finish('discarded');await state.remove(body.sessionId);throw new RequestError(401,'Sign in to tester access.');}
           if(!await state.get(body.sessionId))throw new RequestError(409,'Session was reset; response discarded.');
           call?.finish('accepted');try{await trace?.flush();}catch{}

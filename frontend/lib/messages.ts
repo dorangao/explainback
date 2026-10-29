@@ -138,6 +138,16 @@ export const messages = {
     en: "One change: simplify the explanation, add an output, correct an assumption…",
     zh: "一个修改：简化解释、添加输出、修正假设…",
   },
+  "DraftReview.makeANarratedShow": {
+    en: "Make a narrated show",
+    zh: "生成讲解秀",
+  },
+  "DraftReview.watchTheShow": { en: "Watch the show", zh: "观看讲解秀" },
+  "DraftReview.lessonShow": { en: "LESSON SHOW", zh: "讲解秀" },
+  "DraftReview.lessonShowIntro": {
+    en: "The creator model writes a short bilingual narration for each slide and a prompt for one cover illustration from Muse Image. The slides are rendered from the checked lesson; the browser reads the narration aloud.",
+    zh: "创作模型为每张幻灯片撰写简短的中英双语旁白，并为 Muse Image 生成一张封面插图写提示词。幻灯片由经核验的课程渲染，旁白由浏览器朗读。",
+  },
   "DraftReview.letTheTestLearnerTry": {
     en: "Let the test learner try this lesson",
     zh: "让测试学习者试学本课",
@@ -211,6 +221,7 @@ export const messages = {
     en: "Free to explore · No sign-in",
     zh: "自由探索 · 无需登录",
   },
+  "Gallery.watchTheShow": { en: "Watch the show", zh: "观看讲解秀" },
   "Gallery.openLesson": { en: "Open lesson", zh: "打开课程" },
   "Gallery.predictChangeAnInputExplain": {
     en: "Predict. Change an input. Explain what happened. Then try a new case.",
@@ -393,6 +404,10 @@ export const messages = {
     en: "Show all changes",
     zh: "显示全部修改",
   },
+  "RevisionSummary.wroteTheShowFor": {
+    en: "wrote the show for this lesson",
+    zh: "为本课撰写了讲解秀",
+  },
   "RevisionSummary.triedThisLessonAs": {
     en: "tried this lesson as a test learner",
     zh: "以测试学习者身份试学了本课",
@@ -499,6 +514,10 @@ export const messages = {
   },
   "Studio.loading": { en: "Loading…", zh: "正在加载…" },
   "Studio.model": { en: "Model", zh: "模型" },
+  "Studio.theShowIsReady": {
+    en: "The show is ready. Watch it, or present the lesson as usual.",
+    zh: "讲解秀已就绪。可以观看，或照常演示课程。",
+  },
   "Studio.creatorModel": { en: "Creator model", zh: "创作模型" },
   "Studio.testLearner": { en: "Test learner", zh: "测试学习者" },
   "Studio.theTestLearnerTriedThis": {

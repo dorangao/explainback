@@ -6,6 +6,9 @@ export const brandFiles = new Map([
   ["/brand/mark.svg", "image/svg+xml"],
   ["/brand/share.png", "image/png"],
   ["/gallery/pendulum-sketch.png", "image/png"],
+  ...["cooling","pendulum","web-cache","vehicle","quantum","sketch-pendulum"].map(
+    (id) => [`/gallery/${id}-cover.webp`, "image/webp"],
+  ),
 ]);
 const headers = {
   "Cache-Control": "no-store",

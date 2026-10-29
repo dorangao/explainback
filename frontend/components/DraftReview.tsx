@@ -230,6 +230,9 @@ export function DraftReview({
   onTryout,
   testerLabel,
   metrics,
+  hasShow,
+  onMakeShow,
+  onWatchShow,
 }: {
   draft: Lesson;
   language: Language;
@@ -246,6 +249,9 @@ export function DraftReview({
   onTryout: () => void;
   testerLabel: string | null;
   metrics: RequestMetrics | null;
+  hasShow: boolean;
+  onMakeShow: () => void;
+  onWatchShow: () => void;
 }) {
   const formId = useId();
   const [pending, setPending] = useState<Record<number, string>>({}),
@@ -465,6 +471,34 @@ export function DraftReview({
               metrics={metrics}
               onUse={setRevision}
             />
+          )}
+        </section>
+      )}
+      {canRequest && (
+        <section className="tryout-section" aria-labelledby={`${formId}-show`}>
+          <p className="eyebrow" id={`${formId}-show`}>
+            {t(language, "DraftReview.lessonShow")}
+          </p>
+          <p className="fine">{t(language, "DraftReview.lessonShowIntro")}</p>
+          <div className="actions">
+            <button
+              type="button"
+              className="secondary"
+              disabled={busy || hasPending}
+              onClick={onMakeShow}
+            >
+              {busy
+                ? say(language, "Muse is working…", "Muse 正在处理…")
+                : t(language, "DraftReview.makeANarratedShow")}
+            </button>
+            {hasShow && (
+              <button type="button" disabled={busy} onClick={onWatchShow}>
+                {t(language, "DraftReview.watchTheShow")} ▶
+              </button>
+            )}
+          </div>
+          {hasShow && metrics?.mode === "show" && (
+            <RequestSummary metrics={metrics} language={language} />
           )}
         </section>
       )}

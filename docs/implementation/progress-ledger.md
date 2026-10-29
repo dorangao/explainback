@@ -46,6 +46,7 @@ current index; dated entries and linked evidence retain the history.
 | GALLERY-002 | Claude | Merged as `118cd69`; deployed to production | Base `775b897`, branch `feat/sketch-gallery-and-restore`; `public/gallery-lessons.mjs`, `public/gallery/pendulum-sketch.png`, `src/static.mjs`, `scripts/build-vercel.mjs`, `frontend/components/{Gallery,Studio,RevisionSummary}.tsx`, types, styles, tests, README and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
 | EXPLAIN-001 | Claude | Merged as `88d082c`; deployed to production | Base `118cd69`, branch `feat/explain-back`; `src/lesson-author.mjs` (graded guide contract), `src/server.mjs`, `frontend/components/{LessonPlayer,Studio}.tsx`, `frontend/lib/{types,messages}.ts`, styles, tests, README and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
 | ROLES-001 | Claude | Merged as `bc9f1d2`; deployed to production | Base `00dc995`, branch `feat/creator-tester-roles`; `src/lesson-tester.mjs` (new), `src/server.mjs` (roles, `/api/studio/tryout`), `frontend/components/{Studio,DraftReview,RequestSummary,RevisionSummary}.tsx`, types, messages, styles, tests, README and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
+| SHOW-001 | Claude | Implemented, validated, PR open | Base `5f80635`, branch `feat/lesson-show`; `src/lesson-show.mjs` (new), `src/meta.mjs` (Muse Image), `src/server.mjs` (`/api/studio/show`), `scripts/make-gallery-shows.mjs`, `public/gallery-shows.mjs` + six covers, `src/static.mjs`, `frontend/components/ShowPlayer.tsx` (new), App routing `#show:`, Gallery, Studio, DraftReview, types, messages, styles, tests, README (Why Muse) and Studio docs | User reviews and merges; deploy afterwards. |
 
 
 Before working, read the latest table and actual Git state, claim a bounded file
@@ -570,3 +571,42 @@ learner view listing only the first output unlabelled; the view now names every
 output with its unit at three axis points.
 
 **State:** merged as `bc9f1d2` (PR #13) and deployed; hosted check through the judge invite: Wonder drafted a parachute lesson (24.6 s), Spark's tryout (3.0 s) had the transfer answer checked correct with a 4/5 rating. Release recorded in `docs/vercel-deployment.md`.
+
+### 2026-10-28 Pacific — SHOW-001 — Claude
+
+**Request (user):** pick and demonstrate an angle on why Muse models are the
+right fit, and let the final result be more than text (narration, slides,
+images).
+
+**Facts checked first (dev.meta.ai docs, October 28):** Spark and Wonder accept
+text, image, video, audio and PDF and return text only; Muse Image generates
+and edits images (`/v1/images/generations`); Muse Voice Transcribe is
+speech-to-text only; there is no text-to-speech or video generation on the API.
+The show therefore uses the creator model for the script, Muse Image for the
+cover, the checked lesson for every visual, and the browser's speech synthesis
+for the voice, labelled as such.
+
+**Changes:** `src/lesson-show.mjs` (structured `make_show` script contract with
+order and length checks), `generateMetaImage` in `src/meta.mjs` (documented
+body, data URL result, no bytes in traces), `/api/studio/show` (creator session
+model, optional cover, injectable `imageCall`), `ShowPlayer` (slides rendered
+from the lesson, experiment sweep, browser narration with language voice,
+keyboard, credits), `#show:<id>` route and gallery "Watch the show" links,
+Studio "Make a narrated show" / "Watch the show", six generated gallery shows
+with covers packaged as brand assets, README "Why Muse, specifically" section.
+
+**Verification:** Node tests (show contract, image client with fake fetch, HTTP
+show with cover and cover failure, gallery show contract and served covers);
+Vitest (ShowPlayer slides, keyboard, speech in zh with mocked synthesis;
+Studio make/watch/close flow); typecheck, lint (warnings only), format, build,
+Playwright. Live generation: six shows from Wonder (13–25 s each) and six Muse
+Image covers (220–375 kB); Node 242/242, Vitest 19/19, Playwright 18/18. Live
+local checks (open-access dev server): `#show:cooling` played with the cover,
+narration and the sweeping cooling curve, speech started and paused, no console
+errors; in the Studio, Wonder drafted "Why does a hot air balloon rise?"
+(17.2 s), "Make a narrated show" returned a six-slide script (10.5 s) and a
+Muse Image balloon cover, the player opened over the draft and closed back to
+the review with "Watch the show" available. A cover heading was unreadable on
+the dark stage in the first run; fixed before commit.
+
+**State:** committed and pushed; PR open; not merged or deployed.

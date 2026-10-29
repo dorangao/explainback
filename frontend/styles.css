@@ -1190,6 +1190,136 @@ body {
   padding-left: 20px;
   margin: 20px 0;
 }
+.show-player {
+  background: #10201a;
+  color: #f3f1ea;
+  border-radius: 14px;
+  padding: 20px 22px 16px;
+  margin: 12px 0 24px;
+  display: grid;
+  gap: 16px;
+}
+.show-player .eyebrow {
+  color: #a9c6b4;
+}
+.show-player h1,
+.show-player h2,
+.show-player label,
+.show-player .show-narration,
+.show-player .lead-small {
+  color: #f3f1ea;
+}
+.show-stage {
+  min-height: 320px;
+  display: grid;
+  align-content: center;
+  background: #15291f;
+  border-radius: 10px;
+  padding: 20px 24px;
+}
+.show-cover {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+}
+.show-cover img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  display: block;
+}
+.show-cover h1 {
+  font-size: 1.9rem;
+  margin: 6px 0 10px;
+  line-height: 1.2;
+}
+.show-cover .lead-small,
+.show-takeaway p,
+.show-evidence p,
+.show-transfer p,
+.show-claim p {
+  color: #f3f1ea;
+}
+.show-claim {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.show-claim p:last-child,
+.show-takeaway p:last-child {
+  font-size: 1.5rem;
+  line-height: 1.35;
+  margin: 0;
+}
+.show-experiment {
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 14px 16px 6px;
+}
+.show-experiment .experiment-caption {
+  color: var(--ink);
+}
+.show-evidence dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  margin: 14px 0 0;
+}
+.show-evidence dt {
+  font-size: 0.8rem;
+  color: #a9c6b4;
+}
+.show-evidence dd {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+.show-choice {
+  margin: 6px 0 0;
+}
+.show-caption .show-narration {
+  font-size: 1.15rem;
+  line-height: 1.5;
+  margin: 4px 0 0;
+  min-height: 3.4em;
+}
+.show-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.show-controls .show-counter {
+  font-variant-numeric: tabular-nums;
+  color: #a9c6b4;
+}
+.show-controls .show-voice {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  margin-left: auto;
+}
+.show-player .text-button {
+  color: #d7e6dc;
+}
+.show-credits {
+  color: #a9c6b4;
+  margin: 0;
+}
+.lesson-link-show {
+  margin-left: 14px;
+}
+@media (max-width: 720px) {
+  .show-cover {
+    grid-template-columns: 1fr;
+  }
+  .show-stage {
+    padding: 14px;
+  }
+}
 .tryout-section {
   border-top: 1px solid var(--line);
   padding: 20px 0 8px;
