@@ -34,6 +34,14 @@ always Spark. The six gallery shows are pre-generated and play without sign-in,
 so the show segment can use `#show:cooling` if the live show is slow. Label
 anything cached or edited; never pass a stored result off as live.
 
+**Rehearsal without spending requests.** Create, tryout, revision and show
+replies are remembered in the browser with the inputs they answered. Reopening
+Create or reloading restores the draft without a provider request; a button
+reads **Re-run** while inputs are unchanged and **Send changes to Muse** after
+an edit. For a hands-free walkthrough, set **Guided replay** to *normal* in the
+player (space pauses, any click takes over); **Start a new lesson** forgets the
+remembered draft before a fresh take.
+
 **Pre-flight.** Fresh browser, judge invite link ready, a sketch file on disk,
 EN/ZH switch once, provider console closed unless a request detail is asked for.
 

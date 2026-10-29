@@ -2,6 +2,45 @@
 
 The user asked to move lesson creation into ExplainBack so a topic can become a lesson that the app presents and operates. Carry forward the preference for direct implementation and the bilingual, claim-testing learning loop.
 
+## Remembered lesson, cached results and guided replay (October 28)
+
+**Remembered lesson.** The current draft, its review checkbox, the revision
+prompt, the test learner's report, the show, the explain-back feedback and the
+learner's own explanations are kept in this browser's `localStorage`
+(`explainback-studio-draft`, `frontend/lib/studio-store.ts`) and restored when
+Create is reopened or the page reloads, once access is confirmed. Gallery
+lessons never restore. Nothing is sent to the server; invite codes, session ids
+and tokens are not part of the draft and the store strips any field with such a
+name before writing. **Start a new lesson** (the former Close lesson button)
+forgets the remembered draft; Export and Import JSON work as before. When the
+learner was presenting, the player position is rebuilt by replaying the engine's
+own transitions (`restorePlayer`), so a restored state is one the engine could
+have reached itself.
+
+**Cached results, sent only on demand.** Each model-backed action (Create, Let
+the test learner try, Revise, Check my explanation, Make a narrated show) keeps
+its last successful reply with a fingerprint of the inputs it answered
+(`frontend/lib/studio-cache.ts`). While the inputs are unchanged the reply shows
+with *Cached result · unchanged since HH:MM · No model request was made*, and
+the button reads **Re-run**. Any edit to the lesson, the revision prompt or the
+explain-back text marks the reply stale and the button reads **Send changes to
+Muse**. No action ever runs on mount, language switch or navigation; the
+Studio tests and `e2e/lifecycle.spec.ts` assert zero `/api/studio` requests on
+restore. The language is part of the tryout fingerprint, so a cached report is
+stale in the other language and stays stale until the author re-sends.
+
+**Guided replay.** Both players take a pace (off, slow, normal, fast; the
+lesson player's select, the show player's *Pace*), remembered with the draft.
+In the lesson player the replay advances predict → experiment (the experiment
+plays itself on the existing 6 s timing scaled by the pace) → explain →
+transfer on its own, with a progress bar for the current step; it chooses *Not
+sure* when no prediction was made and reveals the lesson's own transfer answer,
+and it never sends a model request. Any manual click pauses the replay; **Resume
+replay** continues. Space pauses or resumes, ArrowRight steps forward,
+ArrowLeft replays the experiment. In the show player the pace scales the
+narration time and the speech rate, a manual step pauses playback, and the bar
+tracks the whole show.
+
 ## What Muse changed (October 28)
 
 **Restore previous draft** sits beside Dismiss on the panel. It discards the
