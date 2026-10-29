@@ -10,7 +10,12 @@ import {
 import { useAuth } from "./lib/api";
 import type { Area, Language } from "./lib/types";
 import { say } from "./lib/types";
-import { galleryIdFromHash } from "./lib/shared";
+import {
+  galleryIdFromHash,
+  galleryLesson,
+  galleryShow,
+  showIdFromHash,
+} from "./lib/shared";
 import { Brand } from "./components/Brand";
 import { Studio } from "./components/Studio";
 import { AccessPanel } from "./components/AccessPanel";
@@ -20,6 +25,11 @@ const Labs = lazy(() =>
   })),
 );
 
+const ShowPlayer = lazy(() =>
+  import("./components/ShowPlayer").then((module) => ({
+    default: module.ShowPlayer,
+  })),
+);
 function readRoute() {
   const hash = location.hash;
   return {
@@ -27,6 +37,7 @@ function readRoute() {
       ? hash.slice(1)
       : "studio") as Area,
     lessonId: galleryIdFromHash(hash) as string | null,
+    showId: showIdFromHash(hash) as string | null,
   };
 }
 export function App() {
@@ -102,7 +113,7 @@ export function App() {
       firstAuth.current = true;
       setShowAccess(false);
     } else if (firstAuth.current) {
-      setRoute({ area: "studio", lessonId: null });
+      setRoute({ area: "studio", lessonId: null, showId: null });
       history.replaceState(null, "", "#studio");
       firstAuth.current = false;
       setStudioBusy(false);
@@ -118,7 +129,7 @@ export function App() {
     const ok = await auth.login(body);
     if (ok) {
       setShowAccess(false);
-      setRoute({ area: "create", lessonId: null });
+      setRoute({ area: "create", lessonId: null, showId: null });
       history.replaceState(null, "", "#create");
       setStarter((n) => n + 1);
     }
@@ -133,15 +144,20 @@ export function App() {
     if (route.area === "physics" || route.area === "quantum")
       setVisited((previous) => ({ ...previous, [route.area]: true }));
   }, [auth.info.authenticated, route.area]);
-  const focusRoute = useRef(`${route.area}/${route.lessonId}/${libraryVisit}`);
+  const focusRoute = useRef(
+    `${route.area}/${route.lessonId}/${route.showId}/${libraryVisit}`,
+  );
   useEffect(() => {
-    const key = `${route.area}/${route.lessonId}/${libraryVisit}`;
+    const key = `${route.area}/${route.lessonId}/${route.showId}/${libraryVisit}`;
     if (key === focusRoute.current) return;
     focusRoute.current = key;
     main.current?.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: "instant" });
-  }, [route.area, route.lessonId, libraryVisit]);
+  }, [route.area, route.lessonId, route.showId, libraryVisit]);
   const area = route.area;
+  const galleryShowItem = route.showId
+    ? { lesson: galleryLesson(route.showId), show: galleryShow(route.showId) }
+    : null;
   return (
     <div className="app-shell">
       <a className="skip-link" href="#main-content">
@@ -246,13 +262,33 @@ export function App() {
             {t(language, "App.openingYourLearningStudio")}
           </p>
         )}
+        {galleryShowItem?.lesson && galleryShowItem.show && (
+          <Suspense fallback={<p role="status">…</p>}>
+            <ShowPlayer
+              key={`show-${route.showId}`}
+              lesson={galleryShowItem.lesson.lesson}
+              show={galleryShowItem.show.show}
+              cover={galleryShowItem.show.cover}
+              language={language}
+              scriptModel={galleryShowItem.show.model}
+              coverModel={galleryShowItem.show.coverModel}
+              onClose={() => {
+                location.hash = `#lesson:${route.showId}`;
+              }}
+            />
+          </Suspense>
+        )}
         <Studio
           key={auth.identity}
           language={language}
           authenticated={auth.info.authenticated}
           status={auth.status}
           post={auth.post}
-          visible={!route.lessonId && (area === "studio" || area === "create")}
+          visible={
+            !route.lessonId &&
+            !route.showId &&
+            (area === "studio" || area === "create")
+          }
           view={area === "create" ? "create" : "studio"}
           lessonId={null}
           starter={starter}

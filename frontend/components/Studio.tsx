@@ -18,6 +18,7 @@ import type {
   Post,
   Status,
   TryoutReply,
+  ShowReply,
 } from "../lib/types";
 import { say } from "../lib/types";
 import {
@@ -32,6 +33,9 @@ import { useImageAttachment } from "../hooks/useImageAttachment";
 import { Gallery } from "./Gallery";
 import { LessonPlayer } from "./LessonPlayer";
 import { RequestSummary } from "./RequestSummary";
+const ShowPlayer = lazy(() =>
+  import("./ShowPlayer").then((module) => ({ default: module.ShowPlayer })),
+);
 // Authoring, review and diagnostics load only when someone creates or revises.
 const DraftReview = lazy(() =>
   import("./DraftReview").then((m) => ({ default: m.DraftReview })),
@@ -81,6 +85,8 @@ export function Studio({
     [feedback, setFeedback] = useState<Feedback | null>(null),
     [revision, setRevision] = useState<Revision | null>(null),
     [tryout, setTryout] = useState<TryoutReply | null>(null),
+    [show, setShow] = useState<ShowReply | null>(null),
+    [showing, setShowing] = useState(false),
     [source, setSource] = useState<string | null>(null),
     [sourceImage, setSourceImage] = useState<string | null>(null);
   const clearFeedback = useCallback(() => setFeedback(null), []);
@@ -132,6 +138,8 @@ export function Studio({
     setSource(null);
     setFeedback(null);
     setTryout(null);
+    setShow(null);
+    setShowing(false);
     setRevisionKey((k) => k + 1);
     setMessage("");
     return valid;
@@ -146,6 +154,8 @@ export function Studio({
     setFeedback(null);
     setRevision(null);
     setTryout(null);
+    setShow(null);
+    setShowing(false);
     setMessage("");
   }, [invalidate]);
   // A gallery lesson is reviewed content: open it straight into the player.
@@ -298,6 +308,39 @@ export function Studio({
     }
     setTryout(result.reply);
     setMessage(t(language, "Studio.theTestLearnerTriedThis"));
+  }
+  // The creator writes the narration; the server adds a Muse Image cover when it can.
+  async function makeShow() {
+    if (
+      busyRef.current ||
+      !authenticated ||
+      !target?.configured ||
+      remaining === 0 ||
+      !draft
+    )
+      return;
+    let lesson: Lesson;
+    try {
+      lesson = validateLesson(draft);
+    } catch {
+      setMessage(t(language, "Studio.completeBothLanguagesAndValidate"));
+      return;
+    }
+    setMessage("");
+    const result = await run<ShowReply>(target, "show", (id, options) =>
+      post<ShowReply>(
+        "/api/studio/show",
+        { sessionId: id, lesson },
+        { ...options, timeoutMs: options.timeoutMs + 60000 },
+      ),
+    );
+    if (!result.ok) {
+      if (!result.stale) setMessage(t(language, "Studio.theRequestCouldNotBe"));
+      return;
+    }
+    setShow(result.reply);
+    setShowing(true);
+    setMessage(t(language, "Studio.theShowIsReady"));
   }
   async function importLesson(file: File | undefined) {
     if (!file || busyRef.current || !authenticated) return;
@@ -630,7 +673,20 @@ export function Studio({
             {t(language, "Studio.museIsWorkingYourExisting")}
           </p>
         )}
-        {draft && !presenting && (
+        {showing && show && draft && (
+          <Suspense fallback={loadingNote}>
+            <ShowPlayer
+              lesson={validateLesson(draft)}
+              show={show.show}
+              cover={show.cover}
+              language={language}
+              scriptModel={show.model ?? target?.model ?? null}
+              coverModel={show.coverModel}
+              onClose={() => setShowing(false)}
+            />
+          </Suspense>
+        )}
+        {draft && !showing && !presenting && (
           <Suspense fallback={loadingNote}>
             {revision ? (
               <RevisionSummary
@@ -671,6 +727,9 @@ export function Studio({
               onTryout={() => void tryLesson()}
               testerLabel={tester?.label ?? null}
               metrics={metrics}
+              hasShow={Boolean(show)}
+              onMakeShow={() => void makeShow()}
+              onWatchShow={() => setShowing(true)}
             />
           </Suspense>
         )}

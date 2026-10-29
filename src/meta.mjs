@@ -98,3 +98,49 @@ export async function callMeta({
   }
   return { id: data.id, model: data.model, text, usage: data.usage };
 }
+
+export const META_IMAGE_ENDPOINT = 'https://api.meta.ai/v1/images/generations';
+export const DEFAULT_META_IMAGE_MODEL = 'muse-image-1.0';
+// One illustration from Muse Image. Returns a data URL; bytes never enter traces or logs.
+export async function generateMetaImage({
+  apiKey,
+  prompt,
+  model = DEFAULT_META_IMAGE_MODEL,
+  size = '1536x1024',
+  outputFormat = 'webp',
+  timeoutMs = 60_000,
+  fetchImpl = globalThis.fetch,
+  onTrace,
+} = {}) {
+  if (typeof apiKey !== 'string' || !apiKey.trim()) throw new Error('MODEL_API_KEY is missing. Set it privately in your shell or .env.local.');
+  if (typeof prompt !== 'string' || !prompt.trim() || prompt.length > 1000) throw new Error('prompt must be non-empty text under 1000 characters.');
+  if (!['webp', 'png', 'jpeg'].includes(outputFormat)) throw new Error('Unsupported image format.');
+  const signal = AbortSignal.timeout(timeoutMs);
+  const trace = event => { try { onTrace?.(event); } catch { /* Diagnostics must not affect calls. */ } };
+  const body = { model, prompt, n: 1, size, response_format: 'b64_json', output_format: outputFormat };
+  trace({ type: 'request', body });
+  let response;
+  try {
+    response = await fetchImpl(META_IMAGE_ENDPOINT, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey.trim()}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal,
+      redirect: 'error',
+    });
+  } catch {
+    trace({ type: 'error', message: signal.aborted ? 'timeout' : 'transport failure' });
+    throw new Error(signal.aborted ? 'Meta image request timed out.' : 'Could not reach Meta Model API. Check your network connection.');
+  }
+  if (!response.ok) {
+    trace({ type: 'error', message: `status ${response.status}` });
+    throw new Error(`Meta image request failed with status ${response.status}.`);
+  }
+  let data;
+  try { data = await response.json(); } catch { throw new Error('Meta returned invalid image JSON.'); }
+  const b64 = data?.data?.[0]?.b64_json;
+  if (typeof b64 !== 'string' || !b64 || !/^[A-Za-z0-9+/=]+$/.test(b64)) throw new Error('Meta returned no image.');
+  const format = ['webp', 'png', 'jpeg'].includes(data.output_format) ? data.output_format : outputFormat;
+  trace({ type: 'response', body: { output_format: format, bytes: Math.floor(b64.length * 3 / 4), usage: data.usage ?? null } });
+  return { dataUrl: `data:image/${format};base64,${b64}`, format, model, usage: data.usage ? { input_tokens: data.usage.input_tokens ?? null, output_tokens: data.usage.output_tokens ?? null } : null };
+}

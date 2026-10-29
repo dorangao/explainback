@@ -1,6 +1,6 @@
 import { useId } from "react";
 import { t } from "../lib/messages";
-import { galleryLessons, gallerySourceNote } from "../lib/shared";
+import { galleryLessons, gallerySourceNote, galleryShow } from "../lib/shared";
 import type { Language } from "../lib/types";
 import { say } from "../lib/types";
 function LessonArt({ id }: { id: string }) {
@@ -185,6 +185,16 @@ export function Gallery({ language }: { language: Language }) {
                 {t(language, "Gallery.openLesson")}{" "}
                 <span aria-hidden="true">↗</span>
               </a>
+              {galleryShow(item.id) && (
+                <a
+                  className="lesson-link lesson-link-show"
+                  href={`#show:${item.id}`}
+                  aria-label={`${t(language, "Gallery.watchTheShow")}: ${item.lesson.title[language]}`}
+                >
+                  {t(language, "Gallery.watchTheShow")}{" "}
+                  <span aria-hidden="true">▶</span>
+                </a>
+              )}
               <details className="lesson-source">
                 <summary>{t(language, "Gallery.aboutThisLesson")}</summary>
                 <p>{gallerySourceNote(item.source, language)}</p>

@@ -458,3 +458,74 @@ describe("Creator and test learner roles", () => {
     ).toBe("Explain what the rate means in plain words.");
   });
 });
+
+describe("Lesson show", () => {
+  it("makes a show for a draft, opens the player with the cover and returns to the review", async () => {
+    const bodies: Record<string, unknown>[] = [];
+    const post: Post = async (path, body) => {
+      if (path === "/api/studio/session")
+        return { sessionId: "s1", attemptsRemaining: 8 } as never;
+      if (path === "/api/studio/compose")
+        return {
+          status: "ready",
+          lesson: coolingLesson(),
+          message: { en: "", zh: "" },
+          attemptsRemaining: 7,
+          model: "test",
+          elapsedMs: 900,
+          usage: null,
+        } as never;
+      if (path === "/api/studio/show") {
+        bodies.push(body as Record<string, unknown>);
+        const s = (kind: string) => ({
+          kind,
+          chapter: 0,
+          heading: { en: kind + " heading", zh: kind },
+          narration: { en: "Spoken " + kind + ".", zh: kind },
+        });
+        return {
+          show: {
+            version: 1,
+            slides: [s("cover"), s("claim"), s("experiment"), s("takeaway")],
+            coverPrompt: "A mug",
+          },
+          cover: "data:image/webp;base64,QUJD",
+          coverModel: "muse-image-1.0",
+          llm: status.models[0],
+          attemptsRemaining: 6,
+          model: "test",
+          elapsedMs: 3000,
+          usage: null,
+        } as never;
+      }
+      return { records: [] } as never;
+    };
+    mount({ authenticated: true, status, view: "create" }, post);
+    fireEvent.change(screen.getByLabelText(/What would you like to explore/), {
+      target: { value: "Cooling" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Create a lesson/ }));
+    await screen.findByText(/Draft ready/);
+    fireEvent.click(
+      screen.getByRole("button", { name: /Make a narrated show/ }),
+    );
+    await screen.findByText("Spoken cover.");
+    expect(bodies).toHaveLength(1);
+    expect((bodies[0].lesson as { version: number }).version).toBe(2);
+    expect(document.querySelector(".show-cover img")?.getAttribute("src")).toBe(
+      "data:image/webp;base64,QUJD",
+    );
+    expect(
+      screen.queryByRole("button", { name: /Present this lesson/ }),
+    ).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /Close show/ }));
+    expect(
+      screen.getByRole("button", { name: /Present this lesson/ }),
+    ).toBeTruthy();
+    expect(document.querySelector(".request-summary")?.textContent).toMatch(
+      /test wrote the show for this lesson · 3\.0 s/,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Watch the show/ }));
+    expect(await screen.findByText("Spoken cover.")).toBeTruthy();
+  });
+});

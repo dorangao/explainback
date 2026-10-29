@@ -18,6 +18,7 @@
     "meta:smoke": "node --env-file-if-exists=.env.local scripts/meta-smoke.mjs",
     "eval:models": "node --env-file-if-exists=.env.local scripts/compare-models.mjs",
     "eval:studio": "node --env-file-if-exists=.env.local scripts/eval-studio.mjs",
+    "shows:gallery": "node --env-file-if-exists=.env.local scripts/make-gallery-shows.mjs",
     "llm:recover": "node --env-file-if-exists=.env.local scripts/recover-ollama.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
     "test:browser": "playwright test",

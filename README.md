@@ -25,6 +25,9 @@ separately in the [deployment notes](docs/vercel-deployment.md).
    [Pendulum from a sketch](https://explainback.app/#lesson:sketch-pendulum)
 2. Predict whether the claim holds, run the experiment, change an input, then
    answer a fresh case. Switch **English / 中文** at any point; your settings survive.
+   Or press **Watch the show** on any card for a narrated slide show of the
+   lesson ([the cooling show](https://explainback.app/#show:cooling)): Muse Wonder
+   wrote the narration, Muse Image drew the cover, your browser reads it aloud.
 3. Each card says where its content came from. Muse-drafted lessons were edited
    after the [frozen evaluation](docs/studio-evaluation.md); one was drafted by
    Muse from a hand-drawn pendulum sketch, shown on its card; the others are
@@ -36,6 +39,31 @@ get a one-click invite link of the form `explainback.app/#invite:CODE` (the code
 stays in the URL fragment, never in server logs) or can type it on the sign-in
 card. Each code has its own hourly request budget, shown in the top bar, and an
 expiry date; the tester password is never published.
+
+## Why Muse, specifically
+
+ExplainBack needs a model that can take **whatever a learner brings** and give
+back **only things code can check**. That is the shape of the Meta Model API:
+
+- **One API, every medium in.** Spark and Wonder read text, images, video, audio
+  and PDF in a single Responses call with a million-token context. A hand-drawn
+  sketch becomes a lesson here today; a photographed worksheet or a spoken
+  explanation is the same request shape.
+- **Strict structured output.** Every creation, revision, assessment, tryout and
+  show is one schema-constrained call. The model returns a lesson contract, a
+  verdict, a report or a script, never code, so the renderer can compile the
+  formulas, check the ranges and compute the answers itself.
+- **Two tiers, two roles.** Wonder is the creator and Spark the test learner. The
+  same contract runs on both, so a stronger model can draft and a faster, cheaper
+  one can try the draft as a first-time learner and report back, with every
+  answer checked by code.
+- **Images and voice on the same key.** Muse Image draws the cover of each lesson
+  show; Muse Voice Transcribe is the path to spoken explanations. The browser
+  supplies the voice, because the Meta API does not synthesize speech, and the
+  app says so on screen.
+- **Measured, not assumed.** A frozen evaluation suite and a rubric judge compare
+  Spark and Wonder on the same cases, so prompt changes are kept only when the
+  numbers improve.
 
 ## What Meta's model does here
 
@@ -56,6 +84,12 @@ API with structured output. The model never writes code that runs in the browser
   one most important gap, asks a follow-up question that does not give the
   answer away, and suggests exactly one bounded next action: replay, compare or
   transfer. Learners can also ask Muse to explain the result itself.
+- **Lesson show.** Once a draft is ready, **Make a narrated show** asks the creator
+  for a short bilingual script (cover, claim, experiment, evidence, transfer,
+  takeaway) and one cover prompt. The server draws the cover with Muse Image, the
+  browser renders each slide from the checked lesson, sweeps the real demo on the
+  experiment slide, and reads the narration aloud with its own speech synthesis.
+  The six gallery shows were generated this way and play without sign-in.
 - **Two models, two roles.** The stronger `muse-wonder-1.0` is the creator: it
   drafts and revises. `muse-spark-1.3` is the test learner: one click sends a
   draft to it as a first-time learner, who predicts, reads the observations,

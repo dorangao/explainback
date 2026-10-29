@@ -36,6 +36,37 @@ request and response bodies.
 
 ![What Muse changed panel](screenshots/revision-summary.jpg)
 
+## Lesson show (October 28)
+
+A show is the lesson as a narrated slide show. **Make a narrated show** (Draft
+review) posts the validated draft to `/api/studio/show`. The creator model
+answers one structured `make_show` call (`src/lesson-show.mjs`): 5–7 slides,
+each with a kind (`cover`, `claim`, `experiment`, `evidence`, `transfer`,
+`takeaway`), a chapter index, and a bilingual heading and narration (at most
+360 characters per language), plus an English prompt for one cover
+illustration. The reader enforces the order (one cover first, one takeaway last,
+at least one experiment slide) and the lengths. The server then asks Muse Image
+(`muse-image-1.0`, `POST /v1/images/generations`, `src/meta.mjs`
+`generateMetaImage`) for the cover and returns it as a data URL; a failed image
+never fails the show, and image bytes are not traced. A show costs one session
+request and one image.
+
+The player (`frontend/components/ShowPlayer.tsx`) renders every slide from the
+checked lesson: the cover with the illustration, the claim, the real demo
+sweeping its parameter over the narration time, the computed evidence and
+metrics, the transfer question, and the authored explanation as the takeaway.
+Narration is spoken by the browser's own speech synthesis in the chosen
+language (a checkbox turns it off; without speech the show advances on a reading
+timer). Arrow keys move, Escape closes. The credits line names the script model
+and the cover model and says that the voice is the browser's, not a Meta model.
+
+The six gallery shows were generated once with `npm run shows:gallery -- --live`
+(Wonder scripts, Muse Image covers, `public/gallery-shows.mjs` and
+`public/gallery/<id>-cover.webp`), reviewed, and play from `#show:<id>` without
+sign-in or model calls. One English slide had a Chinese word leak in
+("upright姿态"); it was corrected by hand, and the test suite checks that each
+stored script still satisfies the reader's contract.
+
 ## Creator and test learner roles (October 28)
 
 `/api/status` now reports `roles`: the **creator** (the configured

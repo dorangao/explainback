@@ -121,3 +121,25 @@ test('status reports creator and tester roles and the tryout runs on the tester 
  assert.equal(report.chapters[0].transfer.correct,true);assert.equal(report.chapters[0].transfer.unit,'m');assert.equal(report.rating,4);
  assert.deepEqual(report.chapters[0].suggestions,['Label the axis.']);assert.equal(report.attemptsRemaining,6);assert.equal(typeof report.elapsedMs,'number');
 });
+test('a show runs the script on the creator session model and adds a cover from the image model when available',async t=>{
+ const seen=[],images=[];
+ const server=createApp({testerCredentials,configured:true,traceEnabled:true,modelCall:async(args,id)=>{
+  seen.push(id);const name=args.tools[0].name;
+  if(name==='compose_lesson')return {toolCall:{name,arguments:JSON.stringify({status:'ready',message:bi('Ready'),lesson:lesson()})}};
+  const s=k=>({kind:k,chapter:0,heading:bi(k),narration:bi('Say '+k)});
+  return {structured:{name:'make_show',value:{slides:[s('cover'),s('claim'),s('experiment'),s('evidence'),s('takeaway')],coverPrompt:'Two cars on a road'}}};
+ },imageCall:async args=>{images.push(args.prompt);if(images.length>1)throw new Error('down');return {dataUrl:'data:image/webp;base64,QUJD',model:'muse-image-1.0',usage:null};}});
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));t.after(()=>new Promise(r=>{server.close(r);server.closeAllConnections();}));
+ const origin=`http://127.0.0.1:${server.address().port}`,cookie=await testerCookie(origin);
+ const post=(path,body)=>fetch(origin+path,{method:'POST',headers:{Origin:origin,Cookie:cookie,'Content-Type':'application/json'},body:JSON.stringify(body)});
+ const s=await(await post('/api/studio/session',{synthetic:true,language:'en'})).json();
+ const result=await(await post('/api/studio/compose',{sessionId:s.sessionId,topic:'Car acceleration'})).json();
+ assert.equal((await post('/api/studio/show',{sessionId:s.sessionId,lesson:{version:9}})).status,400);
+ const show=await(await post('/api/studio/show',{sessionId:s.sessionId,lesson:result.lesson})).json();
+ assert.equal(show.show.slides.length,5);assert.equal(show.show.slides[0].heading.zh,'示例cover');assert.equal(show.cover,'data:image/webp;base64,QUJD');assert.equal(show.coverModel,'muse-image-1.0');
+ assert.deepEqual(images,['Two cars on a road']);assert.equal(seen[1],s.llm.id);assert.equal(show.attemptsRemaining,6);
+ const again=await(await post('/api/studio/show',{sessionId:s.sessionId,lesson:result.lesson})).json();
+ assert.equal(again.cover,null);assert.equal(again.show.slides.length,5);
+ const trace=await(await post('/api/trace',{sessionId:s.sessionId})).json();
+ assert.ok(!JSON.stringify(trace).includes('QUJD'));assert.ok(trace.records.some(r=>r.model==='muse-image-1.0'));
+});
