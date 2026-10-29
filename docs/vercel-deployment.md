@@ -395,3 +395,17 @@ seven-slide show with its cover, Wonder's narration and the credits line,
 stepped to the first experiment slide (the simulated circuit sweeping its
 phase), started and paused browser narration, with no console errors and no
 model request.
+
+## Rejection reason release · October 28, 2026 (Pacific)
+
+Merged [PR #15](https://github.com/dorangao/explainback/pull/15) as `e0a094c` and
+deployed `main` with `vercel deploy --prod -y`; deployment
+`explainback-f1mgy5u73-doran-gaos-projects.vercel.app`, status Ready, serving
+[explainback.app](https://explainback.app/). No environment changes.
+
+Hosted check: the served bundle carries the "Reason" message and the
+pre-line failure style. Through the judge invite, a 1.1 MB JPEG of
+differentiation rules on Wonder drafted a lesson in 13.5 s, so no rejection was
+available to display live; the 502 path is covered by the HTTP and component
+tests. Noted during the check: reusing an `#invite:` link in a tab that already
+consumed it (after sign-out) does not sign in again until the page is reloaded.
