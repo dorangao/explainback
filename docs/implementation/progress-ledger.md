@@ -981,6 +981,9 @@ at step 1 and stops it. Built bundle served locally with
 `traceEnabled:false`, Start demo was enabled, the suction script paused at step
 1 of 11, one Next sent the preset to Muse Spark (feedback returned, 1/5
 attempts, step 2) and Stop ended it with no console errors. Standalone
-checkout: same suites recorded in the PR. Not yet checked on explainback.app;
+checkout, Node 22: check, Node **265/265**, Vitest **44/44**, build, Playwright
+**22/22**. PRs: [dorangao/explainback#21](https://github.com/dorangao/explainback/pull/21)
+and [dorangao/explainbackapp#3](https://github.com/dorangao/explainbackapp/pull/3)
+(the standalone one deploys production when merged). Not yet checked on explainback.app;
 after the standalone merge deploys, open the Physics workbench through the
 judge invite, press Start demo once, Stop, and sign out.
