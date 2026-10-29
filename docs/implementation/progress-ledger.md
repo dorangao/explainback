@@ -43,7 +43,8 @@ current index; dated entries and linked evidence retain the history.
 | SHOW-001 | Claude | Merged as `b8ba6ce`; deployed to production | Base `5f80635`, branch `feat/lesson-show`; `src/lesson-show.mjs` (new), `src/meta.mjs` (Muse Image), `src/server.mjs` (`/api/studio/show`), `scripts/make-gallery-shows.mjs`, `public/gallery-shows.mjs` + six covers, `src/static.mjs`, `frontend/components/ShowPlayer.tsx` (new), App routing `#show:`, Gallery, Studio, DraftReview, types, messages, styles, tests, README (Why Muse) and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
 | REASON-001 | Claude | Merged as `e0a094c`; deployed to production | Base `7bd28a1`, branch `fix/rejection-reason`; `src/server.mjs` (rejection reason on 502 and trace), `src/trace.mjs`, `public/provider-console.mjs`, `frontend/lib/api.ts`, `frontend/components/Studio.tsx`, messages, styles, tests, Studio docs | Done; release recorded in `docs/vercel-deployment.md`. Follow-up: an `#invite:` link reused in the same tab after sign-out needs a reload. |
 | INVITE-002 | Claude | Merged as `7e0f458`; deployed to production | Base `b6796af`, branch `fix/invite-reuse`; `frontend/App.tsx` (invite applied once per navigation, no handled-code guard), `frontend/App.test.tsx` (new) | Done; release recorded in `docs/vercel-deployment.md`. |
-| REVIEW-002 | Devin (review) · Claude (disposition) | Applied, PR open | Base `8e39aee`, branch `chore/housekeeping-review-002`; show cover budget (`src/server.mjs`), sketch source key `muse-sketch`, unused busy state and shadowing, inline strings extracted, demo script rewrite, readiness tracker and ledger header refresh | User reviews and merges; user runs the worktree/branch cleanup commands recorded below. |
+| SEO-001 | Claude | Implemented; PR open | Base `eec2d1a` (`main` after PR #17), branch `feat/seo-pwa-analytics`; `index.html` (SEO/share/PWA head, JSON-LD), `vercel.json` (no `noindex`, asset caching), `src/static.mjs` and `scripts/build-vercel.mjs` (robots/sitemap/manifest/worker/icons), `public/{manifest.webmanifest,sw.js,icons/}`, `frontend/lib/{analytics,install}.ts`, `frontend/main.tsx`, `App.tsx` (route titles, Install button), `package.json` license fields, tests, README/tracker/deployment notes | User merges and deploys, then enables Web Analytics in the Vercel dashboard (Project → Analytics → Enable); confirm the Official Rules under R02. |
+| REVIEW-002 | Devin (review) · Claude (disposition) | Merged as `eec2d1a` (PR #17) | Base `8e39aee`, branch `chore/housekeeping-review-002`; show cover budget (`src/server.mjs`), sketch source key `muse-sketch`, unused busy state and shadowing, inline strings extracted, demo script rewrite, readiness tracker and ledger header refresh | User reviews and merges; user runs the worktree/branch cleanup commands recorded below. |
 
 
 Before working, read the latest table and actual Git state, claim a bounded file
@@ -704,5 +705,57 @@ and `AGENTS.md` are the handoff.
 **Verification:** Node 243/243 (budget assertion added to the show test),
 Vitest 21/21, typecheck, lint (no errors; no-shadow/no-unused-vars warnings in
 Studio/App gone), Prettier, Playwright 18/18.
+
+**State:** merged as `eec2d1a` (PR #17); the worktree/branch cleanup commands
+remain the user's.
+
+### 2026-10-28 Pacific — SEO-001 — Claude
+
+**Request:** check for license requirements beyond a public repository, add an
+MIT license (Doran Gao, 2026) if none, optimise the app for search, enable
+Vercel analytics, and make the app installable on desktop and mobile.
+
+**License:** `LICENSE` (MIT, copyright 2026 Doran Gao) already existed from
+CLEAN-001; `package.json` now carries `license`, `author`, `homepage` and
+`repository`, and the README has a license section. The only rules document in
+the repository (`docs/863382756_…n.pdf`) is the Hackathon Credit Terms: it says
+participation and judging are governed by the separate Official Rules and has no
+licensing clause. The participant guide on Cerebral Valley redirects to a
+sign-in, and public coverage does not quote an IP or license requirement, so
+nothing beyond "public repository" was found; reading the Official Rules stays
+with the user (R02).
+
+**Search and sharing:** the `X-Robots-Tag: noindex, nofollow` header is gone
+from `vercel.json`, `robots.txt` allows everything except `/api/` and names
+`sitemap.xml` (one URL: hash routes are one page); both are generated in
+`src/static.mjs`, written by the build and served by the local server. The head
+gains canonical and hreflang links, an `og:locale` pair, image alt, a
+`robots` meta and a schema.org `WebApplication` JSON-LD block (data-only, so
+the `script-src 'self'` CSP is unchanged). The tab title names the open gallery
+lesson or show. Hashed `/assets/*` files are now cached for a year as immutable
+and icons/gallery/brand files for a day; pages and the API stay `no-store`.
+
+**Installable app:** `public/manifest.webmanifest` (standalone, scope `/`,
+192/512 any icons and a 512 maskable icon rendered from `favicon.svg`, two
+shortcuts) and `public/sw.js` (shell precache; pages network-first with an
+offline fallback; hashed assets cache-first; brand/gallery
+stale-while-revalidate; `/api/*`, `/_vercel/*` and non-GET requests never
+touched). The worker registers on production builds only
+(`frontend/lib/install.ts`), so the Vite dev server and Vitest see none of it;
+Playwright runs against the built `dist` with the worker active. Chromium shows
+an **Install app** button in the top bar when the browser offers the prompt;
+Safari and Firefox install from their own menus (README says how).
+
+**Analytics:** `frontend/lib/analytics.ts` loads the same-origin
+`/_vercel/insights/script.js` only on `explainback.app` or `*.vercel.app`
+hosts and reports hash-route page views with invite codes stripped. No
+dependency was added. The script returns 404 until **Web Analytics is enabled
+in the Vercel dashboard** (Project → Analytics); the CLI exposes no toggle and
+the dashboard needs the user's sign-in, so that step is the user's.
+
+**Verification:** Node 245/245 (crawler files, manifest/worker consistency,
+new static paths), Vitest 25/25 (analytics host guard, once-only script,
+invite scrubbing, worker registration guard), typecheck, lint (warnings only),
+Prettier, build, Playwright 18/18 on the built bundle.
 
 **State:** committed and pushed; PR open; not merged or deployed.
