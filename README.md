@@ -34,6 +34,13 @@ separately in the [deployment notes](docs/vercel-deployment.md).
    hand-authored text over the existing checked experiments. Gallery playback
    makes no model call.
 
+**Install it as an app.** ExplainBack is a web app you can keep on your desktop or
+phone: on Chrome or Edge press **Install app** in the top bar (or the install icon
+in the address bar); on iPhone and iPad use Safari's Share → **Add to Home Screen**;
+on Android Chrome use the menu → **Add to Home screen**. The reviewed lessons and
+shows then open offline; creating a lesson still needs a connection and an access
+code.
+
 Creating and revising **new** lessons with Muse needs an access code. Reviewers
 get a one-click invite link of the form `explainback.app/#invite:CODE` (the code
 stays in the URL fragment, never in server logs) or can type it on the sign-in
@@ -156,6 +163,14 @@ The gallery works without any key. Lesson creation needs `MODEL_API_KEY` from
 - [Vercel setup and retention](docs/vercel-deployment.md)
 - [Naming and source notes](docs/naming-and-sources.md): generic lab names,
   hypothetical numbers, no sponsorship or endorsement claims.
+
+## License and analytics
+
+The source is released under the [MIT License](LICENSE), copyright 2026 Doran
+Gao. The hosted site reports page views to Vercel Web Analytics (no cookies, no
+model requests or lesson text; invite codes are stripped from the reported
+route). The site is indexable: `robots.txt` allows crawling except `/api/`, and
+`sitemap.xml` lists the single page.
 
 ---
 

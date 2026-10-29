@@ -19,6 +19,7 @@ import {
 import { Brand } from "./components/Brand";
 import { Studio } from "./components/Studio";
 import { AccessPanel } from "./components/AccessPanel";
+import { useInstallPrompt } from "./lib/install";
 const Labs = lazy(() =>
   import("./components/labs/Labs").then((module) => ({
     default: module.Labs,
@@ -65,11 +66,18 @@ export function App() {
   const setLang = useCallback((value: Language) => setLanguage(value), []);
   useEffect(() => {
     document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
-    document.title = t(language, "App.explainbackLearnByExplaining");
     try {
       localStorage.setItem("explainback-language", language);
     } catch {}
   }, [language]);
+  // The tab title names the open gallery lesson or show, so shares and history read well.
+  useEffect(() => {
+    const item = galleryLesson(route.lessonId ?? route.showId ?? "");
+    document.title = item
+      ? `${item.lesson.title[language]} · ExplainBack`
+      : t(language, "App.explainbackLearnByExplaining");
+  }, [language, route.lessonId, route.showId]);
+  const installer = useInstallPrompt();
   useEffect(() => {
     const update = () => {
       const code = /^#invite:([A-Za-z0-9-]{8,64})$/.exec(location.hash)?.[1];
@@ -215,6 +223,11 @@ export function App() {
               <option value="zh">中 · 中文</option>
             </select>
           </label>
+          {installer.canInstall && (
+            <button className="text-button" onClick={installer.install}>
+              {t(language, "App.installApp")}
+            </button>
+          )}
           {auth.info.authenticated && !auth.info.open ? (
             <button
               className="text-button"

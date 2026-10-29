@@ -45,6 +45,7 @@ export const messages = {
   },
   "App.explore": { en: "Explore", zh: "探索" },
   "App.exploreLessons": { en: "Explore lessons", zh: "探索课程" },
+  "App.installApp": { en: "Install app", zh: "安装应用" },
   "App.independentLearningPrototype": {
     en: "Independent learning prototype",
     zh: "独立开发的学习原型",

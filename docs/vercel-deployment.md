@@ -306,8 +306,11 @@ above remain historical records.
 Vercel uses the Vite preset, `npm ci --ignore-scripts`, and
 `npm run typecheck && npm run build`; output remains `dist`. `.vercelignore`
 includes the new frontend and TypeScript/Vite entry/config files. The `/api/*`
-rewrite, Node 22 engine, security/noindex headers and hosted Redis/auth boundary
-remain intact. Node 22 CI runs tests, build and synthetic Chromium workflows.
+rewrite, Node 22 engine, security headers and hosted Redis/auth boundary
+remain intact. (Oct 28, SEO-001: the `X-Robots-Tag: noindex` header was removed
+and `robots.txt` now allows crawling; hashed `/assets/*` files are cached for a
+year as immutable and brand/gallery/icon files for a day, while pages and the
+API stay `no-store`.) Node 22 CI runs tests, build and synthetic Chromium workflows.
 
 ## Post-migration cleanup release · October 28, 2026 (Pacific)
 

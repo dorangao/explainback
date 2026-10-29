@@ -45,7 +45,7 @@ eligibility from that date discrepancy.
 | Requirement | Status | Evidence or remaining action |
 |---|---|---|
 | Meta model integration | Done | Latest release record includes default `muse-spark-1.3` and optional `muse-wonder-1.0`; accepted hosted calls are recorded in [release verification](vercel-deployment.md). |
-| Public repository | Done | GitHub reports [dorangao/explainback](https://github.com/dorangao/explainback) public. Final signed-out access check still due. |
+| Public repository | Done | GitHub reports [dorangao/explainback](https://github.com/dorangao/explainback) public, MIT-licensed (copyright 2026 Doran Gao; `LICENSE`, `package.json`, README). Oct 28: no license requirement beyond a public repository was found in the Credit Terms PDF or public event copy; the Official Rules sit behind the Cerebral Valley sign-in, so Doran confirms them under R02. Final signed-out access check still due. |
 | Event-built contribution clearly identified | **Unresolved** | User confirms pre-Oct-26 work was API setup only. Record the development ledger and clarify the Oct 26 kickoff / Oct 27 building-window boundary. Commit dates alone do not establish creation dates. |
 | Beyond a simple education chatbot | Stronger fit; no eligibility ruling | Interactive authoring, controlled execution, review and transfer are working. Demonstrate these directly. |
 | Track, theme and contributors | To confirm | Recommend Indie Developer + Build for Your World, subject to actual eligibility and date-boundary clarification. |
