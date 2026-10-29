@@ -37,6 +37,44 @@ anything cached or edited; never pass a stored result off as live.
 **Pre-flight.** Fresh browser, judge invite link ready, a sketch file on disk,
 EN/ZH switch once, provider console closed unless a request detail is asked for.
 
+## Shot list, verified live on October 28, 2026 Pacific (LIVE-001)
+
+Every beat below was run on `explainback.app` (deployment source `a6e151e`) in
+the Claude browser pane, signed in with the judges invite, in one sitting with
+four model requests. Timings are the app's own elapsed-time lines; the show
+timing is wall clock. Record in a fresh 1280-px browser window, EN, provider
+console closed. Cut to the live URL in every shot so the address bar shows it.
+
+| # | Time | Screen / action | What the camera sees | Say | Live cost |
+|---|---|---|---|---|---|
+| 1 | 0:00–0:12 | `/` signed out | Six library cards, "Free to explore · No sign-in"; hover card 06 *Pendulum sketch* | A hand-drawn sketch became this lesson. Muse read it, code runs it. | none |
+| 2 | 0:12–0:22 | Click **Open lesson** on card 06 (`#lesson:sketch-pendulum`) | Predict step, claim card, gravity slider 1→20, attribution line "Drafted by muse-spark-1.3 from this hand-drawn sketch" | Every lesson is predict, operate, explain, transfer. | none |
+| 3 | 0:22–0:30 | Open `#invite:…` (pre-pasted), land on `#create` | Header shows *judges · N/40 live requests*; three-step strip; cooling prompt pre-filled; **Creator model = muse-wonder-1.0** | One structured request. Wonder returns a lesson contract, never code. | none |
+| 4 | 0:30–0:58 | Click **Create a lesson** | Spinner, then "Draft ready"; line *muse-wonder-1.0 drafted this lesson · 22.7 s · 1382 in / 1567 out*; title *Why Does Coffee Cool Near Room Temperature?*; formulas `troom+(t0-troom)*exp(-k*x)` | The renderer compiles and range-checks the formulas; the model never ships code. (Measured 22.7 s; cut the wait honestly or say "about twenty seconds".) | 1 request |
+| 5 | 0:58–1:10 | Scroll to **Test learner report**, click **Let the test learner try this lesson** | Spark report in ~4 s: *Overall 4/5 clarity*, Predicted *Not sure*, Explained back with numbers 90→37.17→25.39, **Transfer answer 38.07 °C correct**, two Confusions, two Suggestions | Spark predicts, explains back and answers the transfer. Code marked its answer correct; its confusions are its opinion. | 1 request (4.0 s) |
+| 6 | 1:10–1:40 | Click **Use these suggestions in a revision**, then **Revise lesson & demo** | Revision prompt fills with Spark's two suggestions; after ~21 s a **What Muse changed · 2 fields changed** panel shows old vs new *Chapter 1 explanation* and *Assumptions*; **Restore previous draft** visible | The learner's feedback goes straight back to the creator and every changed field is visible. Nothing is a verified improvement until a human reads it. | 1 request (21.5 s) |
+| 7 | 1:40–1:50 | Tick **I reviewed the demo definition…**, click **Present this lesson →**, click **Disagree**, **Test this claim →** | Learner view; claim "cools at the same rate"; curve from 90 °C bending to 22 °C; **Show final state** → *Time = 60 min · Temperature = 25.386 °C* | The learner commits before seeing the result. | none |
+| 8 | 1:50–2:15 | **Explain the result →**; type (or **Say it instead** and speak) one explanation; **Check my explanation with Muse** | Calculated evidence line (25.386 °C, 0.16928 °C/min); after ~3.5 s a green **Supported by the evidence** verdict and one follow-up question that does not give the answer away | Muse grades against the checked result, names the gap (assumptions), asks a follow-up. Voice path: Muse Voice Transcribe writes it down, you can edit the transcript. | 1 request (3.5 s; +1 if spoken) |
+| 9 | 2:15–2:25 | **Try the transfer question →**; type `38.07`; **Check answer locally** | New case 80 °C / 20 °C / 0.08 at 15 min; green *That matches this model.* | Same number Spark got in beat 5; checked by code, not a model. | none |
+| 10 | 2:25–2:50 | **Lesson overview**, click **Make a narrated show**; press ▶ twice | Dark show frame, Muse Image cover (coffee by a window), slide 1/6 narration; slide 3/6 is the live curve with a moving time marker; credits line *narration by muse-wonder · cover by muse-image · voice by your browser* | Wonder wrote the narration, Muse Image drew the cover, the browser speaks; every value comes from the checked lesson. (Measured ~40 s wall clock; if slow, cut to `#show:cooling`, which is pre-generated, and say so.) | 1 request |
+| 11 | 2:50–3:00 | Switch EN → 中 on the show, then back; end card | Chinese narration and controls on the same slide; URL, repo, eval numbers | Spark 6/6 and judge 10.0 on the frozen text suite with prompt v2. Automatic checks do not validate the science. | none |
+
+**Budget.** The run above used 4 of the invite's hourly live requests (Wonder
+create, Spark tryout, Wonder revise, Spark grade) plus the show. The provider
+session counter also drops per request; start the recording with a fresh
+session so beat 10 is not refused.
+
+**Known cosmetic issues seen on this run (not blockers).** After switching to
+中文 while the show was open, the status line "The show is ready. Watch it, or
+present the lesson as usual." stayed in English, and the "requests left in this
+provider session" figure read 3 in EN and 8 in 中文. Record beat 11 on the show
+slide itself, where everything is translated, and keep the status banner out of
+frame or dismiss it first.
+
+**Not verified in this run.** The spoken path of beat 8 (the pane cannot grant a
+microphone); narrow-screen layout; a second chapter. The transfer question and
+show were exercised on the revised draft only.
+
 ## Controls and review
 
 - `/` and `#studio` open Lesson Studio. `#physics` and `#quantum` retain the

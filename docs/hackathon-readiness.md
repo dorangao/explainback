@@ -34,6 +34,22 @@ Muse API-key setup had been done. Application development started October 26.
 pre-event application. The Oct 26 kickoff / Oct 27 building-window boundary still
 needs organizer clarification; this is separate from the corrected provenance.
 
+### October 28 Pacific — organizer clarification and provenance follow-up
+
+The [Discord FAQ](https://discord.com/channels/1557169028080869426/1557169028626251802/1564257793945632779) says that an existing project must submit a fresh standalone repository containing only event work; its demo should open by identifying pre-existing work and what was built this week. A separate [correction](https://discord.com/channels/1557169028080869426/1557169028626251802/1564291996036759676) says the building period starts after the kickoff session. The guide schedules kickoff for 9 a.m. Pacific on October 26; its actual end is not established here. This clarification supersedes the earlier assumption that the stated dates alone determine the boundary, but does not resolve every file's eligibility.
+
+The preserved `docs/baseline/before-claim-testing.json` (captured 5:18 p.m. Pacific on October 26) records pre-9 a.m. modification times for application files, including `public/graph.mjs`, `public/math.mjs`, `src/server.mjs` and `src/meta.mjs`. The first two are byte-identical to the current checkout at `acb0ed3`. Timestamps are evidence requiring reconciliation with the user's earlier statement; they do not independently establish authorship or the origin of every line. See [submission provenance review](submission-provenance.md). The original repo cannot be described as a verified event-only extract on the basis of its first Git commit.
+
+A local, narrow candidate exists at `output/submission-candidate-explainback/`: its included code first appears in later commits, but it is not the full product, not yet source-proven, not published and not a submission. Confirm the event-only boundary and rights, establish how to handle mixed dependencies, and finish a complete, runnable and publicly accessible judge-facing package before claiming R07 complete.
+
+### October 28 Pacific — user timeline clarification
+
+Doran believes the application work was after kickoff and requested that insignificant disputed files be removed and that the old helpers and server be replaced with more standard implementations. The earlier modification-time evidence remains recorded above and has not been independently reconciled. A full standalone local candidate now includes those replacements and has passed local tests and a clean install/build; see the [provenance review](submission-provenance.md) and SUBMIT-001 in the shared ledger for its validation and remaining eligibility questions.
+
+### October 28 Pacific — public candidate and preview
+
+The standalone candidate was published as [dorangao/explainbackapp](https://github.com/dorangao/explainbackapp), public `main` commit `a6e151e8404848eb4d52e5d14bf210c6ee424689`. A clean local clone is at `~/app/explainbackapp`. Vercel preview deployment `dpl_D4d3Uu4ZdZB99eNB6NtXPGRWyDsz` is reported READY at [the preview](https://explainback-kg8htkl23-doran-gaos-projects.vercel.app), with metadata for that same commit. Live access, sign-in and the full lesson flow have not yet been verified. **Follow-up, Oct 28 Pacific (LIVE-001, Claude):** after the domain cutover, the full flow was verified on `explainback.app` signed in with the judges invite: Wonder create 22.7 s, Spark tryout 4.0 s with a code-checked transfer answer, Wonder revision 21.5 s with two changed fields, explain-back graded in 3.5 s, local transfer check accepted, narrated show with Muse Image cover in about 40 s, EN/中 switch. The shot list is in the [demo script](studio-demo.md); spoken explain-back and narrow screens remain unverified live. Existing preview tester, model and Redis settings were retained; this did not deploy to production or submit to the hackathon. Eligibility and rights remain separate review items.
+
 ## Requirements checkpoint
 
 Read the [participant guide](https://cerebralvalley.ai/e/meta-ai-developer-hackathon/details)
