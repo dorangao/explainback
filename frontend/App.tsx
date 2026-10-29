@@ -60,7 +60,6 @@ export function App() {
     [physicsBusy, setPhysicsBusy] = useState(false),
     [quantumBusy, setQuantumBusy] = useState(false);
   const invite = useRef<string | null>(null),
-    handledInvite = useRef(""),
     firstAuth = useRef(false),
     main = useRef<HTMLElement>(null),
     accessRef = useRef<HTMLDivElement>(null);
@@ -89,11 +88,12 @@ export function App() {
       window.removeEventListener("popstate", update);
     };
   }, []);
+  // Each `#invite:` navigation is applied once (the ref is cleared on use), so the same
+  // link signs in again after a sign-out in the same tab, without a reload.
   useEffect(() => {
     if (authLoading) return;
     const code = invite.current;
-    if (!code || handledInvite.current === code) return;
-    handledInvite.current = code;
+    if (!code) return;
     invite.current = null;
     if (authInfo.authenticated) {
       setStarter((n) => n + 1);

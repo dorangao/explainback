@@ -48,6 +48,7 @@ current index; dated entries and linked evidence retain the history.
 | ROLES-001 | Claude | Merged as `bc9f1d2`; deployed to production | Base `00dc995`, branch `feat/creator-tester-roles`; `src/lesson-tester.mjs` (new), `src/server.mjs` (roles, `/api/studio/tryout`), `frontend/components/{Studio,DraftReview,RequestSummary,RevisionSummary}.tsx`, types, messages, styles, tests, README and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
 | SHOW-001 | Claude | Merged as `b8ba6ce`; deployed to production | Base `5f80635`, branch `feat/lesson-show`; `src/lesson-show.mjs` (new), `src/meta.mjs` (Muse Image), `src/server.mjs` (`/api/studio/show`), `scripts/make-gallery-shows.mjs`, `public/gallery-shows.mjs` + six covers, `src/static.mjs`, `frontend/components/ShowPlayer.tsx` (new), App routing `#show:`, Gallery, Studio, DraftReview, types, messages, styles, tests, README (Why Muse) and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
 | REASON-001 | Claude | Merged as `e0a094c`; deployed to production | Base `7bd28a1`, branch `fix/rejection-reason`; `src/server.mjs` (rejection reason on 502 and trace), `src/trace.mjs`, `public/provider-console.mjs`, `frontend/lib/api.ts`, `frontend/components/Studio.tsx`, messages, styles, tests, Studio docs | Done; release recorded in `docs/vercel-deployment.md`. Follow-up: an `#invite:` link reused in the same tab after sign-out needs a reload. |
+| INVITE-002 | Claude | Implemented, validated, PR open | Base `b6796af`, branch `fix/invite-reuse`; `frontend/App.tsx` (invite applied once per navigation, no handled-code guard), `frontend/App.test.tsx` (new) | User reviews and merges; deploy afterwards. |
 
 
 Before working, read the latest table and actual Git state, claim a bounded file
@@ -639,3 +640,22 @@ the trace, provider errors carry none, accepted rows carry none); Vitest (Studio
 typecheck, lint, format, Playwright. Live check recorded below when run.
 
 **State:** merged as `e0a094c` (PR #15) and deployed; bundle check passed, a live rules-image creation drafted normally (no rejection to display). Release recorded in `docs/vercel-deployment.md`.
+
+### 2026-10-28 Pacific — INVITE-002 — Claude
+
+**Request (user):** a reused `#invite:` link in a tab that had already used it
+did not sign in again after sign-out until the page was reloaded.
+
+**Cause:** the App remembered the handled code in a ref and skipped it on the
+next navigation, although the invite ref is already cleared on use.
+
+**Changes:** the handled-code guard is removed; each `#invite:` navigation is
+applied exactly once (the ref is cleared when consumed, so later auth changes
+do not replay it). New `frontend/App.test.tsx` mocks `useAuth` and checks:
+sign-in from the link, sign-out, the same link again signs in again, and an
+auth change alone does not replay a consumed invite.
+
+**Verification:** Vitest, typecheck, lint, format, Node tests, Playwright.
+Live hosted check after deployment.
+
+**State:** committed and pushed; PR open; not merged or deployed.
