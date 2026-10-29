@@ -46,7 +46,7 @@ current index; dated entries and linked evidence retain the history.
 | GALLERY-002 | Claude | Merged as `118cd69`; deployed to production | Base `775b897`, branch `feat/sketch-gallery-and-restore`; `public/gallery-lessons.mjs`, `public/gallery/pendulum-sketch.png`, `src/static.mjs`, `scripts/build-vercel.mjs`, `frontend/components/{Gallery,Studio,RevisionSummary}.tsx`, types, styles, tests, README and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
 | EXPLAIN-001 | Claude | Merged as `88d082c`; deployed to production | Base `118cd69`, branch `feat/explain-back`; `src/lesson-author.mjs` (graded guide contract), `src/server.mjs`, `frontend/components/{LessonPlayer,Studio}.tsx`, `frontend/lib/{types,messages}.ts`, styles, tests, README and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
 | ROLES-001 | Claude | Merged as `bc9f1d2`; deployed to production | Base `00dc995`, branch `feat/creator-tester-roles`; `src/lesson-tester.mjs` (new), `src/server.mjs` (roles, `/api/studio/tryout`), `frontend/components/{Studio,DraftReview,RequestSummary,RevisionSummary}.tsx`, types, messages, styles, tests, README and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
-| SHOW-001 | Claude | Implemented, validated, PR open | Base `5f80635`, branch `feat/lesson-show`; `src/lesson-show.mjs` (new), `src/meta.mjs` (Muse Image), `src/server.mjs` (`/api/studio/show`), `scripts/make-gallery-shows.mjs`, `public/gallery-shows.mjs` + six covers, `src/static.mjs`, `frontend/components/ShowPlayer.tsx` (new), App routing `#show:`, Gallery, Studio, DraftReview, types, messages, styles, tests, README (Why Muse) and Studio docs | User reviews and merges; deploy afterwards. |
+| SHOW-001 | Claude | Merged as `b8ba6ce`; deployed to production | Base `5f80635`, branch `feat/lesson-show`; `src/lesson-show.mjs` (new), `src/meta.mjs` (Muse Image), `src/server.mjs` (`/api/studio/show`), `scripts/make-gallery-shows.mjs`, `public/gallery-shows.mjs` + six covers, `src/static.mjs`, `frontend/components/ShowPlayer.tsx` (new), App routing `#show:`, Gallery, Studio, DraftReview, types, messages, styles, tests, README (Why Muse) and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
 
 
 Before working, read the latest table and actual Git state, claim a bounded file
@@ -609,4 +609,4 @@ Muse Image balloon cover, the player opened over the draft and closed back to
 the review with "Watch the show" available. A cover heading was unreadable on
 the dark stage in the first run; fixed before commit.
 
-**State:** committed and pushed; PR open; not merged or deployed.
+**State:** merged as `b8ba6ce` (PR #14) and deployed; hosted check of `#show:quantum` signed out (cover, narration, experiment slide, browser voice, no console errors). Release recorded in `docs/vercel-deployment.md`.

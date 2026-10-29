@@ -381,3 +381,17 @@ in 3.0 s: prediction with reason, an explanation quoting the labelled
 observations (weight 735.75 N constant, air resistance 0 → 4823.4 → 19294 N),
 transfer answer 2572.5 N checked correct, two confusions, two suggestions and a
 4/5 clarity rating. Sign-out restored the public library afterwards.
+
+## Lesson show release · October 28, 2026 (Pacific)
+
+Merged [PR #14](https://github.com/dorangao/explainback/pull/14) as `b8ba6ce` and
+deployed `main` with `vercel deploy --prod -y`; deployment
+`explainback-qja089him-doran-gaos-projects.vercel.app`, status Ready, serving
+[explainback.app](https://explainback.app/). No environment changes; the six
+Muse Image covers are served from `/gallery/<id>-cover.webp` (200, 220–375 kB).
+
+Hosted check, signed out: `https://explainback.app/#show:quantum` opened the
+seven-slide show with its cover, Wonder's narration and the credits line,
+stepped to the first experiment slide (the simulated circuit sweeping its
+phase), started and paused browser narration, with no console errors and no
+model request.
