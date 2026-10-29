@@ -748,6 +748,9 @@ body {
   flex-wrap: wrap;
   align-items: center;
 }
+.studio-message {
+  white-space: pre-line;
+}
 .studio-message,
 .request-progress {
   padding: 14px 18px;

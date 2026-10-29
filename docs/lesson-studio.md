@@ -34,6 +34,16 @@ usage when the provider reports it. The server adds `model`, `elapsedMs` and
 `usage` to those replies. The developer console remains the place for full
 request and response bodies.
 
+When a reply is rejected, the failure line now carries the reason: the 502
+response includes `reason`, the validator's own one-line message (for example
+"title needs both languages, each 1–80 characters." or "Use 3–6 process
+stages."), bounded to 200 characters with configured secrets removed and never
+a raw upstream body. The Studio shows it under "The request could not be
+completed or validated", and the provider-activity record shows it next to
+"failed or rejected". Provider and transport errors carry no reason: their text
+never reaches the browser. The reason is a hint for the next attempt; the draft
+and the request budget behave as before.
+
 ![What Muse changed panel](screenshots/revision-summary.jpg)
 
 ## Lesson show (October 28)
