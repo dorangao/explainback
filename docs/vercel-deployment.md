@@ -364,3 +364,20 @@ expiry, 304 reuses the body) sent with "Check my explanation with Muse" returned
 the verdict **Supported by the evidence**, feedback, a follow-up question and a
 next action from `muse-spark-1.3` in 4.7 s; the quota line showed the judge
 budget. Sign-out restored the public library afterwards.
+
+## Creator and test learner release · October 28, 2026 (Pacific)
+
+Merged [PR #13](https://github.com/dorangao/explainback/pull/13) as `bc9f1d2` and
+deployed `main` with `vercel deploy --prod -y`; deployment
+`explainback-kgmkk97op-doran-gaos-projects.vercel.app`, status Ready, serving
+[explainback.app](https://explainback.app/). No environment changes; the build
+no longer logs the ineffective dynamic import warning.
+
+Hosted check through the judge invite: the Create form opened on
+`muse-wonder-1.0` as the creator with "Test learner: Meta · muse-spark-1.3"
+shown beside it. Wonder drafted "Why a parachute changes the fall" (24.6 s,
+first attempt). "Let the test learner try this lesson" returned Spark's report
+in 3.0 s: prediction with reason, an explanation quoting the labelled
+observations (weight 735.75 N constant, air resistance 0 → 4823.4 → 19294 N),
+transfer answer 2572.5 N checked correct, two confusions, two suggestions and a
+4/5 clarity rating. Sign-out restored the public library afterwards.
