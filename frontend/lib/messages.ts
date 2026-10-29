@@ -319,6 +319,10 @@ export const messages = {
     zh: "先做一个预测",
   },
   "LessonPlayer.measuredState": { en: "Measured state", zh: "测量状态" },
+  "LessonPlayer.microphoneAccessWasNotGranted": {
+    en: "Microphone access was not granted.",
+    zh: "未获得麦克风权限。",
+  },
   "LessonPlayer.museFeedbackOnYourExplanation": {
     en: "Muse feedback on your explanation needs creation access. The reviewed explanation below is always available.",
     zh: "让 Muse 评估你的解释需要创建权限；下方经审阅的解释始终可见。",
@@ -339,7 +343,32 @@ export const messages = {
   },
   "LessonPlayer.predict": { en: "Predict", zh: "预测" },
   "LessonPlayer.replayExperiment": { en: "Replay experiment", zh: "重播实验" },
+  "LessonPlayer.recordingUpToOneMinute": {
+    en: "Recording… up to one minute",
+    zh: "录音中…最长一分钟",
+  },
   "LessonPlayer.restartLesson": { en: "Restart lesson", zh: "重新学习" },
+  "LessonPlayer.sayItInstead": { en: "Say it instead", zh: "改为口述" },
+  "LessonPlayer.stopAndTranscribe": {
+    en: "Stop and transcribe",
+    zh: "停止并转写",
+  },
+  "LessonPlayer.theRecordingWasTooShort": {
+    en: "The recording was too short.",
+    zh: "录音太短。",
+  },
+  "LessonPlayer.thisBrowserCannotRecord": {
+    en: "This browser cannot record audio here.",
+    zh: "此浏览器无法在此录音。",
+  },
+  "LessonPlayer.transcribedByMuseVoiceEdit": {
+    en: "Transcribed by Muse Voice Transcribe. Edit it, then check.",
+    zh: "由 Muse Voice Transcribe 转写，可先编辑再检查。",
+  },
+  "LessonPlayer.transcribingWithMuseVoice": {
+    en: "Transcribing with Muse Voice…",
+    zh: "Muse Voice 正在转写…",
+  },
   "LessonPlayer.runTheExperiment": {
     en: "Run the experiment",
     zh: "亲手运行实验",
@@ -415,6 +444,10 @@ export const messages = {
     zh: "显示全部修改",
   },
   "RevisionSummary.tokensIn": { en: "tokens in", zh: "输入 token" },
+  "RevisionSummary.transcribedYourExplanation": {
+    en: "transcribed your explanation",
+    zh: "转写了你的解释",
+  },
   "RevisionSummary.triedThisLessonAs": {
     en: "tried this lesson as a test learner",
     zh: "以测试学习者身份试学了本课",

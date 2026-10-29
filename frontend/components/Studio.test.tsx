@@ -9,6 +9,13 @@ import {
   within,
 } from "@testing-library/react";
 import { Studio } from "./Studio";
+vi.mock("../lib/recorder", () => ({
+  MicrophoneError: class extends Error {},
+  startRecording: vi.fn(async () => ({
+    stop: async () => ({ wav: new Blob(["pcm"]), durationMs: 1500 }),
+  })),
+  blobToBase64: async () => "QUJD",
+}));
 import type { Post, Status } from "../lib/types";
 import { ApiError } from "../lib/api";
 import {
@@ -338,6 +345,78 @@ describe("Explain it back", () => {
     );
     await waitFor(() => expect(bodies).toHaveLength(2));
     expect(bodies[1].explanation).toBeUndefined();
+  });
+  it("records a spoken explanation, transcribes it with Muse Voice and fills the textarea", async () => {
+    const bodies: Record<string, unknown>[] = [];
+    const post: Post = async (path, body) => {
+      if (path === "/api/studio/session")
+        return { sessionId: "s1", attemptsRemaining: 8 } as never;
+      if (path === "/api/studio/transcribe") {
+        bodies.push(body as Record<string, unknown>);
+        return {
+          text: "The cached copy skips the network round trip.",
+          model: "muse-voice-transcribe-1.0",
+          elapsedMs: 900,
+          usage: null,
+          attemptsRemaining: 8,
+        } as never;
+      }
+      return { records: [] } as never;
+    };
+    mount(
+      {
+        authenticated: true,
+        status: { ...status, voice: true },
+        lessonId: "web-cache",
+      },
+      post,
+    );
+    await screen.findByRole("heading", {
+      name: /Loading a web page with a cache/,
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^Agree$/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Test this claim/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Show final state/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Explain the result/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Say it instead/ }));
+    const stop = await screen.findByRole("button", {
+      name: /Stop and transcribe/,
+    });
+    expect(screen.getByText(/Recording… up to one minute/)).toBeTruthy();
+    fireEvent.click(stop);
+    expect(
+      await screen.findByText(/Transcribed by Muse Voice Transcribe/),
+    ).toBeTruthy();
+    const textarea = screen.getByLabelText(
+      /Explain what changed and why, in your own words/,
+    ) as HTMLTextAreaElement;
+    expect(textarea.value).toBe(
+      "The cached copy skips the network round trip.",
+    );
+    expect(bodies).toEqual([
+      { sessionId: "s1", language: "en", audio: "QUJD" },
+    ]);
+    expect(document.querySelector(".request-summary")?.textContent).toMatch(
+      /muse-voice-transcribe-1\.0 transcribed your explanation · 0\.9 s/,
+    );
+    expect(
+      (
+        screen.getByRole("button", {
+          name: /Check my explanation with Muse/,
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(false);
+  });
+  it("hides the microphone when the server has no voice model", async () => {
+    mount({ authenticated: true, status, lessonId: "web-cache" });
+    await screen.findByRole("heading", {
+      name: /Loading a web page with a cache/,
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^Agree$/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Test this claim/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Show final state/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Explain the result/ }));
+    expect(screen.queryByRole("button", { name: /Say it instead/ })).toBeNull();
   });
   it("keeps the textarea without access and explains that feedback needs it", async () => {
     mount({ lessonId: "web-cache" });

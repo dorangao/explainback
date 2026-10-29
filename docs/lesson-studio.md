@@ -120,6 +120,28 @@ The learner text is untrusted subject matter in the prompt, never instructions.
 Signed-out visitors still see the textarea and the reviewed explanation; the
 feedback button is replaced by a note that it needs creation access.
 
+### Spoken explanation (October 28)
+
+With creation access on a server that has a Meta key, **Say it instead** records
+up to one minute from the microphone through Web Audio (mono 16-bit PCM WAV at
+16 kHz, resampled in the browser when the device runs at another rate; the
+format Muse Voice Transcribe accepts) and posts it as base64 to
+`/api/studio/transcribe` with the session and language. The server validates the
+RIFF header, channel count, bit depth, sample rate and duration before anything
+is forwarded, counts the request against the hourly budget but not the eight
+lesson attempts, and calls `muse-voice-transcribe-1.0` (`POST
+/v1/asr/transcribe`, multipart `request` + `audio`, push-to-talk mode, a
+language bias of English or Chinese from the UI language). The transcript is
+appended to the learner's textarea, marked "Transcribed by Muse Voice
+Transcribe. Edit it, then check.", so the learner reviews it before **Check my
+explanation with Muse**. Traces record sizes, duration and the transcript, never
+audio bytes; a failed transcription is a 502 with a plain message and the
+textarea stays usable. Browsers without microphone access or Web Audio get a
+one-line note instead; the button is hidden when `/api/status` reports
+`voice: false`. Live check Oct 28: a 6.9 s synthetic English sentence
+transcribed word for word in 2.2 s; a 6.1 s Mandarin sentence transcribed in
+2.4 s with its first syllable dropped.
+
 ## Image input and model choice (October 28)
 
 **Add a photo, sketch or diagram** sits above the Create button. The browser

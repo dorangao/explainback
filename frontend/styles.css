@@ -2162,3 +2162,27 @@ body {
     flex-direction: column;
   }
 }
+
+/* Spoken explain-back */
+.explain-back-voice {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: 0.35rem 0 0.5rem;
+}
+.explain-back-voice .recording {
+  border-color: #b3261e;
+  color: #b3261e;
+  animation: explainback-pulse 1.2s ease-in-out infinite;
+}
+@keyframes explainback-pulse {
+  50% {
+    box-shadow: 0 0 0 4px rgba(179, 38, 30, 0.18);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .explain-back-voice .recording {
+    animation: none;
+  }
+}

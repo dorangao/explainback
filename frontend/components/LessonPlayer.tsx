@@ -1,5 +1,15 @@
-import { useEffect, useMemo, useReducer, useRef, useState, useId } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+  useId,
+} from "react";
 import { t } from "../lib/messages";
+import { MicrophoneError, startRecording } from "../lib/recorder";
+import type { Recording } from "../lib/recorder";
 import type { Feedback, Language, Player } from "../lib/types";
 import { say } from "../lib/types";
 import { formatDemoNumber } from "../lib/shared";
@@ -23,6 +33,7 @@ export function LessonPlayer({
   canAsk,
   feedback,
   onGuide,
+  onTranscribe,
   onClearFeedback,
   onBack,
   onLibrary,
@@ -34,6 +45,8 @@ export function LessonPlayer({
   canAsk: boolean;
   feedback: Feedback | null;
   onGuide: (explanation?: string) => void;
+  // Speech to text for the explain-back; absent when the server has no voice model.
+  onTranscribe?: (wav: Blob) => Promise<string | null>;
   onClearFeedback: () => void;
   onBack: () => void;
   onLibrary: () => void;
@@ -50,7 +63,71 @@ export function LessonPlayer({
     } | null>(null),
     [counts, setCounts] = useState<number[] | null>(null),
     // The learner's own explanation, kept per chapter so a replay does not erase it.
-    [own, setOwn] = useState<Record<number, string>>({});
+    [own, setOwn] = useState<Record<number, string>>({}),
+    // Spoken explanation: microphone → WAV → Muse Voice Transcribe → the textarea.
+    [voice, setVoice] = useState<"idle" | "recording" | "transcribing">("idle"),
+    [voiceNote, setVoiceNote] = useState("");
+  const recording = useRef<Recording | null>(null);
+  useEffect(
+    () => () => {
+      void recording.current?.stop().catch(() => {});
+      recording.current = null;
+    },
+    [],
+  );
+  const stopVoice = useCallback(
+    async (chapterIndex: number) => {
+      const current = recording.current;
+      if (!current || !onTranscribe) return;
+      recording.current = null;
+      setVoice("transcribing");
+      try {
+        const { wav, durationMs } = await current.stop();
+        if (durationMs < 300) {
+          setVoiceNote(t(language, "LessonPlayer.theRecordingWasTooShort"));
+          return;
+        }
+        const text = await onTranscribe(wav);
+        if (text) {
+          setOwn((previous) => {
+            const before = previous[chapterIndex]?.trimEnd();
+            return {
+              ...previous,
+              [chapterIndex]: (before ? `${before} ${text}` : text).slice(
+                0,
+                700,
+              ),
+            };
+          });
+          setVoiceNote(t(language, "LessonPlayer.transcribedByMuseVoiceEdit"));
+        } else setVoiceNote("");
+      } finally {
+        setVoice("idle");
+      }
+    },
+    [language, onTranscribe],
+  );
+  const startVoice = useCallback(
+    async (chapterIndex: number) => {
+      setVoiceNote("");
+      try {
+        recording.current = await startRecording({
+          onAutoStop: () => void stopVoice(chapterIndex),
+        });
+        setVoice("recording");
+      } catch (error) {
+        setVoiceNote(
+          t(
+            language,
+            error instanceof MicrophoneError && error.message === "denied"
+              ? "LessonPlayer.microphoneAccessWasNotGranted"
+              : "LessonPlayer.thisBrowserCannotRecord",
+          ),
+        );
+      }
+    },
+    [language, stopVoice],
+  );
   const heading = useRef<HTMLHeadingElement>(null),
     state = player.state;
   // The player mutates in place; chapter, variant, metric and controls key the memo.
@@ -377,6 +454,44 @@ export function LessonPlayer({
                     setOwn({ ...own, [state.chapter]: event.target.value })
                   }
                 />
+                {canAsk && onTranscribe && (
+                  <div className="explain-back-voice">
+                    {voice === "idle" && (
+                      <button
+                        type="button"
+                        className="secondary"
+                        disabled={busy}
+                        onClick={() => void startVoice(state.chapter)}
+                      >
+                        🎤 {t(language, "LessonPlayer.sayItInstead")}
+                      </button>
+                    )}
+                    {voice === "recording" && (
+                      <>
+                        <button
+                          type="button"
+                          className="secondary recording"
+                          onClick={() => void stopVoice(state.chapter)}
+                        >
+                          ■ {t(language, "LessonPlayer.stopAndTranscribe")}
+                        </button>
+                        <span className="fine" role="status">
+                          {t(language, "LessonPlayer.recordingUpToOneMinute")}
+                        </span>
+                      </>
+                    )}
+                    {voice === "transcribing" && (
+                      <button type="button" className="secondary" disabled>
+                        {t(language, "LessonPlayer.transcribingWithMuseVoice")}
+                      </button>
+                    )}
+                    {voiceNote && voice !== "recording" && (
+                      <span className="fine" role="status">
+                        {voiceNote}
+                      </span>
+                    )}
+                  </div>
+                )}
                 <div className="explain-back-actions">
                   {canAsk ? (
                     <button

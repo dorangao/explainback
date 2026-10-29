@@ -23,8 +23,9 @@ separately in the [deployment notes](docs/vercel-deployment.md).
    [Acceleration, roll & landing](https://explainback.app/#lesson:vehicle) ·
    [Quantum interference](https://explainback.app/#lesson:quantum) ·
    [Pendulum from a sketch](https://explainback.app/#lesson:sketch-pendulum)
-2. Predict whether the claim holds, run the experiment, change an input, then
-   answer a fresh case. Switch **English / 中文** at any point; your settings survive.
+2. Predict whether the claim holds, run the experiment, explain what changed in
+   your own words (typed, or spoken with **Say it instead** when signed in: Muse
+   Voice Transcribe writes it down, Muse grades it), then answer a fresh case. Switch **English / 中文** at any point; your settings survive.
    Or press **Watch the show** on any card for a narrated slide show of the
    lesson ([the cooling show](https://explainback.app/#show:cooling)): Muse Wonder
    wrote the narration, Muse Image drew the cover, your browser reads it aloud.
@@ -65,9 +66,10 @@ back **only things code can check**. That is the shape of the Meta Model API:
   one can try the draft as a first-time learner and report back, with every
   answer checked by code.
 - **Images and voice on the same key.** Muse Image draws the cover of each lesson
-  show; Muse Voice Transcribe is the path to spoken explanations. The browser
-  supplies the voice, because the Meta API does not synthesize speech, and the
-  app says so on screen.
+  show, and Muse Voice Transcribe turns a spoken explanation into the text that
+  Muse then grades (**Say it instead** in the Explain step; the transcript is
+  editable before checking). The browser supplies the narrator's voice, because
+  the Meta API does not synthesize speech, and the app says so on screen.
 - **Measured, not assumed.** A frozen evaluation suite and a rubric judge compare
   Spark and Wonder on the same cases, so prompt changes are kept only when the
   numbers improve.

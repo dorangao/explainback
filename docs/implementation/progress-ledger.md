@@ -19,7 +19,7 @@ current index; dated entries and linked evidence retain the history.
   back, #13 creator/tester roles and tryout, #14 narrated shows and Why Muse,
   #15 rejection reasons, #16 invite reuse, #17 Devin's review housekeeping,
   #18 indexable/installable site with Vercel analytics (analytics toggle still
-  off in the dashboard).
+  off in the dashboard). In progress: VOICE-001 spoken explain-back (PR open).
 - **Fresh local checks (Oct 28, PR #16 branch):** Node **243/243**, Vitest
   **21/21**, Playwright **18/18**, typecheck, lint (warnings only), Prettier,
   build. CI (`verify.yml`) runs the same on every PR.
@@ -45,6 +45,7 @@ current index; dated entries and linked evidence retain the history.
 | SHOW-001 | Claude | Merged as `b8ba6ce`; deployed to production | Base `5f80635`, branch `feat/lesson-show`; `src/lesson-show.mjs` (new), `src/meta.mjs` (Muse Image), `src/server.mjs` (`/api/studio/show`), `scripts/make-gallery-shows.mjs`, `public/gallery-shows.mjs` + six covers, `src/static.mjs`, `frontend/components/ShowPlayer.tsx` (new), App routing `#show:`, Gallery, Studio, DraftReview, types, messages, styles, tests, README (Why Muse) and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
 | REASON-001 | Claude | Merged as `e0a094c`; deployed to production | Base `7bd28a1`, branch `fix/rejection-reason`; `src/server.mjs` (rejection reason on 502 and trace), `src/trace.mjs`, `public/provider-console.mjs`, `frontend/lib/api.ts`, `frontend/components/Studio.tsx`, messages, styles, tests, Studio docs | Done; release recorded in `docs/vercel-deployment.md`. Follow-up: an `#invite:` link reused in the same tab after sign-out needs a reload. |
 | INVITE-002 | Claude | Merged as `7e0f458`; deployed to production | Base `b6796af`, branch `fix/invite-reuse`; `frontend/App.tsx` (invite applied once per navigation, no handled-code guard), `frontend/App.test.tsx` (new) | Done; release recorded in `docs/vercel-deployment.md`. |
+| VOICE-001 | Claude | Implemented; PR open | Base `35817c6` (`main` after PR #18 docs), branch `feat/spoken-explain-back`; `src/wav.mjs` (new), `src/meta.mjs` (`transcribeMetaAudio`), `src/server.mjs` (`/api/studio/transcribe`, `status.voice`, `transcribeCall` option), `frontend/lib/recorder.ts` (new), `LessonPlayer.tsx` (Say it instead), `Studio.tsx` (transcribe request), `RequestSummary.tsx`, hook mode, types, messages, styles, tests, README/Studio/demo docs | User merges and deploys; live judge-invite check of the microphone path in a real browser (the pane cannot grant a microphone). |
 | SEO-001 | Claude | Merged as `5c9a17f` (PR #18); deployed to production | Base `eec2d1a` (`main` after PR #17), branch `feat/seo-pwa-analytics`; `index.html` (SEO/share/PWA head, JSON-LD), `vercel.json` (no `noindex`, asset caching), `src/static.mjs` and `scripts/build-vercel.mjs` (robots/sitemap/manifest/worker/icons), `public/{manifest.webmanifest,sw.js,icons/}`, `frontend/lib/{analytics,install}.ts`, `frontend/main.tsx`, `App.tsx` (route titles, Install button), `package.json` license fields, tests, README/tracker/deployment notes | User enables Web Analytics in the Vercel dashboard (Project → Analytics → Enable) and confirms the Official Rules under R02. |
 | REVIEW-002 | Devin (review) · Claude (disposition) | Merged as `eec2d1a` (PR #17) | Base `8e39aee`, branch `chore/housekeeping-review-002`; show cover budget (`src/server.mjs`), sketch source key `muse-sketch`, unused busy state and shadowing, inline strings extracted, demo script rewrite, readiness tracker and ledger header refresh | User reviews and merges; user runs the worktree/branch cleanup commands recorded below. |
 
@@ -763,3 +764,46 @@ Prettier, build, Playwright 18/18 on the built bundle.
 **State:** merged as `5c9a17f` (PR #18) and deployed; release record in
 `docs/vercel-deployment.md`. Remaining for the user: the Vercel Web Analytics
 toggle and the Official Rules check (R02).
+
+### 2026-10-28 Pacific — VOICE-001 — Claude
+
+**Request:** "Keep going" after SEO-001; picked from the recorded follow-ups:
+the spoken explain-back through Muse Voice Transcribe, which adds a third Meta
+model to the learner loop (Wonder/Spark text, Muse Image covers, Muse Voice
+speech in) and strengthens the "why Muse" angle for the creative-use criterion.
+
+**API contract (dev.meta.ai, read Oct 28):** `POST https://api.meta.ai/v1/asr/transcribe`,
+bearer key, multipart with a `request` JSON part (`model`, `mode`
+`PUSH_TO_TALK`, `audioEncoding` `WAV`, optional `languageBias` names) and an
+`audio` part; RIFF/WAVE mono 16-bit PCM at 16 or 24 kHz only, 32 MB / 10 min
+caps; JSON reply `{sessionId, transcript, audioDurationMs, turns}`.
+
+**Built:** `src/wav.mjs` validates the header, format, rate and 0.3–60 s
+duration and decodes the base64 body (bounded at 2.6 MB); `transcribeMetaAudio`
+in `src/meta.mjs` builds the multipart request with Node's `FormData`/`Blob`,
+30 s timeout, traces sizes and the transcript only; `/api/studio/transcribe`
+needs a Lesson Studio session, a language, charges the hourly bucket (not the
+eight attempts), returns `{text, model, audioDurationMs, elapsedMs}`, 503 when
+no key is configured, 502 on failure with no upstream text; `/api/status` adds
+`voice`. Browser: `frontend/lib/recorder.ts` captures through Web Audio
+(`AudioContext` at 16 kHz, `ScriptProcessorNode`, linear resample fallback,
+WAV encoder, base64), auto-stops at one minute; `LessonPlayer` shows **Say it
+instead** → **Stop and transcribe** → "Transcribing with Muse Voice…", appends
+the transcript to the per-chapter textarea with an "edit it, then check" note,
+and reports denied/unsupported microphones; `Studio.transcribe` runs through
+the shared provider session (busy, metrics "transcribed your explanation", 45 s
+client timeout, failure line). The microphone is hidden when `status.voice` is
+false or without creation access.
+
+**Verification:** Node 249/249 (`test/speech.test.mjs`: WAV reader cases,
+multipart contract and trace, route validation/trace/502/503), Vitest 30/30
+(recorder helpers; spoken flow with a mocked recorder; hidden without voice),
+typecheck, lint (warnings only), Prettier, build, Playwright 18/18. Live, local
+open-access server with the real key: a 6.9 s synthetic English sentence
+(macOS `say`, 16 kHz) came back word for word in 2.2 s; a 6.1 s Mandarin
+sentence in 2.4 s with its first syllable dropped. In the dev server the button
+renders in the Explain step for the cache lesson; the browser pane cannot grant
+a microphone, so the recording path itself was exercised by the component test
+and the WAV encoder test, not by a real microphone.
+
+**State:** committed and pushed; PR open; not merged or deployed.
