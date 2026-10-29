@@ -129,9 +129,9 @@ function TryoutReport({
 }) {
   const suggestions = tryout.chapters.flatMap((c) => c.suggestions);
   const prediction = {
-    agree: say(language, "Agree", "同意"),
-    disagree: say(language, "Disagree", "不同意"),
-    unsure: say(language, "Not sure", "不确定"),
+    agree: t(language, "DraftReview.agree"),
+    disagree: t(language, "DraftReview.disagree"),
+    unsure: t(language, "DraftReview.notSure"),
   };
   const items = (list: string[]) =>
     list.length === 0 ? (
@@ -163,7 +163,7 @@ function TryoutReport({
       {tryout.chapters.map((c, i) => (
         <div key={i}>
           <h3>
-            {say(language, "Chapter", "章节")} {i + 1}
+            {t(language, "DraftReview.chapter")} {i + 1}
           </h3>
           <dl>
             <dt>{t(language, "DraftReview.predicted")}</dt>
@@ -461,7 +461,7 @@ export function DraftReview({
             onClick={onTryout}
           >
             {busy
-              ? say(language, "Muse is working…", "Muse 正在处理…")
+              ? t(language, "DraftReview.museIsWorking")
               : t(language, "DraftReview.letTheTestLearnerTry")}
           </button>
           {tryout && (
@@ -488,7 +488,7 @@ export function DraftReview({
               onClick={onMakeShow}
             >
               {busy
-                ? say(language, "Muse is working…", "Muse 正在处理…")
+                ? t(language, "DraftReview.museIsWorking")
                 : t(language, "DraftReview.makeANarratedShow")}
             </button>
             {hasShow && (

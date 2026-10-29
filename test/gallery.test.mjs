@@ -8,7 +8,7 @@ import {testerCredentials} from '../test-support/tester.mjs';
 test('every gallery lesson validates, states its provenance and completes locally in both languages',()=>{
  assert.ok(galleryLessons.length>=4);assert.equal(new Set(galleryIds).size,galleryIds.length);
  for(const item of galleryLessons){
-  assert.match(item.id,/^[a-z-]+$/);assert.ok(['muse','muse-image','catalog'].includes(item.source));assert.ok(['model','process','catalog'].includes(item.kind));
+  assert.match(item.id,/^[a-z-]+$/);assert.ok(['muse','muse-sketch','catalog'].includes(item.source));assert.ok(['model','process','catalog'].includes(item.kind));
   assert.ok(item.summary.en.length<=200&&item.summary.zh.length<=200);
   const lesson=validateLesson(item.lesson);assert.equal(lesson.chapters.length,item.lesson.chapters.length);
   for(const language of ['en','zh']){
@@ -38,11 +38,11 @@ test('gallery playback needs no sign-in: status stays private while the page is 
 });
 test('the sketch-sourced lesson records its image, ships the image with the brand files, and names the sketch in its provenance',async()=>{
  const {galleryLessons,gallerySourceNote}=await import('../public/gallery-lessons.mjs');
- const item=galleryLessons.find(l=>l.id==='sketch-pendulum');assert.ok(item);assert.equal(item.source,'muse-image');assert.equal(item.image,'/gallery/pendulum-sketch.png');
+ const item=galleryLessons.find(l=>l.id==='sketch-pendulum');assert.ok(item);assert.equal(item.source,'muse-sketch');assert.equal(item.image,'/gallery/pendulum-sketch.png');
  assert.ok(galleryLessons.filter(l=>l.image).every(l=>l.image.startsWith('/gallery/')));
  const {brandFiles}=await import('../src/static.mjs');assert.equal(brandFiles.get('/gallery/pendulum-sketch.png'),'image/png');
  const {readFileSync}=await import('node:fs');const bytes=readFileSync(new URL('../public/gallery/pendulum-sketch.png',import.meta.url));assert.equal(bytes.subarray(1,4).toString(),'PNG');
- assert.match(gallerySourceNote('muse-image','en'),/sketch/);assert.match(gallerySourceNote('muse-image','zh'),/草图/);
+ assert.match(gallerySourceNote('muse-sketch','en'),/sketch/);assert.match(gallerySourceNote('muse-sketch','zh'),/草图/);
 });
 test('every gallery lesson has a generated show whose cover is packaged with the brand assets',async()=>{
  const {galleryShows,galleryShow,showIdFromHash}=await import('../public/gallery-shows.mjs');

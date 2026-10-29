@@ -2,7 +2,7 @@
 
 ## Shared progress record
 
-Codex and Claude use the same ledger: `docs/implementation/progress-ledger.md`.
+Codex, Claude and Devin use the same ledger: `docs/implementation/progress-ledger.md`.
 Read it before starting work, together with the relevant source and verification
 notes. `CLAUDE.md` points to these instructions; do not maintain a second ledger.
 

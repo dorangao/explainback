@@ -60,7 +60,7 @@ export const galleryLessons=Object.freeze([
    {experiment:'search',framing:bi('One of four items is marked. Decide how many queries an ideal search needs before running it.','四个项目中有一个被标记。运行前先判断理想搜索需要查询几次。'),explanation:bi('Amplitude amplification finds the marked item of four in a single query in this ideal simulation; no hardware or speed advantage is claimed.','在这个理想模拟中，振幅放大只需一次查询就能找到四项中的标记项；不涉及硬件，也不声称速度优势。')}]}},
  // Drafted by Muse from the hand-drawn sketch at /gallery/pendulum-sketch.png (frozen image suite,
  // run of October 28, 2026). Author edits: a duplicated chapter removed, labels capitalised, unit symbol.
- {id:'sketch-pendulum',kind:'model',source:'muse-image',image:'/gallery/pendulum-sketch.png',
+ {id:'sketch-pendulum',kind:'model',source:'muse-sketch',image:'/gallery/pendulum-sketch.png',
   summary:bi('Muse read this hand-drawn pendulum sketch and built a lesson from it. Change gravity and test how the period depends on length.','Muse 读取这张手绘单摆草图并据此生成课程。调整重力加速度，检验周期如何随摆长变化。'),
   lesson:{version:2,title:bi('Pendulum sketch: length and swing','单摆草图：摆长与摆动'),intro:bi('A simple pendulum from a sketch: a support, a string of length L, and a round bob on a curved path.','来自草图的单摆：支架、长度为 L 的摆线，以及沿弧线运动的圆形摆锤。'),chapters:[{experiment:'generated',
    framing:bi('The sketch shows a pendulum of length L swinging on an arc. How does the swing period change when L is made longer or shorter?','草图显示一个摆长为 L 的单摆沿圆弧摆动。当 L 变长或变短时，摆动周期如何变化？'),
@@ -79,6 +79,6 @@ export function galleryLesson(id){return galleryLessons.find(l=>l.id===id)??null
 export function galleryIdFromHash(hash){const m=/^#lesson:([a-z-]+)$/.exec(hash??'');return m&&galleryIds.includes(m[1])?m[1]:null;}
 export function gallerySourceNote(source,language='en'){
  const zh=language==='zh';
- if(source==='muse-image')return zh?'由 Meta muse-spark-1.3 根据这张手绘草图起草（2026 年 10 月 28 日，冻结的图片评估），作者审阅并做了小幅编辑后收录。':'Drafted by Meta muse-spark-1.3 from this hand-drawn sketch on October 28, 2026 (frozen image evaluation), then reviewed and lightly edited by the author.';
+ if(source==='muse-sketch')return zh?'由 Meta muse-spark-1.3 根据这张手绘草图起草（2026 年 10 月 28 日，冻结的图片评估），作者审阅并做了小幅编辑后收录。':'Drafted by Meta muse-spark-1.3 from this hand-drawn sketch on October 28, 2026 (frozen image evaluation), then reviewed and lightly edited by the author.';
  return source==='muse'?(zh?'由 Meta muse-spark-1.3 起草（2026 年 10 月 27 日），作者审阅并编辑后收录。':'Drafted by Meta muse-spark-1.3 on October 27, 2026, then reviewed and edited by the author.'):(zh?'作者手写的文字，实验为原有的核验计算。':'Hand-authored text over the existing checked experiments.');
 }

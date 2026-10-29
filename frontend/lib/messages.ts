@@ -24,11 +24,11 @@ export const messages = {
     en: "Sign in with a tester account",
     zh: "使用测试账号登录",
   },
+  "AccessPanel.username": { en: "Username", zh: "用户名" },
   "AccessPanel.useSyntheticExamplesKeepPersonal": {
     en: "Use synthetic examples. Keep personal and student information out.",
     zh: "请使用虚构示例，不输入真实个人或学生资料。",
   },
-  "AccessPanel.username": { en: "Username", zh: "用户名" },
   "AccessPanel.yourNextQuestion": {
     en: "YOUR NEXT QUESTION",
     zh: "你的下一个问题",
@@ -58,10 +58,6 @@ export const messages = {
     zh: "本地开发 · 开放访问",
   },
   "App.mainNavigation": { en: "Main navigation", zh: "主导航" },
-  "App.openTheExperimentBench": {
-    en: "Open the experiment bench",
-    zh: "打开实验工作台",
-  },
   "App.openingTheExperimentBench": {
     en: "Opening the experiment bench…",
     zh: "正在打开实验工作台…",
@@ -69,6 +65,10 @@ export const messages = {
   "App.openingYourLearningStudio": {
     en: "Opening your learning studio…",
     zh: "正在打开学习工作室…",
+  },
+  "App.openTheExperimentBench": {
+    en: "Open the experiment bench",
+    zh: "打开实验工作台",
   },
   "App.physics": { en: "Physics", zh: "物理" },
   "App.previewAccess": { en: "Preview access", zh: "预览权限" },
@@ -88,6 +88,7 @@ export const messages = {
     en: "02 / REVIEW & REFINE",
     zh: "02 / 审阅与修改",
   },
+  "DraftReview.agree": { en: "Agree", zh: "同意" },
   "DraftReview.applyOrDiscardDefinitionEdits": {
     en: "Apply or discard definition edits before presenting, revising or exporting.",
     zh: "演示、修改或导出前，请应用或放弃定义编辑。",
@@ -100,6 +101,7 @@ export const messages = {
     en: "Bilingual demo definition",
     zh: "双语演示定义",
   },
+  "DraftReview.chapter": { en: "Chapter", zh: "章节" },
   "DraftReview.chapterText": { en: "Chapter text", zh: "章节文字" },
   "DraftReview.checkBothTranslationsUnexpectedCyrillic": {
     en: "Check both translations: unexpected Cyrillic text in ",
@@ -109,11 +111,15 @@ export const messages = {
     en: "Check the teaching text, formulas and assumptions. Structure and arithmetic checks do not establish scientific accuracy.",
     zh: "请检查教学文字、公式与假设。结构与算术检查不代表科学正确。",
   },
+  "DraftReview.clarityRating": { en: "clarity", zh: "清晰度" },
   "DraftReview.closeLesson": { en: "Close lesson", zh: "关闭课程" },
+  "DraftReview.confusions": { en: "Confusions", zh: "困惑之处" },
+  "DraftReview.correct": { en: "correct", zh: "正确" },
   "DraftReview.definitionRejectedCheckBothLanguages": {
     en: "Definition rejected. Check both languages, ranges and formulas. Your last valid definition is preserved.",
     zh: "定义未通过。请检查双语文字、范围和公式。上一次有效定义已保留。",
   },
+  "DraftReview.disagree": { en: "Disagree", zh: "不同意" },
   "DraftReview.discardDefinitionEdits": {
     en: "Discard definition edits",
     zh: "放弃定义编辑",
@@ -123,57 +129,41 @@ export const messages = {
     zh: "编辑公式、控件或步骤（JSON）",
   },
   "DraftReview.editLessonText": { en: "Edit lesson text", zh: "编辑课程文字" },
+  "DraftReview.explainedBack": { en: "Explained back", zh: "解释回述" },
   "DraftReview.exportLessonJson": {
     en: "Export lesson JSON",
     zh: "导出课程 JSON",
   },
+  "DraftReview.incorrect": { en: "incorrect", zh: "错误" },
+  "DraftReview.introduction": { en: "Introduction", zh: "简介" },
   "DraftReview.iReviewedTheDemoDefinition": {
     en: "I reviewed the demo definition and its assumptions for this presentation.",
     zh: "我已审阅本次演示的定义与假设。",
   },
-  "DraftReview.introduction": { en: "Introduction", zh: "简介" },
-  "DraftReview.lessonTitle": { en: "Lesson title", zh: "课程标题" },
-  "DraftReview.moveUp": { en: "Move up", zh: "上移" },
-  "DraftReview.oneChangeSimplifyTheExplanation": {
-    en: "One change: simplify the explanation, add an output, correct an assumption…",
-    zh: "一个修改：简化解释、添加输出、修正假设…",
-  },
-  "DraftReview.makeANarratedShow": {
-    en: "Make a narrated show",
-    zh: "生成讲解秀",
-  },
-  "DraftReview.watchTheShow": { en: "Watch the show", zh: "观看讲解秀" },
   "DraftReview.lessonShow": { en: "LESSON SHOW", zh: "讲解秀" },
   "DraftReview.lessonShowIntro": {
     en: "The creator model writes a short bilingual narration for each slide and a prompt for one cover illustration from Muse Image. The slides are rendered from the checked lesson; the browser reads the narration aloud.",
     zh: "创作模型为每张幻灯片撰写简短的中英双语旁白，并为 Muse Image 生成一张封面插图写提示词。幻灯片由经核验的课程渲染，旁白由浏览器朗读。",
   },
+  "DraftReview.lessonTitle": { en: "Lesson title", zh: "课程标题" },
   "DraftReview.letTheTestLearnerTry": {
     en: "Let the test learner try this lesson",
     zh: "让测试学习者试学本课",
   },
-  "DraftReview.testLearnerReport": {
-    en: "TEST LEARNER REPORT",
-    zh: "测试学习者报告",
+  "DraftReview.makeANarratedShow": {
+    en: "Make a narrated show",
+    zh: "生成讲解秀",
   },
-  "DraftReview.testLearnerIntro": {
-    en: "A second model plays a first-time learner: it predicts, reads the observations, explains back and answers the transfer question. Its answers are checked by code; its confusions and suggestions are its opinion.",
-    zh: "另一个模型扮演首次学习者：先预测，再读观察结果，用自己的话解释，并回答迁移题。答案由代码核验；困惑与建议仅代表它的看法。",
-  },
-  "DraftReview.predicted": { en: "Predicted", zh: "预测" },
-  "DraftReview.explainedBack": { en: "Explained back", zh: "解释回述" },
-  "DraftReview.transferAnswer": { en: "Transfer answer", zh: "迁移题作答" },
-  "DraftReview.correct": { en: "correct", zh: "正确" },
-  "DraftReview.incorrect": { en: "incorrect", zh: "错误" },
-  "DraftReview.confusions": { en: "Confusions", zh: "困惑之处" },
-  "DraftReview.suggestions": { en: "Suggestions", zh: "建议" },
+  "DraftReview.moveUp": { en: "Move up", zh: "上移" },
+  "DraftReview.museIsWorking": { en: "Muse is working…", zh: "Muse 正在处理…" },
   "DraftReview.noneReported": { en: "none reported", zh: "无" },
-  "DraftReview.overall": { en: "Overall", zh: "总体" },
-  "DraftReview.clarityRating": { en: "clarity", zh: "清晰度" },
-  "DraftReview.useTheseSuggestionsIn": {
-    en: "Use these suggestions in a revision",
-    zh: "将这些建议用于修改",
+  "DraftReview.notSure": { en: "Not sure", zh: "不确定" },
+  "DraftReview.oneChangeSimplifyTheExplanation": {
+    en: "One change: simplify the explanation, add an output, correct an assumption…",
+    zh: "一个修改：简化解释、添加输出、修正假设…",
   },
+  "DraftReview.overall": { en: "Overall", zh: "总体" },
+  "DraftReview.predicted": { en: "Predicted", zh: "预测" },
   "DraftReview.presentThisLesson": {
     en: "Present this lesson →",
     zh: "开始演示 →",
@@ -192,10 +182,25 @@ export const messages = {
     zh: "修改课程与演示",
   },
   "DraftReview.startsAt": { en: "starts at", zh: "初值" },
+  "DraftReview.suggestions": { en: "Suggestions", zh: "建议" },
+  "DraftReview.testLearnerIntro": {
+    en: "A second model plays a first-time learner: it predicts, reads the observations, explains back and answers the transfer question. Its answers are checked by code; its confusions and suggestions are its opinion.",
+    zh: "另一个模型扮演首次学习者：先预测，再读观察结果，用自己的话解释，并回答迁移题。答案由代码核验；困惑与建议仅代表它的看法。",
+  },
+  "DraftReview.testLearnerReport": {
+    en: "TEST LEARNER REPORT",
+    zh: "测试学习者报告",
+  },
+  "DraftReview.transferAnswer": { en: "Transfer answer", zh: "迁移题作答" },
+  "DraftReview.useTheseSuggestionsIn": {
+    en: "Use these suggestions in a revision",
+    zh: "将这些建议用于修改",
+  },
   "DraftReview.validateApplyDefinition": {
     en: "Validate & apply definition",
     zh: "验证并应用定义",
   },
+  "DraftReview.watchTheShow": { en: "Watch the show", zh: "观看讲解秀" },
   "ExperimentView.classical0011MixtureIn": {
     en: "Classical 00/11 mixture in the same basis: ",
     zh: "同一测量基中的经典 00/11 混合态：",
@@ -221,7 +226,6 @@ export const messages = {
     en: "Free to explore · No sign-in",
     zh: "自由探索 · 无需登录",
   },
-  "Gallery.watchTheShow": { en: "Watch the show", zh: "观看讲解秀" },
   "Gallery.openLesson": { en: "Open lesson", zh: "打开课程" },
   "Gallery.predictChangeAnInputExplain": {
     en: "Predict. Change an input. Explain what happened. Then try a new case.",
@@ -231,6 +235,7 @@ export const messages = {
     en: "THE LEARNING LIBRARY",
     zh: "互动课程库",
   },
+  "Gallery.watchTheShow": { en: "Watch the show", zh: "观看讲解秀" },
   "Labs.exploreLessons": { en: "Explore lessons", zh: "探索课程" },
   "Labs.theExperimentBench": { en: "THE EXPERIMENT BENCH", zh: "实验工作台" },
   "LessonPlayer.256FreshPreparations": {
@@ -264,6 +269,10 @@ export const messages = {
     en: "Check answer locally",
     zh: "本地核验答案",
   },
+  "LessonPlayer.checkMyExplanationWithMuse": {
+    en: "Check my explanation with Muse",
+    zh: "让 Muse 评估我的解释",
+  },
   "LessonPlayer.chooseBeforeRevealingTheResult": {
     en: "Choose before revealing the result. You can change your mind after testing.",
     zh: "先选择，再查看结果。实验之后，你可以重新思考。",
@@ -281,38 +290,13 @@ export const messages = {
     en: "Enter a finite number.",
     zh: "请输入有限数值。",
   },
-  "LessonPlayer.checkMyExplanationWithMuse": {
-    en: "Check my explanation with Muse",
-    zh: "让 Muse 评估我的解释",
-  },
   "LessonPlayer.experiment": { en: "Experiment", zh: "实验" },
-  "LessonPlayer.explainItBack": { en: "EXPLAIN IT BACK", zh: "换你来解释" },
-  "LessonPlayer.explainWhatChangedAndWhy": {
-    en: "Explain what changed and why, in your own words",
-    zh: "用你自己的话解释：什么变了，为什么",
-  },
-  "LessonPlayer.followUpQuestion": { en: "Follow-up question", zh: "追问" },
-  "LessonPlayer.museFeedbackOnYourExplanation": {
-    en: "Muse feedback on your explanation needs creation access. The reviewed explanation below is always available.",
-    zh: "让 Muse 评估你的解释需要创建权限；下方经审阅的解释始终可见。",
-  },
-  "LessonPlayer.notYetSupported": {
-    en: "Not yet supported by the evidence",
-    zh: "尚未得到证据支持",
-  },
-  "LessonPlayer.partlySupported": {
-    en: "Partly supported by the evidence",
-    zh: "部分得到证据支持",
-  },
-  "LessonPlayer.supportedByTheEvidence": {
-    en: "Supported by the evidence",
-    zh: "与证据一致",
-  },
   "LessonPlayer.experimentProgress": {
     en: "Experiment progress",
     zh: "实验进度",
   },
   "LessonPlayer.explain": { en: "Explain", zh: "解释" },
+  "LessonPlayer.explainItBack": { en: "EXPLAIN IT BACK", zh: "换你来解释" },
   "LessonPlayer.explainTheResult": {
     en: "Explain the result →",
     zh: "解释结果 →",
@@ -321,6 +305,11 @@ export const messages = {
     en: "Explain what changed",
     zh: "解释观察到的变化",
   },
+  "LessonPlayer.explainWhatChangedAndWhy": {
+    en: "Explain what changed and why, in your own words",
+    zh: "用你自己的话解释：什么变了，为什么",
+  },
+  "LessonPlayer.followUpQuestion": { en: "Follow-up question", zh: "追问" },
   "LessonPlayer.graphOutput": { en: "Graph output", zh: "图表输出" },
   "LessonPlayer.learningProgress": { en: "Learning progress", zh: "学习进度" },
   "LessonPlayer.lessonOverview": { en: "Lesson overview", zh: "课程概览" },
@@ -329,8 +318,24 @@ export const messages = {
     zh: "先做一个预测",
   },
   "LessonPlayer.measuredState": { en: "Measured state", zh: "测量状态" },
+  "LessonPlayer.museFeedbackOnYourExplanation": {
+    en: "Muse feedback on your explanation needs creation access. The reviewed explanation below is always available.",
+    zh: "让 Muse 评估你的解释需要创建权限；下方经审阅的解释始终可见。",
+  },
+  "LessonPlayer.museIsWorking": {
+    en: "Muse is working…",
+    zh: "Muse 正在处理…",
+  },
   "LessonPlayer.nextChapter": { en: "Next chapter →", zh: "下一章 →" },
   "LessonPlayer.notSure": { en: "Not sure", zh: "不确定" },
+  "LessonPlayer.notYetSupported": {
+    en: "Not yet supported by the evidence",
+    zh: "尚未得到证据支持",
+  },
+  "LessonPlayer.partlySupported": {
+    en: "Partly supported by the evidence",
+    zh: "部分得到证据支持",
+  },
   "LessonPlayer.predict": { en: "Predict", zh: "预测" },
   "LessonPlayer.replayExperiment": { en: "Replay experiment", zh: "重播实验" },
   "LessonPlayer.restartLesson": { en: "Restart lesson", zh: "重新学习" },
@@ -339,6 +344,10 @@ export const messages = {
     zh: "亲手运行实验",
   },
   "LessonPlayer.showFinalState": { en: "Show final state", zh: "查看最终状态" },
+  "LessonPlayer.supportedByTheEvidence": {
+    en: "Supported by the evidence",
+    zh: "与证据一致",
+  },
   "LessonPlayer.testThisClaim": {
     en: "Test this claim →",
     zh: "检验这个观点 →",
@@ -404,22 +413,50 @@ export const messages = {
     en: "Show all changes",
     zh: "显示全部修改",
   },
-  "RevisionSummary.wroteTheShowFor": {
-    en: "wrote the show for this lesson",
-    zh: "为本课撰写了讲解秀",
-  },
+  "RevisionSummary.tokensIn": { en: "tokens in", zh: "输入 token" },
   "RevisionSummary.triedThisLessonAs": {
     en: "tried this lesson as a test learner",
     zh: "以测试学习者身份试学了本课",
   },
-  "RevisionSummary.tokensIn": { en: "tokens in", zh: "输入 token" },
   "RevisionSummary.whatMuseChanged": {
     en: "WHAT MUSE CHANGED",
     zh: "MUSE 改了什么",
   },
+  "RevisionSummary.wroteTheShowFor": {
+    en: "wrote the show for this lesson",
+    zh: "为本课撰写了讲解秀",
+  },
+  "ShowPlayer.aFreshCase": { en: "A FRESH CASE", zh: "新情境" },
+  "ShowPlayer.browserVoice": { en: "Browser voice", zh: "浏览器朗读" },
+  "ShowPlayer.calculatedEvidence": {
+    en: "CALCULATED EVIDENCE",
+    zh: "计算证据",
+  },
+  "ShowPlayer.closeShow": { en: "Close show", zh: "关闭讲解秀" },
+  "ShowPlayer.lessonShow": { en: "Lesson show", zh: "讲解秀" },
+  "ShowPlayer.lessonShow2": { en: "LESSON SHOW", zh: "讲解秀" },
+  "ShowPlayer.narrationByTheAuthor": {
+    en: "Narration by the author",
+    zh: "旁白由作者撰写",
+  },
+  "ShowPlayer.nextSlide": { en: "Next slide", zh: "下一张" },
+  "ShowPlayer.pause": { en: "Pause", zh: "暂停" },
+  "ShowPlayer.play": { en: "Play", zh: "播放" },
+  "ShowPlayer.playAgain": { en: "Play again", zh: "重新播放" },
+  "ShowPlayer.previousSlide": { en: "Previous slide", zh: "上一张" },
+  "ShowPlayer.takeaway": { en: "TAKEAWAY", zh: "要点" },
+  "ShowPlayer.theClaim": { en: "THE CLAIM", zh: "观点" },
+  "ShowPlayer.voiceByYourBrowserNot": {
+    en: " · voice by your browser, not a Meta model · values come from the checked lesson",
+    zh: " · 朗读由浏览器完成，不是 Meta 模型 · 数值来自经核验的课程",
+  },
   "Studio.01AskAQuestion": {
     en: "01 / ASK A QUESTION",
     zh: "01 / 提出一个问题",
+  },
+  "Studio.addAPhotoSketchOr": {
+    en: "Add a photo, sketch or diagram",
+    zh: "添加照片、草图或示意图",
   },
   "Studio.aQuestionAnExperiment": {
     en: "A question. An experiment.",
@@ -428,10 +465,6 @@ export const messages = {
   "Studio.aQuestionOrASketch": {
     en: "A question or a sketch becomes a lesson you can review and operate.",
     zh: "一个问题或一张草图，变成可审阅、可操作的课程。",
-  },
-  "Studio.addAPhotoSketchOr": {
-    en: "Add a photo, sketch or diagram",
-    zh: "添加照片、草图或示意图",
   },
   "Studio.attachedImagePreview": {
     en: "Attached image preview",
@@ -468,6 +501,7 @@ export const messages = {
   "Studio.create": { en: "Create", zh: "创建" },
   "Studio.createALesson": { en: "Create a lesson", zh: "创建课程" },
   "Studio.creationMode": { en: "Creation mode", zh: "创建方式" },
+  "Studio.creatorModel": { en: "Creator model", zh: "创作模型" },
   "Studio.curiosityPutIntoPractice": {
     en: "CURIOSITY, PUT INTO PRACTICE",
     zh: "让好奇心，变成亲手尝试",
@@ -495,11 +529,11 @@ export const messages = {
     en: "How does a quantum computer use interference?",
     zh: "量子计算机如何利用干涉？",
   },
-  "Studio.importLessonJson": { en: "Import lesson JSON", zh: "导入课程 JSON" },
   "Studio.importedDraftReviewItBefore": {
     en: "Imported draft. Review it before presenting. No model call was made.",
     zh: "已导入草稿，演示前请审阅。未调用模型。",
   },
+  "Studio.importLessonJson": { en: "Import lesson JSON", zh: "导入课程 JSON" },
   "Studio.languageChangedThePendingResult": {
     en: "Language changed. The pending result will not be applied; retry explicitly.",
     zh: "语言已切换，当前请求结果不再应用，请手动重试。",
@@ -514,16 +548,6 @@ export const messages = {
   },
   "Studio.loading": { en: "Loading…", zh: "正在加载…" },
   "Studio.model": { en: "Model", zh: "模型" },
-  "Studio.theShowIsReady": {
-    en: "The show is ready. Watch it, or present the lesson as usual.",
-    zh: "讲解秀已就绪。可以观看，或照常演示课程。",
-  },
-  "Studio.creatorModel": { en: "Creator model", zh: "创作模型" },
-  "Studio.testLearner": { en: "Test learner", zh: "测试学习者" },
-  "Studio.theTestLearnerTriedThis": {
-    en: "The test learner tried this draft. Read its report below the definition.",
-    zh: "测试学习者已试学此草稿，报告见定义下方。",
-  },
   "Studio.modelForYourNextRequest": {
     en: "Model for your next request",
     zh: "下一次请求使用的模型",
@@ -549,15 +573,15 @@ export const messages = {
     en: "Preparing image locally…",
     zh: "正在本地处理图片…",
   },
-  "Studio.removeImage": { en: "Remove image", zh: "移除图片" },
-  "Studio.requestStoppedHereYourCurrent": {
-    en: "Request stopped here. Your current draft is preserved.",
-    zh: "已停止应用请求结果，当前草稿已保留。",
-  },
   "Studio.reason": { en: "Reason", zh: "原因" },
+  "Studio.removeImage": { en: "Remove image", zh: "移除图片" },
   "Studio.requestsLeftInThisProvider": {
     en: "requests left in this provider session",
     zh: "次请求剩余 / 当前模型会话",
+  },
+  "Studio.requestStoppedHereYourCurrent": {
+    en: "Request stopped here. Your current draft is preserved.",
+    zh: "已停止应用请求结果，当前草稿已保留。",
   },
   "Studio.restoredThePreviousDraftThe": {
     en: "Restored the previous draft. The revision was discarded; no request was made.",
@@ -572,13 +596,22 @@ export const messages = {
     en: "Start with a little curiosity.",
     zh: "从一点好奇开始。",
   },
+  "Studio.testLearner": { en: "Test learner", zh: "测试学习者" },
   "Studio.theRequestCouldNotBe": {
     en: "The request could not be completed or validated. Your draft is preserved. Please retry explicitly.",
     zh: "请求未完成或未通过验证，草稿已保留，请手动重试。",
   },
+  "Studio.theShowIsReady": {
+    en: "The show is ready. Watch it, or present the lesson as usual.",
+    zh: "讲解秀已就绪。可以观看，或照常演示课程。",
+  },
   "Studio.theSketchThisLessonWas": {
     en: "The sketch this lesson was drafted from",
     zh: "这堂课所依据的草图",
+  },
+  "Studio.theTestLearnerTriedThis": {
+    en: "The test learner tried this draft. Read its report below the definition.",
+    zh: "测试学习者已试学此草稿，报告见定义下方。",
   },
   "Studio.thisProviderSessionHasUsed": {
     en: "This provider session has used its request budget. Your lesson still works locally.",
