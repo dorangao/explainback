@@ -446,3 +446,19 @@ how hot objects cool · ExplainBack" and the show renders. The analytics script
 is requested from the same origin but returns 404 (one console error) until
 **Web Analytics is enabled in the Vercel dashboard** (Project → Analytics); no
 data is recorded before that.
+
+## Spoken explain-back release · October 28, 2026 (Pacific)
+
+Merged [PR #19](https://github.com/dorangao/explainback/pull/19) as `3d4ff7a` and
+deployed `main` with `vercel deploy --prod -y`; deployment
+`explainback-q8k5jsc9g-doran-gaos-projects.vercel.app`, status Ready, serving
+[explainback.app](https://explainback.app/). No environment changes: the
+existing `MODEL_API_KEY` enables `status.voice`.
+
+Hosted check through the judge invite (signed out afterwards): `/api/status`
+reports `voice: true` with the full hourly quota; `/api/studio/transcribe` with
+the 6.9 s synthetic English sample returned the sentence word for word from
+`muse-voice-transcribe-1.0` in 1.9 s server-side (2.5 s round trip), then the
+session was reset. The production function received a 300 KB JSON body without
+issue. A real-microphone recording in a browser remains unchecked (the pane
+cannot grant a microphone).

@@ -8,18 +8,18 @@ current index; dated entries and linked evidence retain the history.
 
 - **Product:** a question or a sketch becomes a bilingual, reviewable interactive
   lesson. Wonder is the creator, Spark the test learner whose answers code
-  checks; the learner predicts, operates, explains it back (graded by Muse) and
-  transfers; any lesson becomes a narrated show with a Muse Image cover. Six
+  checks; the learner predicts, operates, explains it back (typed or spoken
+  through Muse Voice Transcribe, graded by Muse) and transfers; any lesson becomes a narrated show with a Muse Image cover. Six
   reviewed gallery lessons and their shows play without signing in.
-- **Grounding source:** `main` at `5c9a17f` (PR #18 merge); `origin/main`
-  matches; production serves that code (`explainback-oydt1bx8d`, see the
+- **Grounding source:** `main` at `3d4ff7a` (PR #19 merge); `origin/main`
+  matches; production serves that code (`explainback-q8k5jsc9g`, see the
   deployment notes).
 - **Shipped Oct 28 (all merged and deployed):** PR #9 post-migration cleanup,
   #10 author prompt v2, #11 sketch gallery lesson and restore, #12 explain it
   back, #13 creator/tester roles and tryout, #14 narrated shows and Why Muse,
   #15 rejection reasons, #16 invite reuse, #17 Devin's review housekeeping,
   #18 indexable/installable site with Vercel analytics (analytics toggle still
-  off in the dashboard). In progress: VOICE-001 spoken explain-back (PR open).
+  off in the dashboard), #19 spoken explain-back through Muse Voice Transcribe.
 - **Fresh local checks (Oct 28, PR #16 branch):** Node **243/243**, Vitest
   **21/21**, Playwright **18/18**, typecheck, lint (warnings only), Prettier,
   build. CI (`verify.yml`) runs the same on every PR.
@@ -45,7 +45,7 @@ current index; dated entries and linked evidence retain the history.
 | SHOW-001 | Claude | Merged as `b8ba6ce`; deployed to production | Base `5f80635`, branch `feat/lesson-show`; `src/lesson-show.mjs` (new), `src/meta.mjs` (Muse Image), `src/server.mjs` (`/api/studio/show`), `scripts/make-gallery-shows.mjs`, `public/gallery-shows.mjs` + six covers, `src/static.mjs`, `frontend/components/ShowPlayer.tsx` (new), App routing `#show:`, Gallery, Studio, DraftReview, types, messages, styles, tests, README (Why Muse) and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
 | REASON-001 | Claude | Merged as `e0a094c`; deployed to production | Base `7bd28a1`, branch `fix/rejection-reason`; `src/server.mjs` (rejection reason on 502 and trace), `src/trace.mjs`, `public/provider-console.mjs`, `frontend/lib/api.ts`, `frontend/components/Studio.tsx`, messages, styles, tests, Studio docs | Done; release recorded in `docs/vercel-deployment.md`. Follow-up: an `#invite:` link reused in the same tab after sign-out needs a reload. |
 | INVITE-002 | Claude | Merged as `7e0f458`; deployed to production | Base `b6796af`, branch `fix/invite-reuse`; `frontend/App.tsx` (invite applied once per navigation, no handled-code guard), `frontend/App.test.tsx` (new) | Done; release recorded in `docs/vercel-deployment.md`. |
-| VOICE-001 | Claude | Implemented; PR open | Base `35817c6` (`main` after PR #18 docs), branch `feat/spoken-explain-back`; `src/wav.mjs` (new), `src/meta.mjs` (`transcribeMetaAudio`), `src/server.mjs` (`/api/studio/transcribe`, `status.voice`, `transcribeCall` option), `frontend/lib/recorder.ts` (new), `LessonPlayer.tsx` (Say it instead), `Studio.tsx` (transcribe request), `RequestSummary.tsx`, hook mode, types, messages, styles, tests, README/Studio/demo docs | User merges and deploys; live judge-invite check of the microphone path in a real browser (the pane cannot grant a microphone). |
+| VOICE-001 | Claude | Merged as `3d4ff7a` (PR #19); deployed to production | Base `35817c6` (`main` after PR #18 docs), branch `feat/spoken-explain-back`; `src/wav.mjs` (new), `src/meta.mjs` (`transcribeMetaAudio`), `src/server.mjs` (`/api/studio/transcribe`, `status.voice`, `transcribeCall` option), `frontend/lib/recorder.ts` (new), `LessonPlayer.tsx` (Say it instead), `Studio.tsx` (transcribe request), `RequestSummary.tsx`, hook mode, types, messages, styles, tests, README/Studio/demo docs | User records one spoken explanation through the judge invite in a real browser (the pane cannot grant a microphone); the route itself is verified live. |
 | SEO-001 | Claude | Merged as `5c9a17f` (PR #18); deployed to production | Base `eec2d1a` (`main` after PR #17), branch `feat/seo-pwa-analytics`; `index.html` (SEO/share/PWA head, JSON-LD), `vercel.json` (no `noindex`, asset caching), `src/static.mjs` and `scripts/build-vercel.mjs` (robots/sitemap/manifest/worker/icons), `public/{manifest.webmanifest,sw.js,icons/}`, `frontend/lib/{analytics,install}.ts`, `frontend/main.tsx`, `App.tsx` (route titles, Install button), `package.json` license fields, tests, README/tracker/deployment notes | User enables Web Analytics in the Vercel dashboard (Project → Analytics → Enable) and confirms the Official Rules under R02. |
 | REVIEW-002 | Devin (review) · Claude (disposition) | Merged as `eec2d1a` (PR #17) | Base `8e39aee`, branch `chore/housekeeping-review-002`; show cover budget (`src/server.mjs`), sketch source key `muse-sketch`, unused busy state and shadowing, inline strings extracted, demo script rewrite, readiness tracker and ledger header refresh | User reviews and merges; user runs the worktree/branch cleanup commands recorded below. |
 
@@ -806,4 +806,6 @@ renders in the Explain step for the cache lesson; the browser pane cannot grant
 a microphone, so the recording path itself was exercised by the component test
 and the WAV encoder test, not by a real microphone.
 
-**State:** committed and pushed; PR open; not merged or deployed.
+**State:** merged as `3d4ff7a` (PR #19) and deployed; release record in
+`docs/vercel-deployment.md` (live route check through the judge invite, signed
+out afterwards). Remaining: one real-microphone recording by the user.
