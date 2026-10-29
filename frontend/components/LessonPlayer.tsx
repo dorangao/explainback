@@ -384,7 +384,7 @@ export function LessonPlayer({
                       onClick={() => onGuide(ownText.trim())}
                     >
                       {busy
-                        ? say(language, "Muse is working…", "Muse 正在处理…")
+                        ? t(language, "LessonPlayer.museIsWorking")
                         : t(
                             language,
                             "LessonPlayer.checkMyExplanationWithMuse",

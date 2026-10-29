@@ -1,8 +1,9 @@
 # ExplainBack hackathon readiness
 
-Updated **October 27, 2026, Pacific**. This tracks submission readiness. Current
-engineering work, Codex/Claude ownership and the latest local validation are in
-the [shared progress ledger](implementation/progress-ledger.md). Dated
+Updated **October 28, 2026, Pacific** (refresh after REVIEW-002). This tracks
+submission readiness. Current engineering work, Codex/Claude/Devin ownership and
+the latest local validation are in the
+[shared progress ledger](implementation/progress-ledger.md). Dated
 implementation and release notes remain historical evidence. The user selected and
 authorized priorities 1–2: Studio-first presentation and a frozen 12-case lesson
 evaluation. Studio-first runtime commit `3f947d5` was deployed at that checkpoint;
@@ -10,20 +11,22 @@ later gallery, reviewer-code, Wonder and image-input work is mapped in the share
 ledger and [release verification](vercel-deployment.md). Remaining checklist items
 below retain their individual evidence and completion conditions.
 
-**Assessment: the product works; submission readiness is incomplete.**
-The strongest next step is to make one convincing, measurable story from the
-working app. More subjects would add less value than a clear demo and reliable
-lesson creation.
+**Assessment (Oct 28): the product is ahead of the submission.** Eight
+features shipped on Oct 28 (gallery and sketch lesson, explain-it-back grading,
+Wonder-creator/Spark-tester roles with a checked tryout, narrated shows with
+Muse Image covers, rejection reasons, invite reuse). Every P0 gate below is
+still open. Remaining effort should go to the demo script, the video, the
+submission copy and the organizer questions, not new features.
 
 **Proposed pitch:** ExplainBack turns a question into a bilingual, reviewable
 interactive lesson. Learners predict, operate the model, inspect evidence, revise
 their explanation, and try a new case.
 
-**Selected story:** an adult learner or lesson author turns a new question into a
-reviewed, revised, operable bilingual lesson, followed by the powered-vehicle
-physics showcase. The user explicitly confirmed this combination on Oct 27.
-See the [demo script](studio-demo.md)
-and [first frozen evaluation](studio-evaluation.md).
+**Selected story (revised Oct 28):** a sketch or question → Wonder drafts →
+Spark tries it as a learner and its suggestions go into a revision → the learner
+explains it back and is graded → the lesson becomes a narrated show. The
+powered-vehicle lab is a 15-second aside at most. See the
+[demo script](studio-demo.md) and the [frozen evaluation](studio-evaluation.md).
 
 **Timeline correction, supplied by Doran on Oct 27:** before October 26, only
 Muse API-key setup had been done. Application development started October 26.
@@ -60,7 +63,7 @@ Weights are from the guide; assessments below are our own, not predicted scores.
 |---|---|---|
 | Impact — 30% | Bilingual, interactive learning with an inspectable result | Observe 3–5 adult testers using the same short task; record completion, confusion, assistance and time. No learning-effectiveness claim from this small study. |
 | Meta tooling — 25% | Muse authors structured lessons, revises them, selects bounded actions and explains computed results | Show a new topic becoming an operable lesson, then one explicit revision changing its behavior. Show the actual call/result. |
-| Execution — 20% | Bounded interpreter, validation gates, replay, authentication, shared cloud state; current local grounding passed 244 tests | Frozen generated-lesson checks, failure retention, reproducible setup, release/main alignment. Tests are engineering evidence, not model accuracy. |
+| Execution — 20% | Bounded interpreter, validation gates, replay, authentication, shared cloud state; current local checks: 243 Node tests, 21 component tests, 18 browser flows | Frozen generated-lesson checks, failure retention, reproducible setup, release/main alignment. Tests are engineering evidence, not model accuracy. |
 | Demo — 25% | Powered vehicle animation, synchronized graphs, bilingual presentation | One rehearsed three-minute sequence with readable labels and reliable judge entry. |
 
 ## Lead story selected; alternatives retained
@@ -120,17 +123,17 @@ sent, rules accepted, or submission made by this update.
 - [ ] **R02 · Doran · Oct 28 — Entry choice and rules.** Confirm track, theme, all contributors, eligibility and any required official-rule acceptance. Reading the guide or seeing the form is not acceptance.
 - [ ] **R03 · Build + Doran · Oct 28 — Contribution ledger.** The [shared engineering ledger](implementation/progress-ledger.md#reconciled-progress-history) now maps features to commits and preserves the user-provided timeline. Commit dates do not establish every feature's creation date. Confirm remaining dates and contributors and add demo timestamps; eligibility remains separate.
 - [x] **R04 · Doran + Build · Oct 27 — Choose the main story.** User chose Studio-first: help an adult learner/author turn a question into a reviewable interactive lesson. [Selected script](studio-demo.md)
-- [ ] **R05 · Build · Oct 29 — Source/release alignment.** Local `main` at `ba4da7a` now includes the powered-journey/output fixes and PRs #3–7. The latest recorded runtime is `08e5591`; its release note from `59a725a` was restored during grounding. Finish with a fresh remote/source/deployment check for the final candidate; local refs and historical hosted checks alone do not complete this gate. See the [shared ledger](implementation/progress-ledger.md).
-- [ ] **R06 · Build + Doran · Oct 30 — Judge access.** Partly addressed Oct 27: five reviewed lessons now open at explainback.app without sign-in (`#lesson:<id>` deep links; playback makes no provider call). Creation/revision now accepts reviewer access codes (`EXPLAINBACK_ACCESS_CODES`, per-code hourly quota and expiry, `#invite:CODE` links) so the tester password stays private. Oct 28: a `judges` code (40/hour, expires 2026-11-20) is configured in Vercel Production and the invite link was verified on explainback.app, including one live creation and the Redis quota decrement. Remaining: put the invite link in the submission copy. Check a fresh browser, session expiry, quotas and recovery; ensure reviewers can reach the intended lesson. Do not remove authentication silently.
-- [ ] **R07 · Build · Oct 30 — Publishable source package.** Check setup from a clean clone; choose a source license with Doran; review assets/attributions and the full proposed history for secrets. Keep raw eval outputs private and publish only sanitized summaries. No LICENSE or GitHub test workflow was found in the inspected tracked tree.
+- [~] **R05 · Build · Oct 29 — Source/release alignment.** Oct 28: `main` through PR #16 (`7e0f458`, docs at `8e39aee`) is deployed and aliased to explainback.app; every release since PR #8 is recorded in [the deployment notes](vercel-deployment.md) with a hosted check. Remaining: one final fresh remote/source/deployment check on the submission candidate.
+- [ ] **R06 · Build + Doran · Oct 30 — Judge access.** Partly addressed Oct 27: five reviewed lessons now open at explainback.app without sign-in (`#lesson:<id>` deep links; playback makes no provider call). Creation/revision now accepts reviewer access codes (`EXPLAINBACK_ACCESS_CODES`, per-code hourly quota and expiry, `#invite:CODE` links) so the tester password stays private. Oct 28: a `judges` code (40/hour, expires 2026-11-20) is configured in Vercel Production and the invite link was verified on explainback.app, including one live creation and the Redis quota decrement. Oct 28 later: invite links now sign in again after sign-out in the same tab (PR #16), and six gallery lessons plus their narrated shows open signed out. Remaining: put the invite link in the submission copy; check session expiry and quota recovery once more in a fresh browser. Do not remove authentication silently.
+- [~] **R07 · Build · Oct 30 — Publishable source package.** Oct 28: an MIT `LICENSE` and the GitHub `verify` workflow (Node 22 tests, build and browser checks on every PR) exist and pass. Remaining: setup from a clean clone, asset/attribution review (six Muse Image covers, one hand-drawn sketch), and a secret scan of the full history before publication. Raw eval outputs stay private.
 
 ### P1 — Make the submission convincing
 
 - [x] **Q01 · Build · Oct 27 — Freeze a small Studio eval.** Six bilingual pairs, 12 cases; checksum, independent numeric probes and manual rubric fixed before the run. [Frozen protocol and results](studio-evaluation.md). This is separate from the older proposed 24-case claim benchmark.
 - [ ] **Q02 · Build + Reviewer · Oct 31 — Run and report.** Automated baseline complete: 12/12 attempted, 12 valid contracts, 12 automated checks passed (8 drafts, 4 expected deferrals/refusals), no retries. AI-assisted author review found content issues; independent human review remains open. [Case findings](studio-evaluation.md). One model create/revise/operate/transfer flow is verified locally; process revision/transfer still needs a matching live run. Do not treat schema success as teaching readiness.
 - [ ] **Q03 · Doran + Build · Nov 1 — Observe 3–5 testers.** Ask each to create/review a lesson, predict, change one input and explain a new case. Record assistance and friction with consent; no real student records. Decide fixes from observed problems.
-- [ ] **Q04 · Build · Nov 1 — One presentation path.** Studio default entry, three-step introduction, editable starters and EN/ZH controls are deployed; console remains expandable. Hosted entry/language/area smoke checks passed. [Demo verification](studio-demo.md). Keep open for the full hosted create/revise/operate path and narrow-screen checks on this release candidate.
-- [ ] **Q05 · Build · Nov 1 — Release quality gate.** Add or run reproducible Node 22 tests/build/secret checks for the final source. Resolve review findings; the PR #2 bot review did not complete because of a usage limit, so it is not passing-review evidence. Local fresh-review evidence remains separately documented.
+- [ ] **Q04 · Build · Nov 1 — One presentation path.** Oct 28: the [demo script](studio-demo.md) is rewritten around the current product (sketch/question → Wonder → Spark tryout → revision → explain-back → show). Hosted checks exist for each step separately. Remaining: one full rehearsal of the sequence in a fresh browser, with timing, and narrow-screen checks.
+- [ ] **Q05 · Build · Nov 1 — Release quality gate.** CI now runs Node 22 tests, build and browser checks on every PR (`.github/workflows/verify.yml`). Remaining for the final source: the secret scan and a last run on the candidate commit. Resolve review findings; the PR #2 bot review did not complete because of a usage limit, so it is not passing-review evidence. Local fresh-review evidence remains separately documented.
 - [ ] **S01 · Build + Doran · Nov 2 — Rehearse and record.** Make a three-minute video with legible interactions, one real creation/revision, assumptions, a transfer result, and an accurate contribution disclosure. Label recorded/cached/demo-assisted material.
 - [ ] **S02 · Build + Doran · Nov 2 — Submission copy.** Prepare team name, description, track/theme, public repo, accessible video, Meta usage and why Meta matters. Include the live app and judge access instructions in the description if the form has no dedicated field.
 - [ ] **S03 · Doran · Nov 3 — Submit and verify receipt.** Recheck all required fields, repository/video access and final deployment; personally handle publication-consent/rule checkboxes. Submit through CV, then record confirmation/status. Deadline is Nov 4 at 6 PM Pacific; reserve the final day for recovery.
@@ -138,25 +141,16 @@ sent, rules accepted, or submission made by this update.
 ### Stretch, only after P0/P1
 
 - [ ] **X01 — Bounded experiment proposal:** implement and evaluate one parameter-change → prediction → computation → reconciliation cycle.
-- [~] **X02 — Sketch input:** Oct 28: Lesson Studio accepts a photo/sketch/diagram with the compose request (bounded data URL, browser downscaling, traces omit bytes) and a frozen two-case pendulum-sketch suite exists. Ambiguous/missing/reversed-arrow controls and a confirmation step remain open.
+- [~] **X02 — Sketch input:** Oct 28: Lesson Studio accepts a photo/sketch/diagram with the compose request (bounded data URL, browser downscaling, traces omit bytes); a frozen two-case pendulum-sketch suite exists and a sketch-drafted lesson is in the gallery. Open: the transfer question can name lengths the sketch does not show (a prompt rule "transfer values come from visible labels or are stated as assumed" is the proposed fix, to be measured on the image suite), and ambiguous/missing-arrow handling.
 - [ ] **X03 — Open-weight demonstration:** only if an eligible Meta model completes the actual lesson workflow acceptably. A local provider selector or Qwen run is not proof for the Meta open-weight award. Keep the two Ollama models exclusive.
 
-## Proposed three-minute story
+## Three-minute story
 
-| Time | On-screen action | What it establishes |
-|---|---|---|
-| 0:00–0:15 | State the user's problem and accurate creation timeline | Purpose and provenance |
-| 0:15–0:50 | Create a new topic lesson with Muse; inspect assumptions/formula or process | Actual authoring beyond eight fixed experiments |
-| 0:50–1:25 | Request one concise revision; review its formula, inputs and wording | Model contribution and user control |
-| 1:25–1:50 | Predict, operate an input, inspect a graph/result; switch language | An interactive experiment with a computable consequence |
-| 1:50–2:15 | Answer a fresh case; show checked calculation vs model judgment | Evidence and limits |
-| 2:15–2:40 | Acceleration → airborne roll → powered landing showcase and one provider record | Visual craft; identify the curated renderer and separate physics models |
-| 2:40–3:00 | Show actual eval results, limitations, source and live URL | Reproducibility and access |
-
-Use cooling, outside the fixed catalog, for the Studio section. The local
-create/revise/operate flow is documented in the demo script. If a live response is slow, preserve honest elapsed-time or
-edited-recording disclosure rather than implying instant generation. A prepared
-export may be a labeled fallback, never passed off as a fresh model response.
+The storyboard lives in the [demo script](studio-demo.md) (updated Oct 28):
+sketch or question → Wonder drafts → Spark tries it and its suggestions go into
+a revision → the learner explains it back and is graded → narrated show → eval
+numbers, limits, source and live URL. Record Wonder with honest time cuts or
+use Spark as creator and say so; never pass a stored result off as live.
 
 <details>
 <summary>Evidence, unresolved questions and update log</summary>

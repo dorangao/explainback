@@ -115,11 +115,11 @@ export function Studio({
   );
   // The creator role (Wonder when configured) is the initial choice; the tester role is fixed.
   const target =
-    targets.find((t) => t.id === modelId) ??
+    targets.find((m) => m.id === modelId) ??
     targets.find(
       (m) => m.id === providerStatus?.roles?.creator && m.configured,
     ) ??
-    targets.find((t) => t.id === providerStatus?.defaultModel) ??
+    targets.find((m) => m.id === providerStatus?.defaultModel) ??
     targets[0];
   const tester =
     targets.find((m) => m.id === providerStatus?.roles?.tester) ?? null;
@@ -335,11 +335,7 @@ export function Studio({
     }
     setMessage("");
     const result = await run<ShowReply>(target, "show", (id, options) =>
-      post<ShowReply>(
-        "/api/studio/show",
-        { sessionId: id, lesson },
-        { ...options, timeoutMs: options.timeoutMs + 60000 },
-      ),
+      post<ShowReply>("/api/studio/show", { sessionId: id, lesson }, options),
     );
     if (!result.ok) {
       if (!result.stale) setMessage(failureMessage(result.error));
@@ -412,9 +408,9 @@ export function Studio({
                 invalidate();
               }}
             >
-              {targets.map((t) => (
-                <option key={t.id} value={t.id} disabled={!t.configured}>
-                  {t.label}
+              {targets.map((m) => (
+                <option key={m.id} value={m.id} disabled={!m.configured}>
+                  {m.label}
                 </option>
               ))}
             </select>
@@ -582,13 +578,13 @@ export function Studio({
                       }}
                       disabled={busy}
                     >
-                      {targets.map((t) => (
+                      {targets.map((m) => (
                         <option
-                          key={t.id}
-                          value={t.id}
-                          disabled={!t.configured}
+                          key={m.id}
+                          value={m.id}
+                          disabled={!m.configured}
                         >
-                          {t.label}
+                          {m.label}
                         </option>
                       ))}
                     </select>

@@ -1,3 +1,4 @@
+import { t } from "../lib/messages";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Language, Lesson, Show } from "../lib/types";
 import { say } from "../lib/types";
@@ -120,7 +121,7 @@ export function ShowPlayer({
     <section
       className="show-player"
       data-kind={slide.kind}
-      aria-label={say(language, "Lesson show", "讲解秀")}
+      aria-label={t(language, "ShowPlayer.lessonShow")}
     >
       <div className="show-stage">
         {slide.kind === "cover" && (
@@ -135,9 +136,7 @@ export function ShowPlayer({
               />
             )}
             <div>
-              <p className="eyebrow">
-                {say(language, "LESSON SHOW", "讲解秀")}
-              </p>
+              <p className="eyebrow">{t(language, "ShowPlayer.lessonShow2")}</p>
               <h1>{lesson.title[language]}</h1>
               <p className="lead-small">{lesson.intro[language]}</p>
             </div>
@@ -145,7 +144,7 @@ export function ShowPlayer({
         )}
         {slide.kind === "claim" && (
           <blockquote className="show-claim">
-            <p className="eyebrow">{say(language, "THE CLAIM", "观点")}</p>
+            <p className="eyebrow">{t(language, "ShowPlayer.theClaim")}</p>
             <p>{e.claim}</p>
           </blockquote>
         )}
@@ -164,7 +163,7 @@ export function ShowPlayer({
         {slide.kind === "evidence" && (
           <div className="show-evidence">
             <p className="eyebrow">
-              {say(language, "CALCULATED EVIDENCE", "计算证据")}
+              {t(language, "ShowPlayer.calculatedEvidence")}
             </p>
             <p>{e.result}</p>
             {e.metrics.length > 0 && (
@@ -183,7 +182,7 @@ export function ShowPlayer({
         )}
         {slide.kind === "transfer" && (
           <div className="show-transfer">
-            <p className="eyebrow">{say(language, "A FRESH CASE", "新情境")}</p>
+            <p className="eyebrow">{t(language, "ShowPlayer.aFreshCase")}</p>
             <p className="pre-line">{e.transfer.question}</p>
             {e.transfer.choices?.map((choice, i) => (
               <p key={i} className="show-choice">
@@ -194,7 +193,7 @@ export function ShowPlayer({
         )}
         {slide.kind === "takeaway" && (
           <div className="show-takeaway">
-            <p className="eyebrow">{say(language, "TAKEAWAY", "要点")}</p>
+            <p className="eyebrow">{t(language, "ShowPlayer.takeaway")}</p>
             <p>{chapter.explanation[language]}</p>
           </div>
         )}
@@ -211,23 +210,23 @@ export function ShowPlayer({
           className="secondary"
           onClick={() => go(index - 1)}
           disabled={index === 0}
-          aria-label={say(language, "Previous slide", "上一张")}
+          aria-label={t(language, "ShowPlayer.previousSlide")}
         >
           ←
         </button>
         <button type="button" onClick={() => setPlaying((p) => !p)}>
           {playing
-            ? say(language, "Pause", "暂停")
+            ? t(language, "ShowPlayer.pause")
             : last
-              ? say(language, "Play again", "重新播放")
-              : say(language, "Play", "播放")}
+              ? t(language, "ShowPlayer.playAgain")
+              : t(language, "ShowPlayer.play")}
         </button>
         <button
           type="button"
           className="secondary"
           onClick={() => go(index + 1)}
           disabled={last}
-          aria-label={say(language, "Next slide", "下一张")}
+          aria-label={t(language, "ShowPlayer.nextSlide")}
         >
           →
         </button>
@@ -241,10 +240,10 @@ export function ShowPlayer({
             disabled={!speechAvailable()}
             onChange={(event) => setVoice(event.target.checked)}
           />
-          {say(language, "Browser voice", "浏览器朗读")}
+          {t(language, "ShowPlayer.browserVoice")}
         </label>
         <button type="button" className="text-button" onClick={onClose}>
-          {say(language, "Close show", "关闭讲解秀")}
+          {t(language, "ShowPlayer.closeShow")}
         </button>
       </div>
       <p className="fine show-credits">
@@ -254,7 +253,7 @@ export function ShowPlayer({
               `Narration written by Meta ${scriptModel}`,
               `旁白由 Meta ${scriptModel} 撰写`,
             )
-          : say(language, "Narration by the author", "旁白由作者撰写")}
+          : t(language, "ShowPlayer.narrationByTheAuthor")}
         {coverModel
           ? say(
               language,
@@ -262,11 +261,7 @@ export function ShowPlayer({
               ` · 封面由 Meta ${coverModel} 绘制`,
             )
           : ""}
-        {say(
-          language,
-          " · voice by your browser, not a Meta model · values come from the checked lesson",
-          " · 朗读由浏览器完成，不是 Meta 模型 · 数值来自经核验的课程",
-        )}
+        {t(language, "ShowPlayer.voiceByYourBrowserNot")}
       </p>
     </section>
   );

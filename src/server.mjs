@@ -82,6 +82,10 @@ export function createHandler({
   const targets=router.list().map(t=>({...t,...(configured!==undefined&&t.id===router.defaultId?{configured}:{})}));
   const selected=id=>{const t=targets.find(t=>t.id===(id??router.defaultId));if(!t)throw new RequestError(400,'Choose an allowed provider/model.');return {...t};};
   const defaultTarget=selected();
+  // A hosted function has 60 s in all (vercel.json maxDuration). The show's cover call gets
+  // what is left after the script call, and is skipped when that is too little to succeed.
+  const REQUEST_BUDGET_MS=55_000,MIN_IMAGE_MS=8_000;
+  const imageBudgetMs=elapsedMs=>{const left=REQUEST_BUDGET_MS-elapsedMs;return left>=MIN_IMAGE_MS?Math.min(60_000,Math.round(left)):0;};
   // Roles: the stronger Wonder model drafts and revises; Spark plays the first-time learner
   // who tries a draft and reports back. Each falls back to the default target when absent.
   const roleTarget=prefix=>targets.find(t=>t.configured&&t.provider==='meta'&&t.model.startsWith(prefix))??defaultTarget;
@@ -177,11 +181,12 @@ export function createHandler({
           // or missing image never fails the show. Image bytes go to the client only.
           if(mode==='show'){
             result.cover=null;result.coverModel=null;
-            if(imageCall&&llm.provider==='meta'){
+            const timeoutMs=imageBudgetMs(metrics.elapsedMs);
+            if(imageCall&&llm.provider==='meta'&&timeoutMs>0){
               const imageTrace=trace?.start({provider:'meta',model:'muse-image-1.0',input:result.show.coverPrompt,instructions:'image generation'});
-              try{const image=await imageCall({prompt:result.show.coverPrompt,...(imageTrace?{onTrace:imageTrace.event}:{})});result.cover=image.dataUrl;result.coverModel=image.model;imageTrace?.finish('accepted');}
+              try{const image=await imageCall({prompt:result.show.coverPrompt,timeoutMs,...(imageTrace?{onTrace:imageTrace.event}:{})});result.cover=image.dataUrl;result.coverModel=image.model;imageTrace?.finish('accepted');}
               catch{imageTrace?.finish('failed or rejected');}
-            }
+            }else if(imageCall&&llm.provider==='meta')result.coverSkipped='time';
           }
           if(!await access.active(tester.id)){call?.finish('discarded');await state.remove(body.sessionId);throw new RequestError(401,'Sign in to tester access.');}
           if(!await state.get(body.sessionId))throw new RequestError(409,'Session was reset; response discarded.');

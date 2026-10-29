@@ -1,44 +1,38 @@
 # ExplainBack shared progress ledger
 
-Common engineering handoff for **Codex and Claude**. Updated **October 28, 2026,
-Pacific**. Start here, then inspect the actual checkout. The work table is the
+Common engineering handoff for **Codex, Claude and Devin**. Updated **October 28,
+2026, Pacific** (header refreshed after REVIEW-002). Start here, then inspect the actual checkout. The work table is the
 current index; dated entries and linked evidence retain the history.
 
 ## Current baseline
 
-- **Product:** a question or image becomes a bilingual, reviewable interactive
-  lesson. The learner predicts, operates, explains and transfers. Six reviewed
-  gallery lessons (one drafted from a sketch) play without signing in or making
-  model requests.
-- **Grounding source:** `main` at `ba4da7a5182df30b399baad37a03494e4565ccf9`, merging
-  PR #7. The locally stored `origin/main` matches; no remote refresh was performed
-  in this grounding pass.
-- **Recent additions:** reviewer codes with quotas, local open-access mode,
-  Muse Wonder alongside Spark, image input and model-comparison/judge evaluation.
-- **Production release tracking:** [PR #8 release verification](https://github.com/dorangao/explainback/pull/8)
-  records the final merge, deployment and live checks. Before this release, the
-  Vercel CLI verified production at `ba4da7a`, READY/PROMOTED with
-  `explainback.app` assigned. Older release records remain in
-  [the deployment notes](../vercel-deployment.md).
-- **Release branch:** `codex/react-studio-branding`; migration and branding
-  implementation committed/pushed as `8bdc8ff` in [PR #8](https://github.com/dorangao/explainback/pull/8).
-  The PR release-verification section records the final merged/deployed state.
-- **Fresh local checks:** Node **22.23.1**, **245/245 tests**, TypeScript and build
-  pass; **18/18 Chromium workflows passed** after independent review fixes. See [migration verification](../react-ui-verification.md).
+- **Product:** a question or a sketch becomes a bilingual, reviewable interactive
+  lesson. Wonder is the creator, Spark the test learner whose answers code
+  checks; the learner predicts, operates, explains it back (graded by Muse) and
+  transfers; any lesson becomes a narrated show with a Muse Image cover. Six
+  reviewed gallery lessons and their shows play without signing in.
+- **Grounding source:** `main` at `8e39aee` (docs) on top of PR #16 (`7e0f458`);
+  `origin/main` matches; production serves that code
+  (`explainback-e9arw59r0`, see the deployment notes).
+- **Shipped Oct 28 (all merged and deployed):** PR #9 post-migration cleanup,
+  #10 author prompt v2, #11 sketch gallery lesson and restore, #12 explain it
+  back, #13 creator/tester roles and tryout, #14 narrated shows and Why Muse,
+  #15 rejection reasons, #16 invite reuse.
+- **Fresh local checks (Oct 28, PR #16 branch):** Node **243/243**, Vitest
+  **21/21**, Playwright **18/18**, typecheck, lint (warnings only), Prettier,
+  build. CI (`verify.yml`) runs the same on every PR.
 - **Pre-existing untracked work:** `.agents/`, `.claude/`, `skills-lock.json`.
-  Left untouched and excluded from the release commits. Shared handoff documents
-  are included in PR #8.
-- **Current work:** the approved green-and-paper React migration is implemented
-  and validated. The user authorized commit/push/PR/merge/deployment; REL-001
-  links the live release record instead of inferring those external states.
-
+  Left untouched and excluded from commits.
+- **Current work:** submission readiness (demo script, video, submission copy,
+  organizer questions) per `docs/hackathon-readiness.md`; see REVIEW-002 below
+  for the Oct 28 review and its disposition.
 
 ## Work table
 
 | ID | Owner | State | Scope / files | Next action |
 |---|---|---|---|---|
-| GROUND-001 | Codex | Complete locally; uncommitted | `AGENTS.md`, `CLAUDE.md`, this ledger, README and readiness/deployment notes | Both agents use this handoff on their next task. |
-| UI-001 | Codex | Committed and pushed in `8bdc8ff`; release tracked by REL-001 | Base `ba4da7a`, branch `codex/react-studio-branding`; claim: `frontend/`, `e2e/`, package/build configs, static serving, physics adapter, brand assets, relevant tests and docs. | Ready for user review; commit/push/deployment remain separate next actions. |
+| GROUND-001 | Codex | Complete; committed in PR #8 | `AGENTS.md`, `CLAUDE.md`, this ledger, README and readiness/deployment notes | Both agents use this handoff on their next task. |
+| UI-001 | Codex | Merged in PR #8 and deployed | Base `ba4da7a`, branch `codex/react-studio-branding`; claim: `frontend/`, `e2e/`, package/build configs, static serving, physics adapter, brand assets, relevant tests and docs. | Ready for user review; commit/push/deployment remain separate next actions. |
 | REL-001 | Codex | Release evidence in PR #8; file claim released | Base `ba4da7a`, `codex/react-studio-branding`; claims `vercel.json`, `.vercelignore`, `.github/workflows/`, suction fallback regression, release evidence and this ledger; committing the validated UI-001 files. | [PR #8](https://github.com/dorangao/explainback/pull/8) carries the final merge SHA, production deployment and live validation evidence; read its release verification section. |
 | REVIEW-001 | Claude | Assessment complete; no product code changed | Base `b7f82df` (`main` after PR #8), checkout on `codex/react-studio-branding`; read-only review of `frontend/`, `src/static.mjs`, build/CI config, tests; this ledger only | User chooses which findings to schedule; see the dated entry. |
 | CLEAN-001 | Claude | Merged as `92723db`; deployed to production | Base `b7f82df`, branch `feat/post-migration-cleanup`; claims `frontend/**`, `public/*.d.mts`, removed legacy shell files, `src/server.mjs` (asset map, reply metrics), `test/**`, lint/format/Vitest config, CI workflow, README, LICENSE, Studio docs | User reviews and merges the PR; deploy afterwards. Labs port left `react/refs` and `react/immutability` as warnings under `frontend/components/labs/**` (follow-up: idiomatic React state for the ported controllers). |
@@ -49,6 +43,7 @@ current index; dated entries and linked evidence retain the history.
 | SHOW-001 | Claude | Merged as `b8ba6ce`; deployed to production | Base `5f80635`, branch `feat/lesson-show`; `src/lesson-show.mjs` (new), `src/meta.mjs` (Muse Image), `src/server.mjs` (`/api/studio/show`), `scripts/make-gallery-shows.mjs`, `public/gallery-shows.mjs` + six covers, `src/static.mjs`, `frontend/components/ShowPlayer.tsx` (new), App routing `#show:`, Gallery, Studio, DraftReview, types, messages, styles, tests, README (Why Muse) and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
 | REASON-001 | Claude | Merged as `e0a094c`; deployed to production | Base `7bd28a1`, branch `fix/rejection-reason`; `src/server.mjs` (rejection reason on 502 and trace), `src/trace.mjs`, `public/provider-console.mjs`, `frontend/lib/api.ts`, `frontend/components/Studio.tsx`, messages, styles, tests, Studio docs | Done; release recorded in `docs/vercel-deployment.md`. Follow-up: an `#invite:` link reused in the same tab after sign-out needs a reload. |
 | INVITE-002 | Claude | Merged as `7e0f458`; deployed to production | Base `b6796af`, branch `fix/invite-reuse`; `frontend/App.tsx` (invite applied once per navigation, no handled-code guard), `frontend/App.test.tsx` (new) | Done; release recorded in `docs/vercel-deployment.md`. |
+| REVIEW-002 | Devin (review) · Claude (disposition) | Applied, PR open | Base `8e39aee`, branch `chore/housekeeping-review-002`; show cover budget (`src/server.mjs`), sketch source key `muse-sketch`, unused busy state and shadowing, inline strings extracted, demo script rewrite, readiness tracker and ledger header refresh | User reviews and merges; user runs the worktree/branch cleanup commands recorded below. |
 
 
 Before working, read the latest table and actual Git state, claim a bounded file
@@ -659,3 +654,55 @@ auth change alone does not replay a consumed invite.
 Playwright 18/18. Hosted check after deployment recorded below.
 
 **State:** merged as `7e0f458` (PR #16) and deployed; hosted check of sign-out then same-tab invite reuse passed (new login without reload). Release recorded in `docs/vercel-deployment.md`.
+
+### 2026-10-28 Pacific — REVIEW-002 — Devin's review, disposition by Claude
+
+**Source:** Devin's read-only review of the ledger, tracker, demo and eval docs
+and the main code paths (shared by the user). Devin joins the crew; this ledger
+and `AGENTS.md` are the handoff.
+
+**Applied in this change:**
+
+- (5) **Show request time budget.** `/api/studio/show` ran the creator call (up
+  to 50 s) and then the Muse Image call (60 s) inside a 60 s function. The cover
+  call now gets what is left of a 55 s budget after the script call and is
+  skipped (`coverSkipped:'time'`) when under 8 s remain; the client no longer
+  waits an extra 60 s. Test asserts the budgeted timeout.
+- (6) **Sketch provenance key** renamed from `muse-image` to `muse-sketch` in
+  the gallery data, source note and card, so it cannot be read as "Muse Image
+  drew the sketch".
+- (8) `App.tsx` unused busy state removed; four shadowed `t` lambdas renamed;
+  22 inline `say(...)` pairs in LessonPlayer, ShowPlayer and DraftReview moved
+  into `frontend/lib/messages.ts` by the extractor (236 messages).
+- (1, 2) `docs/studio-demo.md` rewritten around the current product with the
+  Wonder-timing guidance (honest cuts, or Spark as creator and say so).
+- (3, 4) `docs/hackathon-readiness.md` and this ledger's header refreshed:
+  dates, test counts, R05/R06/R07/Q04/Q05/X02 states, story pointer, work table
+  rows GROUND-001/UI-001.
+
+**Not applied here, with reasons:**
+
+- (7) Worktree `.claude/worktrees/agent-a09d810a860cc1fde` (branch merged,
+  tree clean) and the superseded branches `feat/reviewer-access-codes` (its
+  commit is equivalent to one on main) and `feat/wonder-eval-image` (its docs
+  were restored on main): removal is destructive and was declined by the
+  session's permission policy. Commands for the user:
+  `git worktree remove .claude/worktrees/agent-a09d810a860cc1fde`,
+  `git branch -d worktree-agent-a09d810a860cc1fde`,
+  `git branch -D feat/reviewer-access-codes feat/wonder-eval-image`,
+  `git push origin --delete feat/reviewer-access-codes feat/wonder-eval-image`.
+  Moving the checkout out of iCloud Drive is the user's call.
+- (8) Labs hook warnings: left; the labs port is out of scope this week.
+- (9) Automatic re-run of the test learner after a revision with a before/after
+  clarity number: good follow-up; one extra request per revision.
+- (10) Sketch transfer-values prompt rule: cheap, but prompt changes are kept
+  only with a measured rerun (image suite), so it is a separate small task.
+- (11) "How this was checked" panel on gallery cards: follow-up.
+- (12) Human content review of the six gallery lessons: user/reviewer task (Q02).
+- R01/R02 and the organizer questions remain the user's.
+
+**Verification:** Node 243/243 (budget assertion added to the show test),
+Vitest 21/21, typecheck, lint (no errors; no-shadow/no-unused-vars warnings in
+Studio/App gone), Prettier, Playwright 18/18.
+
+**State:** committed and pushed; PR open; not merged or deployed.

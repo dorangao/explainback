@@ -128,7 +128,7 @@ test('a show runs the script on the creator session model and adds a cover from 
   if(name==='compose_lesson')return {toolCall:{name,arguments:JSON.stringify({status:'ready',message:bi('Ready'),lesson:lesson()})}};
   const s=k=>({kind:k,chapter:0,heading:bi(k),narration:bi('Say '+k)});
   return {structured:{name:'make_show',value:{slides:[s('cover'),s('claim'),s('experiment'),s('evidence'),s('takeaway')],coverPrompt:'Two cars on a road'}}};
- },imageCall:async args=>{images.push(args.prompt);if(images.length>1)throw new Error('down');return {dataUrl:'data:image/webp;base64,QUJD',model:'muse-image-1.0',usage:null};}});
+ },imageCall:async args=>{images.push(args.prompt);assert.ok(Number.isInteger(args.timeoutMs)&&args.timeoutMs>0&&args.timeoutMs<=55_000,'cover call is budgeted inside the request limit');if(images.length>1)throw new Error('down');return {dataUrl:'data:image/webp;base64,QUJD',model:'muse-image-1.0',usage:null};}});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));t.after(()=>new Promise(r=>{server.close(r);server.closeAllConnections();}));
  const origin=`http://127.0.0.1:${server.address().port}`,cookie=await testerCookie(origin);
  const post=(path,body)=>fetch(origin+path,{method:'POST',headers:{Origin:origin,Cookie:cookie,'Content-Type':'application/json'},body:JSON.stringify(body)});

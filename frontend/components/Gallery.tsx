@@ -171,7 +171,7 @@ export function Gallery({ language }: { language: Language }) {
                 )}
               </span>
               <h3>{item.lesson.title[language]}</h3>
-              {item.source === "muse-image" && (
+              {item.source === "muse-sketch" && (
                 <span className="lesson-origin">
                   {t(language, "Gallery.createdFromASketch")}
                 </span>

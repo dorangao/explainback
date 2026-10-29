@@ -30,6 +30,8 @@ const ShowPlayer = lazy(() =>
     default: module.ShowPlayer,
   })),
 );
+// Busy flags from the areas are not used by the shell yet; the areas keep their own.
+const noop = () => {};
 function readRoute() {
   const hash = location.hash;
   return {
@@ -55,10 +57,7 @@ export function App() {
     [route, setRoute] = useState(readRoute),
     [showAccess, setShowAccess] = useState(false),
     [starter, setStarter] = useState(0),
-    [libraryVisit, setLibraryVisit] = useState(0),
-    [studioBusy, setStudioBusy] = useState(false),
-    [physicsBusy, setPhysicsBusy] = useState(false),
-    [quantumBusy, setQuantumBusy] = useState(false);
+    [libraryVisit, setLibraryVisit] = useState(0);
   const invite = useRef<string | null>(null),
     firstAuth = useRef(false),
     main = useRef<HTMLElement>(null),
@@ -116,9 +115,6 @@ export function App() {
       setRoute({ area: "studio", lessonId: null, showId: null });
       history.replaceState(null, "", "#studio");
       firstAuth.current = false;
-      setStudioBusy(false);
-      setPhysicsBusy(false);
-      setQuantumBusy(false);
     }
   }, [auth.info.authenticated]);
   const openAccess = useCallback(() => {
@@ -292,7 +288,7 @@ export function App() {
           view={area === "create" ? "create" : "studio"}
           lessonId={null}
           starter={starter}
-          onBusy={setStudioBusy}
+          onBusy={noop}
           onRequestAccess={openAccess}
         />
         {route.lessonId && (
@@ -306,7 +302,7 @@ export function App() {
             view="studio"
             lessonId={route.lessonId}
             starter={0}
-            onBusy={setStudioBusy}
+            onBusy={noop}
             onRequestAccess={openAccess}
           />
         )}
@@ -326,7 +322,7 @@ export function App() {
                 visible={area === "physics"}
                 status={auth.status}
                 post={auth.post}
-                onBusy={setPhysicsBusy}
+                onBusy={noop}
                 onLanguage={setLang}
               />
             )}
@@ -338,7 +334,7 @@ export function App() {
                 visible={area === "quantum"}
                 status={auth.status}
                 post={auth.post}
-                onBusy={setQuantumBusy}
+                onBusy={noop}
                 onLanguage={setLang}
               />
             )}
