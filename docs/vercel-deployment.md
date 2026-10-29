@@ -48,7 +48,9 @@ server variables privately using the Vercel dashboard or stdin to `vercel env ad
 - `EXPLAINBACK_ACCESS_CODES` (optional reviewer codes, `label:CODE:YYYY-MM-DD:quota`, comma-separated; each has its own hourly provider budget and expiry, see `.env.example`)
 - `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` (the integration's
   `KV_REST_API_URL` / `KV_REST_API_TOKEN` names are also supported)
-- `EXPLAINBACK_TRACE=1` for the guided demo and provider console
+- `EXPLAINBACK_TRACE=1` only if the provider console should show request records
+  (off in production: it keeps filtered request bodies for 30 minutes and marks
+  every session a developer demo; the guided demo runs without it)
 
 Do not upload `.env.local` or set any public-prefixed secret. Do not overwrite
 local configuration with `vercel env pull`; use a separate ignored environment

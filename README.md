@@ -246,8 +246,8 @@ and does not control the powered landing.
 A completed walkthrough uses four live provider calls. Waiting or playing does
 not call a provider. Unexpected feedback or errors stop without retries. Confirmation
 and results remain **scripted/assisted**, never independent learner evidence.
-The console requires a configured provider and `EXPLAINBACK_TRACE=1`; restart
-after changing that flag. Trace-off still permits manual learning workflows.
+The demo runs with tracing on or off. The request console additionally needs
+`EXPLAINBACK_TRACE=1`; restart after changing that flag.
 
 Stop, reset, language switching, or hiding the tab prevents future steps. Sent
 requests may still finish and incur usage. Switching language preserves the
@@ -699,7 +699,7 @@ or choose **Suction · design comparison** in the guided demo and press **Start 
 English and Chinese have the same claim → confirmation → prediction → checked
 experiment → design proposal/comparison → fresh robot transfer workflow.
 The guided version pauses at each stage and makes at most five provider submissions.
-It requires `EXPLAINBACK_TRACE=1`; ordinary manual sessions work with tracing disabled.
+The request console needs `EXPLAINBACK_TRACE=1`; the demo itself does not.
 Meta remains the default. No Ollama instance is required by this lab.
 
 The reduced model separates external-flow aerodynamics from sealed fan suction,
