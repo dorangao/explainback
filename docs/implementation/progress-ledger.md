@@ -53,7 +53,7 @@ current index; dated entries and linked evidence retain the history.
 | MOVE-001 | Codex | Complete: domain moved and verified | Base old `acb0ed3`; new `/Users/dorangao/app/explainbackapp` at `a6e151e`; production deployment `dpl_Hnt8c8Z1PNHZM7T63iFgMaZ3rSGf` | Continue submission readiness and user-led full-flow testing. |
 | TOUCH-001 | Claude | Complete; read-only touch base of the standalone checkout; no claim held | Base `a6e151e` on `/Users/dorangao/app/explainbackapp` `main` (matches `origin/main`); this ledger only | Another agent is editing `frontend/styles.css` there (uncommitted at 21:12 Pacific); whoever owns it runs Prettier and records the claim before committing. |
 | LIVE-001 | Claude | Complete: full live flow verified after cutover; shot list written; claim released | Base `a6e151e` (deployed source); claims `docs/studio-demo.md` (shot list section), this ledger and `docs/hackathon-readiness.md` evidence line only; no product code | User records the demo from the shot list in `docs/studio-demo.md`; spoken explain-back and narrow screens still unverified live. |
-| DEMO-TRACE-001 | Claude | Implemented and verified locally in both checkouts; PRs open, not merged or deployed | Base `96a163d` (original `main`) and `6049da1` (standalone `main`), branch `fix/guided-demo-without-trace` in each; claims `public/demo-runner.mjs`, `public/suction-demo.mjs`, `frontend/components/labs/{GuidedDemo.tsx,physicsController.ts}`, their Node tests, `e2e/app.spec.ts`, README and deployment notes (original only), this ledger | User merges the standalone PR (Git-triggered production deploy) and the original PR; then presses Start demo on explainback.app through the judge invite. |
+| DEMO-TRACE-001 | Claude | Merged in the standalone repo as `92e0b19` and live on explainback.app; original PR #21 open | Base `96a163d` (original `main`) and `6049da1` (standalone `main`), branch `fix/guided-demo-without-trace` in each; claims `public/demo-runner.mjs`, `public/suction-demo.mjs`, `frontend/components/labs/{GuidedDemo.tsx,physicsController.ts}`, their Node tests, `e2e/app.spec.ts`, README and deployment notes (original only), this ledger | User decides whether production keeps `EXPLAINBACK_TRACE=1` now that the demo no longer needs it, and whether to merge or close the original PR #21. |
 
 
 Before working, read the latest table and actual Git state, claim a bounded file
@@ -984,6 +984,19 @@ attempts, step 2) and Stop ended it with no console errors. Standalone
 checkout, Node 22: check, Node **265/265**, Vitest **44/44**, build, Playwright
 **22/22**. PRs: [dorangao/explainback#21](https://github.com/dorangao/explainback/pull/21)
 and [dorangao/explainbackapp#3](https://github.com/dorangao/explainbackapp/pull/3)
-(the standalone one deploys production when merged). Not yet checked on explainback.app;
-after the standalone merge deploys, open the Physics workbench through the
-judge invite, press Start demo once, Stop, and sign out.
+(the standalone one deploys production when merged).
+
+**Release (Oct 29):** rebased the standalone branch onto `ca54ece` (after PRs
+#2 lesson library and #4 Blob images; no overlapping files), reran check,
+Node **277/277**, Vitest **51/51**, build and Playwright **24/24**, CI green,
+merged as `92e0b19`; the Git-triggered production deployment served the new
+`Labs` chunk within a minute. Live through the judge invite: Start demo was
+enabled, the suction script paused at step 1 of 11 ("Paused · read, then
+select Next · 0/5"), stayed paused for 8 s, Stop ended it with no request
+sent, then signed out. A pane screenshot briefly hid the tab and stopped a
+first attempt, which is the documented hide-the-tab behaviour. Finding:
+production `/api/status` now reports `traceEnabled: true`, so the standalone
+project has `EXPLAINBACK_TRACE=1` set; the demo no longer needs it, and with it
+on every session is labelled a developer demo and filtered request bodies stay
+in Redis for 30 minutes. The original-repo PR #21 carries the same change plus
+this ledger and stays open.
