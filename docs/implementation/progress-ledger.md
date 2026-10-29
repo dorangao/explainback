@@ -53,6 +53,7 @@ current index; dated entries and linked evidence retain the history.
 | MOVE-001 | Codex | Complete: domain moved and verified | Base old `acb0ed3`; new `/Users/dorangao/app/explainbackapp` at `a6e151e`; production deployment `dpl_Hnt8c8Z1PNHZM7T63iFgMaZ3rSGf` | Continue submission readiness and user-led full-flow testing. |
 | TOUCH-001 | Claude | Complete; read-only touch base of the standalone checkout; no claim held | Base `a6e151e` on `/Users/dorangao/app/explainbackapp` `main` (matches `origin/main`); this ledger only | Another agent is editing `frontend/styles.css` there (uncommitted at 21:12 Pacific); whoever owns it runs Prettier and records the claim before committing. |
 | LIVE-001 | Claude | Complete: full live flow verified after cutover; shot list written; claim released | Base `a6e151e` (deployed source); claims `docs/studio-demo.md` (shot list section), this ledger and `docs/hackathon-readiness.md` evidence line only; no product code | User records the demo from the shot list in `docs/studio-demo.md`; spoken explain-back and narrow screens still unverified live. |
+| DEMO-TRACE-001 | Claude | Merged in the standalone repo as `92e0b19` and live on explainback.app; original PR #21 open | Base `96a163d` (original `main`) and `6049da1` (standalone `main`), branch `fix/guided-demo-without-trace` in each; claims `public/demo-runner.mjs`, `public/suction-demo.mjs`, `frontend/components/labs/{GuidedDemo.tsx,physicsController.ts}`, their Node tests, `e2e/app.spec.ts`, README and deployment notes (original only), this ledger | User decides whether production keeps `EXPLAINBACK_TRACE=1` now that the demo no longer needs it, and whether to merge or close the original PR #21. |
 
 
 Before working, read the latest table and actual Git state, claim a bounded file
@@ -943,3 +944,59 @@ The user reopened the invite after the release. The current browser showed revie
 **Observations (cosmetic, not fixed):** the "The show is ready…" status banner stayed English after switching to 中文; the "requests left in this provider session" figure read 3 in EN and 8 in 中文 on the same page state. Worth a look in `frontend/lib/messages.ts` and the status source, outside this claim.
 
 **Not verified:** spoken explain-back (no microphone in the pane), narrow-screen layout, multi-chapter lessons. The lesson was not exported; the pane session was left signed in. Nothing committed.
+
+### 2026-10-29 Pacific — DEMO-TRACE-001 — Claude
+
+**Request:** the user's phone screenshot of the live Physics & math workbench
+(Chinese, judge invite) showed **开始演示 / Start demo** greyed out with the note
+"演示需启用 EXPLAINBACK_TRACE=1 并重启"; "check and fix can start the show".
+
+**Cause:** the guided demo was gated on the server trace flag three times: the
+Start button and `runDemo()` in `physicsController.ts` refused to start without
+`status.traceEnabled`, and both scripts (`runPresetDemo`, `runSuctionDemo`)
+threw before their first request. Production runs with `EXPLAINBACK_TRACE`
+unset on purpose: the flag keeps filtered request bodies in Redis for 30
+minutes and marks every session a developer demo. The demo itself never needed
+the trace; presets already reach the server with `demoPreset: true`, which marks
+the session `demoUsed` and the report `assisted`, and the manual flows run with
+tracing off.
+
+**Fix:** the demo starts whenever the lab is ready and the tester is signed in;
+the scripts require only login and a supported language; the console stays
+behind the flag and the note now says "The request console is off on this
+server (EXPLAINBACK_TRACE=1); the demo still makes live model calls" (zh:
+"真实调用的请求记录未开启…演示照常进行"). README and the deployment notes no
+longer list the flag as a demo requirement. Applied identically to the
+standalone checkout `/Users/dorangao/app/explainbackapp` (branch
+`fix/guided-demo-without-trace` from `6049da1`; it has no deployment notes and
+its README does not mention the flag).
+
+**Verification:** original checkout, Node 22: `npm run check`, Node **250/250**
+(two runner tests now assert the scripts complete with `traceEnabled:false`
+and still refuse without login), Vitest **30/30**, build, Playwright
+**11/11** on `app.spec.ts` including a new test that rewrites `/api/status` to
+`traceEnabled:false`, starts the demo, sees "Paused · read, then select Next"
+at step 1 and stops it. Built bundle served locally with
+`EXPLAINBACK_TRACE=0 EXPLAINBACK_OPEN_ACCESS=1`: `/api/status` reported
+`traceEnabled:false`, Start demo was enabled, the suction script paused at step
+1 of 11, one Next sent the preset to Muse Spark (feedback returned, 1/5
+attempts, step 2) and Stop ended it with no console errors. Standalone
+checkout, Node 22: check, Node **265/265**, Vitest **44/44**, build, Playwright
+**22/22**. PRs: [dorangao/explainback#21](https://github.com/dorangao/explainback/pull/21)
+and [dorangao/explainbackapp#3](https://github.com/dorangao/explainbackapp/pull/3)
+(the standalone one deploys production when merged).
+
+**Release (Oct 29):** rebased the standalone branch onto `ca54ece` (after PRs
+#2 lesson library and #4 Blob images; no overlapping files), reran check,
+Node **277/277**, Vitest **51/51**, build and Playwright **24/24**, CI green,
+merged as `92e0b19`; the Git-triggered production deployment served the new
+`Labs` chunk within a minute. Live through the judge invite: Start demo was
+enabled, the suction script paused at step 1 of 11 ("Paused · read, then
+select Next · 0/5"), stayed paused for 8 s, Stop ended it with no request
+sent, then signed out. A pane screenshot briefly hid the tab and stopped a
+first attempt, which is the documented hide-the-tab behaviour. Finding:
+production `/api/status` now reports `traceEnabled: true`, so the standalone
+project has `EXPLAINBACK_TRACE=1` set; the demo no longer needs it, and with it
+on every session is labelled a developer demo and filtered request bodies stay
+in Redis for 30 minutes. The original-repo PR #21 carries the same change plus
+this ledger and stays open.
