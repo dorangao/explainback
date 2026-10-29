@@ -424,3 +424,25 @@ Hosted check: a fresh load of the judge invite signed in (quota line shown);
 Sign out returned to the library; setting the same `#invite:` hash in the same
 tab, without a reload, sent a new `/api/login` (200) and restored the quota line
 and Sign out. Signed out again afterwards.
+
+## Indexable, installable and analytics release · October 28, 2026 (Pacific)
+
+Merged [PR #18](https://github.com/dorangao/explainback/pull/18) as `5c9a17f` and
+deployed `main` with `vercel deploy --prod -y`; deployment
+`explainback-oydt1bx8d-doran-gaos-projects.vercel.app`, status Ready, serving
+[explainback.app](https://explainback.app/). No environment changes. (PR #17,
+`eec2d1a`, had been merged by the user and reached production through the
+Vercel Git integration; its bundle carried the `muse-sketch` key.)
+
+Hosted check (signed out): `/` no longer sends `X-Robots-Tag`; `robots.txt`
+allows crawling except `/api/` and names `sitemap.xml` (200, XML); the head
+carries the robots meta, canonical link, manifest link and JSON-LD;
+`manifest.webmanifest` (200, `application/manifest+json`) and `sw.js` (200,
+`application/javascript`) are served `no-store`; a maskable icon returns
+`public, max-age=86400, stale-while-revalidate=604800` and the hashed index
+bundle `public, max-age=31536000, immutable`. On `#show:cooling` the service
+worker is activated and controlling the page, the tab title is "Newton cooling:
+how hot objects cool · ExplainBack" and the show renders. The analytics script
+is requested from the same origin but returns 404 (one console error) until
+**Web Analytics is enabled in the Vercel dashboard** (Project → Analytics); no
+data is recorded before that.
