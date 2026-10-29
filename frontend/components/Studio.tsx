@@ -29,6 +29,7 @@ import {
   studioWalkthrough,
   validateLesson,
 } from "../lib/shared";
+import { blobToBase64 } from "../lib/recorder";
 import { useProviderSession } from "../hooks/useProviderSession";
 import { useImageAttachment } from "../hooks/useImageAttachment";
 import { Gallery } from "./Gallery";
@@ -317,6 +318,33 @@ export function Studio({
     setMessage(t(language, "Studio.theTestLearnerTriedThis"));
   }
   // The creator writes the narration; the server adds a Muse Image cover when it can.
+  // The spoken explain-back: the recorded WAV goes to Muse Voice Transcribe and the
+  // transcript comes back for the learner to edit; it is one request on the budget.
+  async function transcribe(wav: Blob): Promise<string | null> {
+    if (busyRef.current || !authenticated || !target?.configured) return null;
+    const audio = await blobToBase64(wav);
+    const result = await run<{ text: string; attemptsRemaining?: number }>(
+      target,
+      "transcribe",
+      (id, options) =>
+        post<{
+          text: string;
+          model: string;
+          elapsedMs: number;
+          usage: null;
+          attemptsRemaining: number;
+        }>(
+          "/api/studio/transcribe",
+          { sessionId: id, language, audio },
+          { ...options, timeoutMs: 45_000 },
+        ),
+    );
+    if (!result.ok) {
+      if (!result.stale) setMessage(failureMessage(result.error));
+      return null;
+    }
+    return result.reply.text;
+  }
   async function makeShow() {
     if (
       busyRef.current ||
@@ -746,11 +774,13 @@ export function Studio({
               canAsk={canRequest}
               feedback={feedback}
               onGuide={(own) => void request("guide", own)}
+              onTranscribe={providerStatus?.voice ? transcribe : undefined}
               onClearFeedback={clearFeedback}
               onBack={() => setPresenting(false)}
               onLibrary={closeLesson}
             />
-            {feedback && metrics?.mode === "guide" && (
+            {((feedback && metrics?.mode === "guide") ||
+              metrics?.mode === "transcribe") && (
               <RequestSummary metrics={metrics} language={language} />
             )}
             {source && (

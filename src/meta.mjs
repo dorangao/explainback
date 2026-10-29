@@ -100,6 +100,8 @@ export async function callMeta({
 }
 
 export const META_IMAGE_ENDPOINT = 'https://api.meta.ai/v1/images/generations';
+export const META_ASR_ENDPOINT = 'https://api.meta.ai/v1/asr/transcribe';
+export const DEFAULT_META_VOICE_MODEL = 'muse-voice-transcribe-1.0';
 export const DEFAULT_META_IMAGE_MODEL = 'muse-image-1.0';
 // One illustration from Muse Image. Returns a data URL; bytes never enter traces or logs.
 export async function generateMetaImage({
@@ -143,4 +145,52 @@ export async function generateMetaImage({
   const format = ['webp', 'png', 'jpeg'].includes(data.output_format) ? data.output_format : outputFormat;
   trace({ type: 'response', body: { output_format: format, bytes: Math.floor(b64.length * 3 / 4), usage: data.usage ?? null } });
   return { dataUrl: `data:image/${format};base64,${b64}`, format, model, usage: data.usage ? { input_tokens: data.usage.input_tokens ?? null, output_tokens: data.usage.output_tokens ?? null } : null };
+}
+
+// Speech to text for the learner's spoken explanation. The audio is a validated mono
+// 16-bit WAV (src/wav.mjs); the transcript comes back as text for the learner to edit.
+// Traces carry sizes and the transcript, never audio bytes.
+export async function transcribeMetaAudio({
+  apiKey,
+  wav,
+  model = DEFAULT_META_VOICE_MODEL,
+  languageBias,
+  timeoutMs = 30_000,
+  fetchImpl = globalThis.fetch,
+  onTrace,
+} = {}) {
+  if (typeof apiKey !== 'string' || !apiKey.trim()) throw new Error('MODEL_API_KEY is missing. Set it privately in your shell or .env.local.');
+  if (!(wav instanceof Uint8Array) || wav.byteLength < 44 || wav.byteLength > 4_000_000) throw new Error('wav must be a small WAV buffer.');
+  if (languageBias !== undefined && (!Array.isArray(languageBias) || !languageBias.every(l => typeof l === 'string' && /^[A-Za-z ]{2,40}$/.test(l)))) throw new Error('languageBias must be language names.');
+  const signal = AbortSignal.timeout(timeoutMs);
+  const trace = event => { try { onTrace?.(event); } catch { /* Diagnostics must not affect calls. */ } };
+  const request = { model, mode: 'PUSH_TO_TALK', audioEncoding: 'WAV', ...(languageBias ? { languageBias } : {}) };
+  trace({ type: 'request', body: { ...request, audioBytes: wav.byteLength } });
+  const form = new FormData();
+  form.append('request', new Blob([JSON.stringify(request)], { type: 'application/json' }));
+  form.append('audio', new Blob([wav], { type: 'audio/wav' }), 'speech.wav');
+  let response;
+  try {
+    response = await fetchImpl(META_ASR_ENDPOINT, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey.trim()}`, Accept: 'application/json' },
+      body: form,
+      signal,
+      redirect: 'error',
+    });
+  } catch {
+    trace({ type: 'error', message: signal.aborted ? 'timeout' : 'transport failure' });
+    throw new Error(signal.aborted ? 'Meta transcription timed out.' : 'Could not reach Meta Model API. Check your network connection.');
+  }
+  if (!response.ok) {
+    trace({ type: 'error', message: `status ${response.status}` });
+    throw new Error(`Meta transcription failed with status ${response.status}.`);
+  }
+  let data;
+  try { data = await response.json(); } catch { throw new Error('Meta returned invalid transcription JSON.'); }
+  if (typeof data?.transcript !== 'string') throw new Error('Meta returned no transcript.');
+  const text = data.transcript.replace(/\s+/g, ' ').trim();
+  const audioDurationMs = Number.isFinite(data.audioDurationMs) ? Math.round(data.audioDurationMs) : null;
+  trace({ type: 'response', body: { transcript: text, audioDurationMs } });
+  return { text, model, audioDurationMs };
 }

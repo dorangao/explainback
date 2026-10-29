@@ -18,6 +18,7 @@ export function RequestSummary({
     guide: t(language, "RevisionSummary.explainedThisResult"),
     tryout: t(language, "RevisionSummary.triedThisLessonAs"),
     show: t(language, "RevisionSummary.wroteTheShowFor"),
+    transcribe: t(language, "RevisionSummary.transcribedYourExplanation"),
   }[metrics.mode];
   const tokens =
     metrics.usage && (metrics.usage.input ?? metrics.usage.output) !== null

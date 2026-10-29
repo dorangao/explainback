@@ -2,7 +2,7 @@ import {quantumCoachRequest,readQuantumCoach} from './quantum-coach.mjs';
 import {lessonAuthorRequest,readLessonAuthor} from './lesson-author.mjs';
 import {learnerTryoutRequest,readLearnerTryout} from './lesson-tester.mjs';
 import {showRequest,readShow} from './lesson-show.mjs';
-import {generateMetaImage} from './meta.mjs';
+import {generateMetaImage,transcribeMetaAudio} from './meta.mjs';
 import {validateLesson} from '../public/lesson-schema.mjs';
 import {suctionScenario,suctionTitle} from '../public/suction.mjs';
 import {flightScenario,flightTitle} from '../public/flight.mjs';
@@ -12,6 +12,7 @@ import {createTrace} from './trace.mjs';
 import {createMemoryState} from './state.mjs';
 import { createServer } from 'node:http';
 import {serveFrontend} from './static.mjs';
+import {readWavBase64} from './wav.mjs';
 import { randomBytes } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import {createProviderRouter} from './llm/index.mjs';
@@ -62,6 +63,8 @@ export function createHandler({
   configured, modelCall, router = createProviderRouter(),
   // Cover illustrations for shows; null disables them. Tests inject a fake.
   imageCall = process.env.MODEL_API_KEY?.trim()?(args=>generateMetaImage({apiKey:process.env.MODEL_API_KEY,...args})):null,
+  // Speech to text for the spoken explain-back; null hides the microphone. Tests inject a fake.
+  transcribeCall = process.env.MODEL_API_KEY?.trim()?(args=>transcribeMetaAudio({apiKey:process.env.MODEL_API_KEY,...args})):null,
   traceEnabled = process.env.EXPLAINBACK_TRACE === '1',
   testerCredentials = {},accessCodes=parseAccessCodes(process.env.EXPLAINBACK_ACCESS_CODES),openAccess=process.env.EXPLAINBACK_OPEN_ACCESS==='1',
   state=createMemoryState(),auth=createTesterAuth({...testerCredentials,accessCodes:accessCodes.codes??accessCodes,onRevoke:owner=>state.revokeOwner(owner)}),getOrigin=localOrigin,
@@ -114,11 +117,11 @@ export function createHandler({
       const quotaExceeded=()=>new RequestError(429,tester?.audience?'This access code’s hourly request budget is used up. Reviewed lessons still open without live requests.':'API request limit reached. No request was sent.');
       if (req.method === 'GET' && path === '/api/status') {
         const access=tester.audience?{...publicAudience(tester.audience),remaining:await state.remainingTurns(bucket,limit)}:null;
-        json(200, { configured:defaultTarget.configured, mode: 'live', access, model:defaultTarget.model, models:targets,defaultModel:defaultTarget.id,roles, traceEnabled, audience: 'tester-poc', problems: [...Object.values(problems).map(p => ({ id: p.id, title: p.title })),{id:'acceleration',title:motionTitle},{id:'flight',title:flightTitle},{id:'suction',title:suctionTitle}] }); return;
+        json(200, { configured:defaultTarget.configured, mode: 'live', access, model:defaultTarget.model, models:targets,defaultModel:defaultTarget.id,roles,voice:Boolean(transcribeCall), traceEnabled, audience: 'tester-poc', problems: [...Object.values(problems).map(p => ({ id: p.id, title: p.title })),{id:'acceleration',title:motionTitle},{id:'flight',title:flightTitle},{id:'suction',title:suctionTitle}] }); return;
       }
-      if (req.method !== 'POST' || !['/api/studio/session','/api/studio/compose','/api/studio/guide','/api/studio/tryout','/api/studio/show','/api/quantum/session','/api/quantum/explain','/api/session', '/api/turn', '/api/reset', '/api/claim', '/api/replay',...(traceEnabled?['/api/trace']:[])].includes(path)) { json(404, { error: 'Not found.' }); return; }
+      if (req.method !== 'POST' || !['/api/studio/session','/api/studio/compose','/api/studio/guide','/api/studio/tryout','/api/studio/show','/api/studio/transcribe','/api/quantum/session','/api/quantum/explain','/api/session', '/api/turn', '/api/reset', '/api/claim', '/api/replay',...(traceEnabled?['/api/trace']:[])].includes(path)) { json(404, { error: 'Not found.' }); return; }
       if (req.headers.origin !== origin) throw new RequestError(403, 'This action must come from this app.');
-      const body = await readJSON(req,path==='/api/studio/compose'?1_400_000:['/api/studio/guide','/api/studio/tryout','/api/studio/show'].includes(path)?48_000:16_384);
+      const body = await readJSON(req,path==='/api/studio/compose'?1_400_000:path==='/api/studio/transcribe'?2_700_000:['/api/studio/guide','/api/studio/tryout','/api/studio/show'].includes(path)?48_000:16_384);
       if(!await access.active(tester.id)){json(401,{error:'Sign in to tester access.',code:'TESTER_REQUIRED'});return;}
       if(path==='/api/quantum/session'||path==='/api/studio/session'){
         if(body.synthetic!==true||!['en','zh'].includes(body.language))throw new RequestError(400,'Choose a language and synthetic quantum demo.');
@@ -159,6 +162,29 @@ export function createHandler({
       if(path==='/api/trace'){
         if(body.clear!==undefined&&typeof body.clear!=='boolean')throw new RequestError(400,'Use a boolean clear flag.');
         if(body.clear)await state.writeTrace(body.sessionId,[],lock);json(200,{records:await state.readTrace(body.sessionId)});return;
+      }
+      if(s.workflow==='lesson-studio'&&path==='/api/studio/transcribe'){
+        // The learner's spoken explanation becomes editable text; it counts against the hourly
+        // budget but not the eight lesson attempts. Audio bytes never reach the trace or logs.
+        if(!transcribeCall)throw new RequestError(503,'Voice transcription is not configured.');
+        if(!['en','zh'].includes(body.language))throw new RequestError(400,'Choose a language.');
+        let wav;try{wav=readWavBase64(body.audio);}catch{throw new RequestError(400,'Record up to one minute of speech as mono 16-bit WAV.');}
+        if(!await state.consumeTurn(bucket,limit))throw quotaExceeded();
+        const trace=traceEnabled?createTrace(redacted,{initial:await state.readTrace(body.sessionId),onChange:rows=>state.writeTrace(body.sessionId,rows,lock)}):null;
+        const call=trace?.start({provider:'meta',model:'muse-voice-transcribe-1.0',input:`spoken explanation, ${wav.durationMs} ms at ${wav.sampleRate} Hz`,instructions:'speech to text'});
+        try{
+          await trace?.flush();
+          const startedAt=performance.now();
+          const result=await transcribeCall({wav:wav.buffer,languageBias:[body.language==='zh'?'Chinese':'English'],timeoutMs:30_000,...(call?{onTrace:call.event}:{})});
+          if(!await access.active(tester.id)){call?.finish('discarded');await state.remove(body.sessionId);throw new RequestError(401,'Sign in to tester access.');}
+          call?.finish(result.text?'accepted':'empty');try{await trace?.flush();}catch{}
+          await save(trace?.read());
+          json(200,{text:result.text,model:result.model,audioDurationMs:result.audioDurationMs??wav.durationMs,elapsedMs:Math.round(performance.now()-startedAt),usage:null,attemptsRemaining:8-s.attempts});return;
+        }catch(error){
+          call?.finish(error instanceof RequestError?'discarded':'failed or rejected');
+          if(error instanceof RequestError)throw error;
+          const failure=new RequestError(502,'The recording could not be transcribed. Try again or type your explanation.');failure.attemptsRemaining=8-s.attempts;throw failure;
+        }finally{try{await trace?.flush();}catch{}}
       }
       if(s.workflow==='lesson-studio'){
         const mode=path==='/api/studio/compose'?'compose':path==='/api/studio/guide'?'guide':path==='/api/studio/tryout'?'tryout':path==='/api/studio/show'?'show':null;

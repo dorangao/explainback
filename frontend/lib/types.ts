@@ -27,6 +27,8 @@ export type Status = {
   defaultModel: string;
   // Creator drafts and revises (Wonder when configured); tester tries a draft (Spark).
   roles?: { creator: string; tester: string };
+  // Muse Voice Transcribe is available for the spoken explain-back.
+  voice?: boolean;
   traceEnabled: boolean;
   access: Access | null;
   problems: { id: string; title: Bilingual }[];
