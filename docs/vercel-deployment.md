@@ -409,3 +409,15 @@ differentiation rules on Wonder drafted a lesson in 13.5 s, so no rejection was
 available to display live; the 502 path is covered by the HTTP and component
 tests. Noted during the check: reusing an `#invite:` link in a tab that already
 consumed it (after sign-out) does not sign in again until the page is reloaded.
+
+## Invite reuse release · October 28, 2026 (Pacific)
+
+Merged [PR #16](https://github.com/dorangao/explainback/pull/16) as `7e0f458` and
+deployed `main` with `vercel deploy --prod -y`; deployment
+`explainback-e9arw59r0-doran-gaos-projects.vercel.app`, status Ready, serving
+[explainback.app](https://explainback.app/). No environment changes.
+
+Hosted check: a fresh load of the judge invite signed in (quota line shown);
+Sign out returned to the library; setting the same `#invite:` hash in the same
+tab, without a reload, sent a new `/api/login` (200) and restored the quota line
+and Sign out. Signed out again afterwards.

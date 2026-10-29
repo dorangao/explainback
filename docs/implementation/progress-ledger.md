@@ -48,7 +48,7 @@ current index; dated entries and linked evidence retain the history.
 | ROLES-001 | Claude | Merged as `bc9f1d2`; deployed to production | Base `00dc995`, branch `feat/creator-tester-roles`; `src/lesson-tester.mjs` (new), `src/server.mjs` (roles, `/api/studio/tryout`), `frontend/components/{Studio,DraftReview,RequestSummary,RevisionSummary}.tsx`, types, messages, styles, tests, README and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
 | SHOW-001 | Claude | Merged as `b8ba6ce`; deployed to production | Base `5f80635`, branch `feat/lesson-show`; `src/lesson-show.mjs` (new), `src/meta.mjs` (Muse Image), `src/server.mjs` (`/api/studio/show`), `scripts/make-gallery-shows.mjs`, `public/gallery-shows.mjs` + six covers, `src/static.mjs`, `frontend/components/ShowPlayer.tsx` (new), App routing `#show:`, Gallery, Studio, DraftReview, types, messages, styles, tests, README (Why Muse) and Studio docs | Done; release recorded in `docs/vercel-deployment.md`. |
 | REASON-001 | Claude | Merged as `e0a094c`; deployed to production | Base `7bd28a1`, branch `fix/rejection-reason`; `src/server.mjs` (rejection reason on 502 and trace), `src/trace.mjs`, `public/provider-console.mjs`, `frontend/lib/api.ts`, `frontend/components/Studio.tsx`, messages, styles, tests, Studio docs | Done; release recorded in `docs/vercel-deployment.md`. Follow-up: an `#invite:` link reused in the same tab after sign-out needs a reload. |
-| INVITE-002 | Claude | Implemented, validated, PR open | Base `b6796af`, branch `fix/invite-reuse`; `frontend/App.tsx` (invite applied once per navigation, no handled-code guard), `frontend/App.test.tsx` (new) | User reviews and merges; deploy afterwards. |
+| INVITE-002 | Claude | Merged as `7e0f458`; deployed to production | Base `b6796af`, branch `fix/invite-reuse`; `frontend/App.tsx` (invite applied once per navigation, no handled-code guard), `frontend/App.test.tsx` (new) | Done; release recorded in `docs/vercel-deployment.md`. |
 
 
 Before working, read the latest table and actual Git state, claim a bounded file
@@ -655,7 +655,7 @@ do not replay it). New `frontend/App.test.tsx` mocks `useAuth` and checks:
 sign-in from the link, sign-out, the same link again signs in again, and an
 auth change alone does not replay a consumed invite.
 
-**Verification:** Vitest, typecheck, lint, format, Node tests, Playwright.
-Live hosted check after deployment.
+**Verification:** Vitest 21/21, Node 243/243, typecheck, lint, format,
+Playwright 18/18. Hosted check after deployment recorded below.
 
-**State:** committed and pushed; PR open; not merged or deployed.
+**State:** merged as `7e0f458` (PR #16) and deployed; hosted check of sign-out then same-tab invite reuse passed (new login without reload). Release recorded in `docs/vercel-deployment.md`.
